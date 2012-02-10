@@ -1,4 +1,4 @@
-package GUI;
+package prosevis.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,12 +17,13 @@ import java.util.HashMap;
 
 import javax.swing.*;
 
-import data.HierNode;
-import data.ICon;
-import data.InputFile;
-import data.NodeIterator;
-import data.Syllable;
-import data.WordNode;
+import prosevis.data.HierNode;
+import prosevis.data.ICon;
+import prosevis.data.InputFile;
+import prosevis.data.NodeIterator;
+import prosevis.data.Syllable;
+import prosevis.data.WordNode;
+
 
 /*
  * This class controls the two visualization panels, keeping track of

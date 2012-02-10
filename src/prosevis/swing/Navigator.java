@@ -1,4 +1,4 @@
-package GUI;
+package prosevis.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;

@@ -1,4 +1,4 @@
-package data;
+package prosevis.data;
 
 import java.util.ArrayList;
 

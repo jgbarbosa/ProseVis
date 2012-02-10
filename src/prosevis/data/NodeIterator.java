@@ -1,4 +1,4 @@
-package data;
+package prosevis.data;
 
 public class NodeIterator {
 	
