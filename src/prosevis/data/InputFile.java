@@ -2,7 +2,6 @@ package prosevis.data;
 
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.font.NumericShaper;
 import java.awt.font.TextLayout;
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,9 +15,6 @@ import javax.swing.JOptionPane;
 public class InputFile {
   private File file;
   public HierNode head;
-
-  static public String[] vowelSounds = { "I", "E", "{", "A", "V", "U", "i",
-      "e", "u", "AI", "o", "O", "aI", "OI", "aU", "r=", "@", "@U", "EI" };
 
   public ArrayList<HierNode> firstElements; // First node at each level
   public ArrayList<HierNode> currElements; // Current node at each level as file
@@ -229,14 +225,14 @@ public class InputFile {
       line[ICon.WORD_IND] = ",";
 
     // Parse phoneme into three components
-    String[] sylComp = parsePhoneme(line[ICon.PHONEME_IND]);
+    String[] sylComp = ParsingTools.parsePhoneme(line[ICon.PHONEME_IND]);
 
     int[] sAttributes = updateSylAttr(line, sylComp);
 
     float[] prob = null;
 
     if (hasComparisonData == true)
-      prob = getProb(line);
+      prob = ParsingTools.getProb(line);
 
     // Does this syllable start a new word?
     if (currWord == null || !currWord.getWord().equals(line[ICon.WORD_IND])) {
@@ -245,7 +241,7 @@ public class InputFile {
 
       // Create new word
       WordNode newWord = new WordNode(line[ICon.WORD_IND], wAttributes,
-          sAttributes, prob, notPunct(line[ICon.WORD_IND]));
+          sAttributes, prob, ParsingTools.notPunct(line[ICon.WORD_IND]));
 
       // Determine word, pos, and phoneme length
       double wordWidth = getTextWidth(line[ICon.WORD_IND]);
@@ -327,17 +323,6 @@ public class InputFile {
     return this.hasComparisonData;
   }
 
-  public float[] getProb(String[] line) {
-    float[] prob = new float[ICon.MAX_PROB];
-    int end = line.length;
-    int start = end - ICon.MAX_PROB;
-
-    for (int itr = start, count = 0; itr < end; count++, itr++) {
-      prob[count] = Float.parseFloat(line[itr]);
-    }
-    return prob;
-  }
-
   // Update lists that are specific to the word
   public int[] updateWordAttr(String[] line) {
     int[] attr = new int[5];
@@ -368,7 +353,7 @@ public class InputFile {
 
     if (line[ICon.WORD_IND].equals(""))
       line[ICon.WORD_IND] = ",";
-    String soundCode = soundex(line[ICon.WORD_IND]);
+    String soundCode = ParsingTools.soundex(line[ICon.WORD_IND]);
     attr[4] = soundexCode.indexOf(soundCode);
     if (attr[4] == -1) {
       soundexCode.add(soundCode);
@@ -378,48 +363,10 @@ public class InputFile {
     return attr;
   }
 
-  public String[] parsePhoneme(String phoneme) {
-    String[] elements = phoneme.split(" ");
-    boolean vowel = false;
-    int vowelIndex = -1;
-    String[] breakDown = { "", "", "" };
-
-    for (int i = 0; i < elements.length; i++) {
-      for (int j = 0; j < vowelSounds.length; j++) {
-        if (elements[i].equals(vowelSounds[j])) {
-          vowel = true;
-          breakDown[1] = elements[i];
-          vowelIndex = i;
-          break;
-        }
-      }
-
-      if (vowel) {
-        break;
-      }
-    }
-
-    if (vowelIndex != 0) {
-      breakDown[0] = elements[0];
-    }
-
-    if (vowelIndex != elements.length - 1 && elements.length > 1) {
-      breakDown[2] = elements[elements.length - 1];
-    }
-
-    if (phoneme.equals("s trike")) {
-      for (int i = 0; i < 3; i++)
-        System.out.println("breakdwn " + breakDown[i]);
-    }
-    return breakDown;
-  }
-
   public double getTextWidth(String input) {
     String text = input + " ";
-
     TextLayout layoutData = new TextLayout(text, gFont,
         g.getFontRenderContext());
-
     return layoutData.getAdvance();
   }
 
@@ -453,23 +400,6 @@ public class InputFile {
     }
 
     return text;
-  }
-
-  public boolean notPunct(String test) {
-    String word = test.trim().toLowerCase();
-
-    if (word.length() < 4) {
-      if (word.endsWith(".") || word.endsWith(",") || word.endsWith("\"")
-          || word.endsWith("!") || word.endsWith(";") || word.endsWith(":")
-          || word.endsWith("?") || word.endsWith("\'") || word.endsWith(")")
-          || word.endsWith("-") || word.endsWith("(")) {
-        return false;
-      } else {
-        return true;
-      }
-    } else {
-      return true;
-    }
   }
 
   // Create the initial nodes at each level of the tree
@@ -565,73 +495,6 @@ public class InputFile {
     // Set the new node as the current node at this depth
     currElements.set(depth, node);
     return node;
-  }
-
-  public String soundex(String s) {
-    char[] x = s.toUpperCase().toCharArray();
-    char firstLetter = x[0];
-
-    // convert letters to numeric code
-    for (int i = 0; i < x.length; i++) {
-      switch (x[i]) {
-      case 'B':
-      case 'F':
-      case 'P':
-      case 'V': {
-        x[i] = '1';
-        break;
-      }
-
-      case 'C':
-      case 'G':
-      case 'J':
-      case 'K':
-      case 'Q':
-      case 'S':
-      case 'X':
-      case 'Z': {
-        x[i] = '2';
-        break;
-      }
-
-      case 'D':
-      case 'T': {
-        x[i] = '3';
-        break;
-      }
-
-      case 'L': {
-        x[i] = '4';
-        break;
-      }
-
-      case 'M':
-      case 'N': {
-        x[i] = '5';
-        break;
-      }
-
-      case 'R': {
-        x[i] = '6';
-        break;
-      }
-
-      default: {
-        x[i] = '0';
-        break;
-      }
-      }
-    }
-
-    // remove duplicates
-    String output = "" + firstLetter;
-    for (int i = 1; i < x.length; i++)
-      if (x[i] != x[i - 1] && x[i] != '0')
-        output += x[i];
-
-    // pad with 0's or truncate
-    output = output + "0000";
-    return output.substring(0, 4);
   }
 
   public int getNodeCount(int depth) {
