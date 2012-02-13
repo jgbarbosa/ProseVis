@@ -169,6 +169,10 @@ public class ControllerGUI {
     JPanel renderPane = new JPanel();
     dataPane.addTab("Render", null, renderPane, null);
   }
+
+  public void go() {
+    this.frame.setVisible(true);    
+  }
 }
 
 class FileListModel extends AbstractListModel<String> {
