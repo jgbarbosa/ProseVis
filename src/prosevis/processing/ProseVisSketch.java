@@ -1,11 +1,9 @@
 package prosevis.processing;
 
 import java.awt.EventQueue;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import processing.core.PApplet;
-import fullscreen.FullScreen;
+import processing.core.PFont;
 
 public class ProseVisSketch extends PApplet {
   private static final long serialVersionUID = 1L;
@@ -25,7 +23,8 @@ public class ProseVisSketch extends PApplet {
       }
     });
 
-    PApplet.main(new String[] { "--present", "prosevis.processing.ProseVisSketch" });
+//    PApplet.main(new String[] { "--present", "prosevis.processing.ProseVisSketch" });
+    PApplet.main(new String[] {"prosevis.processing.ProseVisSketch" });
   }
   
   public void keyReleased() {
@@ -34,10 +33,13 @@ public class ProseVisSketch extends PApplet {
   public void setup() {
 //    size(800,800);
     size(1440, 900);
-    
+    PFont f = loadFont("Monospaced.plain-12.vlw");
+    textFont(f);
+    fill(255, 0, 0);
     // 5 fps
     frameRate(30);
     background(255);
+    text("Hello Strings!",10,100);
   }
 
   public void draw() {

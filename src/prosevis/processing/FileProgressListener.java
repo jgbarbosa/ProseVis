@@ -30,18 +30,16 @@ public class FileProgressListener implements WindowStateListener {
       FileProgressEvent fpe = (FileProgressEvent)e;
       
       switch (fpe.getStatus()) {
+      case PROGRESS:
+        progressLabel.setText(String.format("Progress: (%2.2f%%)", fpe.getProgress() * 100.0));
+        break;
       case FINISHED_SUCC:
         this.model.addData(fpe.getResult());
         fileList.refresh(model.getFileList());
         System.err.println("Finished parsing " + fpe.getResult().getName());
         progressLabel.setText("");
-        break;
-
-      case PROGRESS:
-        progressLabel.setText(String.format("Progress: (%2.2f%%)", fpe.getProgress() * 100.0));
         addBtn.setEnabled(true);
         break;
-      
       default:
         progressLabel.setText("");
         addBtn.setEnabled(true);
