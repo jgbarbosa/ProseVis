@@ -7,20 +7,20 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import prosevis.processing.model.ProseModelIF;
+
 
 public class FileProgressListener implements WindowStateListener {
   private static final long serialVersionUID = -4051127437837695428L;
-  private ApplicationModel model;
+  private ProseModelIF model;
   private FileListModel fileList;
   private JLabel progressLabel;
-  private JFrame frame;
   private JButton addBtn;
 
-  public FileProgressListener(ApplicationModel model, FileListModel fileListModel, JLabel progressLabel, JFrame f, JButton btnAddFile) {
+  public FileProgressListener(ProseModelIF model, FileListModel fileListModel, JLabel progressLabel, JButton btnAddFile) {
     this.model = model;
     this.fileList = fileListModel;
     this.progressLabel = progressLabel;
-    this.frame = f;
     this.addBtn = btnAddFile;
   }
 

@@ -18,7 +18,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.ListModel;
+
+import prosevis.processing.model.ApplicationModel;
+import prosevis.processing.model.ProseModelIF;
 
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -27,7 +29,7 @@ import com.jgoodies.forms.layout.RowSpec;
 
 
 public class ControllerGUI {
-
+  private final ProseModelIF theModel;
   private JFrame frame;
 
   /**
@@ -37,7 +39,7 @@ public class ControllerGUI {
     EventQueue.invokeLater(new Runnable() {
       public void run() {
         try {
-          ControllerGUI window = new ControllerGUI();
+          ControllerGUI window = new ControllerGUI(new ApplicationModel());
           window.frame.setVisible(true);
         } catch (Exception e) {
           e.printStackTrace();
@@ -49,7 +51,8 @@ public class ControllerGUI {
   /**
    * Create the application.
    */
-  public ControllerGUI() {
+  public ControllerGUI(ProseModelIF model) {
+    theModel = model;
     initialize();
   }
 
@@ -61,12 +64,11 @@ public class ControllerGUI {
     final FileListModel listModel = new FileListModel();
     list.setModel(listModel);
     JLabel lblProgress = new JLabel("");
-    final ApplicationModel appModel = new ApplicationModel();
     final JButton btnAddFile = new JButton("Add File");
     
     frame = new JFrame();
     FileProgressListener fplistener = 
-        new FileProgressListener(appModel, listModel, lblProgress, frame, btnAddFile);
+        new FileProgressListener(theModel, listModel, lblProgress, btnAddFile);
     frame.addWindowStateListener(fplistener);
     frame.setBounds(100, 100, 693, 558);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -111,8 +113,8 @@ public class ControllerGUI {
     JButton btnClearFiles = new JButton("Clear Files");
     btnClearFiles.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        appModel.removeAllData();
-        listModel.refresh(appModel.getFileList());
+        theModel.removeAllData();
+        listModel.refresh(theModel.getFileList());
       }
     });
     
