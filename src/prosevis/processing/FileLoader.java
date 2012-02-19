@@ -11,7 +11,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import prosevis.data.DataTree;
-import prosevis.data.IProgressNotifiable;
 
 public class FileLoader implements Runnable, IProgressNotifiable {  
   private final static String LAST_PATH_SAVE = ".lastpath.txt";

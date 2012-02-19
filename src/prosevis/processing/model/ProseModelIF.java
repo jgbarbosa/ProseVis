@@ -13,8 +13,4 @@ public interface ProseModelIF {
   void removeAllData();
   
   DataTreeView[] getRenderingData();
-  
-  int getNumberRows();
-  
-  void setNumberRows(int numRows);
 }

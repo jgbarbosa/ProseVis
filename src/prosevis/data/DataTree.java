@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import prosevis.processing.IProgressNotifiable;
+
 public class DataTree {
   // The first nodes at each level of the tree
   private ArrayList<HierNode> firstElements;
@@ -19,12 +21,13 @@ public class DataTree {
   // The file from whence this data was parsed
   private String sourceFile;
   private String shortName;
+  // how many nodes we have at each level
+  private int[] nodeCount;
   
   // HERE BE DRAGONS, DEEP NLP STUFF
   private int[] currIndices;
   private int[] maxWords;
   private int[] maxPhonemes;
-  private int[] nodeCount;
   private boolean hasComparisonData;
   private HierNode head;
   private WordNode currentWord;
@@ -42,6 +45,7 @@ public class DataTree {
   private double[] maxWordWidth;
   private double[] maxPhonemeWidth;
   private double[] maxPOSWidth;
+  private HierNode findNodeResult;
   
   public DataTree() {
     firstElements = new ArrayList<HierNode>();
@@ -172,21 +176,21 @@ public class DataTree {
       nodeCount[i] = 1;
     }
 
-    HierNode phra = new HierNode(true);
+    HierNode phra = new HierNode(true, 1);
 
-    HierNode sent = new HierNode(false);
+    HierNode sent = new HierNode(false, 1);
     sent.addChild(phra);
 
-    HierNode para = new HierNode(false);
+    HierNode para = new HierNode(false, 1);
     para.addChild(sent);
 
-    HierNode sect = new HierNode(false);
+    HierNode sect = new HierNode(false, 1);
     sect.addChild(para);
 
-    HierNode chap = new HierNode(false);
+    HierNode chap = new HierNode(false, 1);
     chap.addChild(sect);
 
-    head = new HierNode(false);
+    head = new HierNode(false, 1);
     head.addChild(chap);
 
     firstElements.add(chap);
@@ -307,12 +311,14 @@ public class DataTree {
   }
   public HierNode newNode(int depth, boolean direct) {
     HierNode node;
+    nodeCount[depth]++;
+
 
     if (depth < ICon.MAX_DEPTH - 1) {
-      node = new HierNode(false);
+      node = new HierNode(false, nodeCount[depth]);
       node.addChild(newNode(depth + 1, false));
     } else {
-      node = new HierNode(true);
+      node = new HierNode(true, nodeCount[depth]);
     }
 
     if (direct) {
@@ -346,8 +352,6 @@ public class DataTree {
     if (currentElements.get(depth).getPOSWidth() > maxPOSWidth[depth]) {
       maxPOSWidth[depth] = currentElements.get(depth).getPOSWidth();
     }
-
-    nodeCount[depth]++;
 
     // Set the new node as the current node at this depth
     currentElements.set(depth, node);
@@ -441,5 +445,22 @@ public class DataTree {
 
   public String getName() {
     return this.shortName;
+  }
+
+  public int getNumNodes(int hierarchyLevel) {
+    assert(hierarchyLevel <= ICon.CHAPTER_IND);
+    assert(hierarchyLevel >= ICon.WORD_IND);
+    return nodeCount[hierarchyLevel];
+  }
+
+  // Find the ordinal'th node on the level hierarchy level
+  // for example, fine the 263rd paragraph (of the entire document)
+  public HierNode findNode(int level, int ordinal) {
+    HierNodeWrapper wrapper  = new HierNodeWrapper();
+    head.findNode(-1, level, ordinal, wrapper);
+    if (wrapper.resultType != HierNodeWrapper.ResultType.VALID) {
+      throw new RuntimeException("Failed while looking up node");
+    }
+    return wrapper.result;
   }
 }

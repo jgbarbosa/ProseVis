@@ -1,72 +1,55 @@
 package prosevis.data;
 
 public class NodeIterator {
-	
-	
-	public boolean startInd = true;
-	
-	public WordNode currWord;
-	
-	public NodeIterator(HierNode currNode){
-		setDisplayBreak(currNode);
-		
-		while(!currNode.isPreWord()){
-			currNode = (HierNode)currNode.getFirstChild();
-		}
-		
-		currWord = (WordNode)currNode.getFirstChild();
-	}
-	
-	public void setDisplayBreak(HierNode currNode){
-		
-		while(!currNode.isPreWord()){
-			currNode = (HierNode)currNode.getLastChild();
-		}
-			
-		WordNode lastWord = (WordNode)currNode.getLastChild();
-		lastWord.setDisplayBreak(true);
-			
-	}
-	
-	public boolean breakNext(){
-		
-		if(currWord == null){
-			return false;
-		}
-		
-		if(currWord.getDisplayBreak()){
-			return true;
-		}else{
-			return false;
-		}
-	}
-	
-	public boolean punctNext(){
-		
-		if(currWord.getNext() == null){
-			return false;
-		}
-		
-		if(((WordNode)currWord.getNext()).isPunct()){
-			return true;
-		}else{
-			return false;
-		}
-	}
-	
-	public WordNode next(){
-		
-		if(currWord.getDisplayBreak()){
-			currWord.setDisplayBreak(false);
-			return null;
-		}
-		
-		if(startInd){
-			startInd = false;
-		}else{
-			currWord = (WordNode)currWord.getNext();
-		}
-		
-		return currWord;
-	}
+  private WordNode nextWord;
+  private HierNode parentNode;
+
+  public NodeIterator(HierNode parent) {
+    this.parentNode = parent;
+    if (parentNode != null) {
+      HierNode itr = parentNode;
+      while (!itr.isPreWord()) {
+        itr = (HierNode)itr.getFirstChild();
+      }
+
+      nextWord = (WordNode)itr.getFirstChild();
+
+      setDisplayBreak();
+    }
+  }
+
+  private void setDisplayBreak() {
+    HierNode itr = parentNode;
+    while (!itr.isPreWord()) {
+      itr = (HierNode)itr.getLastChild();
+    }
+
+    WordNode lastWord = (WordNode) itr.getLastChild();
+    lastWord.setDisplayBreak(true);
+  }
+
+  public WordNode next() {
+    WordNode ret = nextWord;
+    if (nextWord != null) {
+      if (nextWord.getDisplayBreak()) {
+        nextWord.setDisplayBreak(false);
+        nextWord = null;
+      } else {
+        nextWord = (WordNode)nextWord.getNext();
+      }
+    }
+
+    return ret;
+  }
+
+  public void clearDisplayBreak() {
+    if (parentNode == null) return;
+    HierNode itr = parentNode;
+    while (!itr.isPreWord()) {
+      itr = (HierNode)itr.getLastChild();
+    }
+
+    WordNode lastWord = (WordNode) itr.getLastChild();
+    lastWord.setDisplayBreak(false);
+  }
 }

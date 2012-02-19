@@ -1,0 +1,10 @@
+tei_chapter_id	tei_section_id	tei_paragraph_id	sentence_id	phrase_id	word	part_of_speech	accent	phoneme	stress	tone	break_index	phoneme_id	phoneme_freq	word_id	pos_id
+1	1	1	1	1	the	DT	NULL	D @	0	L-L%	5	46	4925	2810	7
+1	1	1	1	1	sun	NN	L+H*	s V n	1	L-L%	5	1750	93	2712	15
+1	1	1	1	1	had	VBD	L+H*	h { d	1	L-L%	5	855	148	1264	30
+1	1	1	1	1	not	RB	NULL	n A t	1	L-L%	5	1338	538	1884	23
+1	1	1	1	1	yet	RB	NULL	j E t	1	L-L%	5	881	127	3204	23
+1	1	1	1	1	risen	VBN	!H*	r I	1	L-L%	5	1604	339	7586	32
+1	1	1	1	1	risen	VBN	!H*	z @ n	0	L-L%	5	2229	180	7586	32
+1	1	1	1	1	.	.	NULL	.	NULL	L-L%	5	4	4788	10	3
+1	1	1	2	1	the	DT	NULL	D @	0	H-L%	4	46	4925	2810	7

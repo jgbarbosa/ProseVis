@@ -51,21 +51,4 @@ public class ApplicationModel implements ProseModelIF {
   public synchronized DataTreeView[] getRenderingData() {
     return data.toArray(new DataTreeView[0]);
   }
-
-  /* (non-Javadoc)
-   * @see prosevis.processing.ProseModelIF#getNumberRows()
-   */
-  @Override
-  public synchronized int getNumberRows() {
-    return numberRows ;
-  }
-
-  /* (non-Javadoc)
-   * @see prosevis.processing.ProseModelIF#setNumberRows()
-   */
-  @Override
-  public void setNumberRows(int numRows) {
-    numberRows = numRows;
-  }
-
 }

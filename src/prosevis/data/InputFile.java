@@ -418,21 +418,21 @@ public class InputFile {
       nodeCount[i] = 1;
     }
 
-    HierNode phra = new HierNode(true);
+    HierNode phra = new HierNode(true, 1);
 
-    HierNode sent = new HierNode(false);
+    HierNode sent = new HierNode(false, 1);
     sent.addChild(phra);
 
-    HierNode para = new HierNode(false);
+    HierNode para = new HierNode(false, 1);
     para.addChild(sent);
 
-    HierNode sect = new HierNode(false);
+    HierNode sect = new HierNode(false, 1);
     sect.addChild(para);
 
-    HierNode chap = new HierNode(false);
+    HierNode chap = new HierNode(false, 1);
     chap.addChild(sect);
 
-    head = new HierNode(false);
+    head = new HierNode(false, 1);
     head.addChild(chap);
 
     firstElements.add(chap);
@@ -451,11 +451,12 @@ public class InputFile {
   public HierNode newNode(int depth, boolean direct) {
     HierNode node;
 
+    nodeCount[depth]++;
     if (depth < ICon.MAX_DEPTH - 1) {
-      node = new HierNode(false);
+      node = new HierNode(false, nodeCount[depth]);
       node.addChild(newNode(depth + 1, false));
     } else {
-      node = new HierNode(true);
+      node = new HierNode(true, nodeCount[depth]);
     }
 
     if (direct) {
@@ -490,7 +491,6 @@ public class InputFile {
       maxPOSWidth[depth] = currElements.get(depth).getPOSWidth();
     }
 
-    nodeCount[depth]++;
 
     // Set the new node as the current node at this depth
     currElements.set(depth, node);

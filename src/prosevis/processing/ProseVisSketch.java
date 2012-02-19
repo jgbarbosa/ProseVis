@@ -1,35 +1,61 @@
 package prosevis.processing;
 
 import java.awt.EventQueue;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PFont;
+import prosevis.data.HierNode;
+import prosevis.data.NodeIterator;
+import prosevis.data.WordNode;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ProseModelIF;
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
-import controlP5.ControllerGroup;
 import controlP5.Slider;
-import controlP5.Textfield;
 
 public class ProseVisSketch extends PApplet {
   private static final long serialVersionUID = 1L;
   private static final int VIEW_WIDTH = 1440;
   private static final int VIEW_HEIGHT = 900;
-  private static final double SLIDER_FRACTION = 0.02;
+  private static final double SLIDER_FRACTION = 0.01;
   
-  private ControlP5 controlP5;// = new ControlP5(this);
-  private ProseModelIF theModel = new ApplicationModel();
-  private ArrayList<Slider> sliders = new ArrayList<Slider>();
-  private int lastNumRows = 1;
-  private int lastNumViews = 0;
+  private ControlP5 controlP5;
+  private final ProseModelIF theModel;
+  private final ArrayList<Slider> sliders;
+  private DataTreeView[] lastViews;
+  private final HashMap<Integer, PFont> fonts;
+  private int curFontSize;
+  private boolean[] needsUpdate;
+  private int lastY;
+  private int lastX;
+  
+  public ProseVisSketch() {
+    theModel = new ApplicationModel();
+    sliders = new ArrayList<Slider>();
+    lastViews = null;
+    fonts = new HashMap<Integer, PFont>();
+    curFontSize = 14;
+    needsUpdate = null;
+  }
 
   public void keyReleased() {
   }
   
   public void setup() {
+    // size call must be first, Processing is possibly the worst library ever written
+    size(VIEW_WIDTH, VIEW_HEIGHT, OPENGL);
+    // can't do this in the constructor
+    controlP5 = new ControlP5(this);
+    background(255, 255, 255);
+    frameRate(25);
+    fill(0, 0, 0);
+    fonts.put(curFontSize, createFont("Monospaced.plain", curFontSize));
+    textFont(fonts.get(14), 14); 
+
     EventQueue.invokeLater(new Runnable() {
       public void run() {
         try {
@@ -41,87 +67,115 @@ public class ProseVisSketch extends PApplet {
       }
     });
 
-    size(VIEW_WIDTH, VIEW_HEIGHT);
-    background(255, 255, 255);
-    frameRate(25);
-    PFont f = loadFont("Monospaced.plain-12.vlw");
-    textFont(f);
-    fill(0, 0, 0);
-    controlP5 = new ControlP5(this);
-    
-    fill(0, 0, 0);
-    
-    //controlP5.addNumberbox("numberboxA",rectColor,100,140,100,14).setId(1);
-    //controlP5.addNumberbox("numberboxB",backColor,100,180,100,14).setId(2);
-    //controlP5.addNumberbox("numberboxC",0,100,220,100,14).setId(3);
-    
-    //controlP5.addSlider("sliderA",100,200,100,100,260,100,14).setId(4);
-    //controlP5.addSlider("sliderMine", 0.0f, 100.0f, 200, 200, 10, 200).setLabelVisible(false);
-    //controlP5.addTextfield("textA",100,290,100,20).setId(5);
-    
-    //controlP5.controller("numberboxA").setMax(255);
-    //controlP5.controller("numberboxA").setMin(0);
-//  text("Hello Strings!",10,100);
-
-  }
-
+    }
+  
   public void draw() {
-    background(255, 255, 255);
-    int numRows = theModel.getNumberRows();
     DataTreeView[] views = theModel.getRenderingData();
-    if (numRows != lastNumRows || views.length != lastNumViews) {
-      System.out.println("adding sliders");
+    final int viewHeight = VIEW_HEIGHT;
+    final int viewWidth = (views.length < 1)
+        ? VIEW_WIDTH 
+        : VIEW_WIDTH / views.length;
+    final int sliderWidth = max((int)(viewWidth * SLIDER_FRACTION), 10);
+
+    if (!DataTreeView.sameFiles(views, lastViews)) {
+      background(255, 255, 255);
       // crap, new data or layout, remove all the sliders
-      lastNumRows = numRows;
-      lastNumViews = views.length;
-      final int viewHeight = VIEW_HEIGHT / numRows;
-      final int viewWidth = (views.length < numRows)
-          ? VIEW_WIDTH 
-          : VIEW_WIDTH / ((numRows - 1 + views.length) / numRows);
-      final int sliderWidth = max((int)(viewWidth * SLIDER_FRACTION), 10);
+      lastViews = views;
       for (Slider s: sliders) {
         controlP5.remove(s.name());
       }
       sliders.clear();
-      int column = 0;
-      int row = 0;
-      while (sliders.size() < views.length) {
+      for (int i = 0; i < views.length; i++) {
         // add a slider for this slice of the screen
-        Slider slider = new Slider(controlP5, 
-            (ControllerGroup)controlP5.controlWindow.tabs().get(1), 
-            "slider" + sliders.size(),
-            0.0f, 100.0f, (float)views[sliders.size()].getScroll(),
-            (column + 1) * viewWidth - sliderWidth,
-            row * viewHeight,
+        controlP5.addSlider("slider" + sliders.size(), 0.0f, 1.0f, (float)views[sliders.size()].getScroll(),
+            (i + 1) * viewWidth - sliderWidth,
+            0,
             sliderWidth, viewHeight);
+        Slider slider = (Slider)controlP5.controller("slider" + sliders.size());
         slider.setLabelVisible(false);
-        slider.setId(sliders.size() + 1);
+        slider.setId(sliders.size());
         slider.setMoveable(false);
-
-        controlP5.register(slider);
+        
+        // because they don't implement listeners, we'll need to keep a reference for ourselves
         sliders.add(slider);
-        row++;
-        if (row % numRows == 0) {
-          column++;
-          row = 0;
+        System.out.println("registeded slider");
+        renderView(views[i], i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
+      }
+    } else {
+      for (int i = 0 ; i < views.length; i++) {
+        if (views[i].getAndClearNeedsRender()) {
+          renderView(views[i], i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
         }
       }
     }
   }
-    
-  // a slider event will change the value of textfield textA
-  public void sliderA(int theValue) {
-    ((Textfield)controlP5.controller("textA")).setValue(""+theValue);
+  
+  public void mouseDragged() {
+    if (mouseButton == LEFT && focused) {
+      int x = emouseX;
+      int y = emouseY;
+//      System.out.println(x + ", " + y);
+      int dx = emouseX - lastX;
+      int dy = emouseY - lastY;
+      lastX = x;
+      lastY = y;
+    }
   }
   
-  public void controlEvent(ControlEvent theEvent) {
-    println("got a control event from controller with id "+theEvent.controller().id());
-    switch(theEvent.controller().id()) {
-      case 1: // numberboxA
-      break;
-      case 2:  // numberboxB
-      break;  
+  public void mousePressed() {
+    if (mouseButton == LEFT && focused) {
+      this.lastX = mouseX - this.getX();
+      this.lastY = mouseY - this.getY();
     }
+  }
+  
+  private void renderView(DataTreeView dataTreeView, int minX, int minY,
+      int viewWidth, int viewHeight) {
+    fill(255);
+    rect(minX, minY, viewWidth, viewHeight);
+    fill(0);
+    HierNode lineNode = dataTreeView.getStartingLine();
+    int renderedHeight = 0;
+    final int lineHeight = curFontSize; // hope this works in general
+    final int charWidth = curFontSize / 2 + 1; // hope this works in general
+    int renderedWidth;
+    String word;
+
+    while (renderedHeight + lineHeight < viewHeight) {
+      // we still have space, render another line
+      NodeIterator words = new NodeIterator(lineNode);
+      WordNode wordNode = words.next();
+      if (wordNode == null) {
+        // we're out of lines, not even one word in this one
+        break;
+      }
+      renderedWidth = 0;
+      while (wordNode != null) {
+        word = wordNode.getWord();
+        if (renderedWidth + word.length() * charWidth > viewWidth) {
+          // garbage collect the page breaks
+          words.clearDisplayBreak();
+          break;
+        }
+        text(word, renderedWidth + minX,  renderedHeight + lineHeight + minY);
+        renderedWidth += (word.length() + 1) * charWidth;     
+        wordNode = (WordNode)words.next();
+      }
+      
+      lineNode = (HierNode)lineNode.getNext();
+      renderedHeight += lineHeight;
+    }    
+  }
+
+  public void controlEvent(ControlEvent theEvent) {
+    int sliderIdx = theEvent.controller().id();
+    if (sliderIdx >= sliders.size() || sliderIdx < 0) {
+      System.err.println("Got a bad slider index: " + sliderIdx);
+      return;
+    }
+    Slider updated = sliders.get(theEvent.controller().id());
+    DataTreeView updateData = lastViews[theEvent.controller().id()];
+    updateData.setScroll(updated.value());
   }
   
   /**
@@ -129,6 +183,6 @@ public class ProseVisSketch extends PApplet {
    */
   public static void main(String[] args) {
 //    PApplet.main(new String[] { "--present", "prosevis.processing.ProseVisSketch" });
-    PApplet.main(new String[] {"prosevis.processing.ProseVisSketch" });
+    PApplet.main(new String[] {"prosevis.processing.ProseVisSketch"});
   }
 }
