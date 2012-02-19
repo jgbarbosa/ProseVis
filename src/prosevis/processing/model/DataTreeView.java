@@ -8,9 +8,11 @@ public class DataTreeView {
   private DataTree data;
   private double scrollFraction;
   private boolean needsRender = true;
+  private int currentFontSize = 14;
   
   public static final double SCROLL_TOP = 1.0;
   public static final double SCROLL_BOTTOM = 0.0;
+  private static final double SCROLL_MULTIPLIER = 1.0;
   public enum RenderBy {
     CHAPTER,
     SECTION,
@@ -64,32 +66,61 @@ public class DataTreeView {
 
   public synchronized HierNode getStartingLine() {
     HierNode parent = null;
-    int lineNum = -1;
     // 1 - scroll because top of file is 1.0 and bottom is 0.0
+    int index = -1;
     switch (renderType) {
     case CHAPTER:
-      lineNum = (int)(data.getNumNodes(ICon.CHAPTER_IND) * (1 - this.scrollFraction));
-      return data.findNode(ICon.CHAPTER_IND, lineNum);
+      index = ICon.CHAPTER_IND;
+      break;
     case SECTION:
-      lineNum = (int)(data.getNumNodes(ICon.SECTION_IND) * (1 - this.scrollFraction));
-      return data.findNode(ICon.SECTION_IND, lineNum);
+      index = ICon.SECTION_IND;
+      break;
     case PARAGRAPH:
-      lineNum = (int)(data.getNumNodes(ICon.PARAGRAPH_IND) * (1 - this.scrollFraction));
-      return data.findNode(ICon.PARAGRAPH_IND, lineNum);
+      index = ICon.PARAGRAPH_IND;
+      break;
     case SENTENCE:
-      lineNum = (int)(data.getNumNodes(ICon.SENTENCE_IND) * (1 - this.scrollFraction));
-      return data.findNode(ICon.SENTENCE_IND, lineNum);
+      index = ICon.SENTENCE_IND;
+      break;
     case PHRASE:
-      lineNum = (int)(data.getNumNodes(ICon.PHRASE_IND) * (1 - this.scrollFraction));
-      return data.findNode(ICon.PHRASE_IND, lineNum);
+      index = ICon.PHRASE_IND;
+      break;
     default:
       throw new RuntimeException("Can't search for starting line at this hierarchy level");
     }
+    int lineNum = (int)(data.getNumNodes(index) * (1 - this.scrollFraction));
+    lineNum = Math.min(lineNum, data.getNumNodes(index) - 1);
+    return data.findNode(index, lineNum);
+
   }
   
   public synchronized boolean getAndClearNeedsRender() {
     boolean ret = needsRender;
     needsRender = false;
     return ret;
+  }
+
+  public synchronized double addScrollOffset(int dy) {
+    switch (renderType) {
+    case CHAPTER:
+      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.CHAPTER_IND) * this.currentFontSize );
+      break;
+    case SECTION:
+      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.SECTION_IND) * this.currentFontSize);
+      break;
+    case PARAGRAPH:
+      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.PARAGRAPH_IND) * this.currentFontSize);
+      break;
+    case SENTENCE:
+      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.SENTENCE_IND) * this.currentFontSize);
+      break;
+    case PHRASE:
+      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.PHRASE_IND) * this.currentFontSize);
+      break;
+    default:
+      throw new RuntimeException("Can't search for starting line at this hierarchy level");
+    }
+    this.scrollFraction = Math.max(0.0, Math.min(1.0, scrollFraction));
+    this.needsRender = true;
+    return this.scrollFraction;
   }
 }

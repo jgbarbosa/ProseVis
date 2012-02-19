@@ -1,7 +1,6 @@
 package prosevis.processing;
 
 import java.awt.EventQueue;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -32,6 +31,7 @@ public class ProseVisSketch extends PApplet {
   private boolean[] needsUpdate;
   private int lastY;
   private int lastX;
+  private int lastViewScrollIdx;
   
   public ProseVisSketch() {
     theModel = new ApplicationModel();
@@ -40,6 +40,7 @@ public class ProseVisSketch extends PApplet {
     fonts = new HashMap<Integer, PFont>();
     curFontSize = 14;
     needsUpdate = null;
+    lastViewScrollIdx = -1;
   }
 
   public void keyReleased() {
@@ -78,6 +79,7 @@ public class ProseVisSketch extends PApplet {
     final int sliderWidth = max((int)(viewWidth * SLIDER_FRACTION), 10);
 
     if (!DataTreeView.sameFiles(views, lastViews)) {
+      lastViewScrollIdx = -1;
       background(255, 255, 255);
       // crap, new data or layout, remove all the sliders
       lastViews = views;
@@ -110,23 +112,47 @@ public class ProseVisSketch extends PApplet {
     }
   }
   
+  @Override
   public void mouseDragged() {
-    if (mouseButton == LEFT && focused) {
+    if (mouseButton == LEFT && focused && lastViewScrollIdx >= 0) {
       int x = emouseX;
       int y = emouseY;
-//      System.out.println(x + ", " + y);
-      int dx = emouseX - lastX;
       int dy = emouseY - lastY;
       lastX = x;
       lastY = y;
+      double newScroll = lastViews[lastViewScrollIdx].addScrollOffset(dy);
+      sliders.get(lastViewScrollIdx).setValue((float)newScroll);
     }
   }
   
+  @Override
   public void mousePressed() {
-    if (mouseButton == LEFT && focused) {
-      this.lastX = mouseX - this.getX();
-      this.lastY = mouseY - this.getY();
+    if (mouseButton == LEFT && focused && lastViews != null && lastViews.length > 0) {
+      int x = mouseX;
+      int y = mouseY;
+      if (x >= 0 && x < width && y > 0 && y < height) {
+        lastX = x;
+        lastY = y;
+        int viewWidth = width / lastViews.length;
+        for (int i = 0; i < lastViews.length; i++) {
+          if (x < (i + 1) * viewWidth && x >= i * viewWidth) {
+            lastViewScrollIdx = i;
+            break;
+          }
+        }
+      }
     }
+  }
+
+  @Override
+  public void mouseReleased() {
+    lastViewScrollIdx = -1;
+  }
+  
+ 
+  @Override
+  public void focusLost() {
+    lastViewScrollIdx = -1;
   }
   
   private void renderView(DataTreeView dataTreeView, int minX, int minY,
