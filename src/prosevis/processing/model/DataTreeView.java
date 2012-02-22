@@ -5,11 +5,11 @@ import prosevis.data.HierNode;
 import prosevis.data.ICon;
 
 public class DataTreeView {
-  private DataTree data;
+  private final DataTree data;
   private double scrollFraction;
   private boolean needsRender = true;
-  private int currentFontSize = 14;
-  
+  private final int currentFontSize = 14;
+
   public static final double SCROLL_TOP = 1.0;
   public static final double SCROLL_BOTTOM = 0.0;
   private static final double SCROLL_MULTIPLIER = 1.0;
@@ -18,15 +18,15 @@ public class DataTreeView {
     SECTION,
     PARAGRAPH,
     SENTENCE,
-    PHRASE,    
+    PHRASE,
   };
   private static RenderBy renderType = RenderBy.PHRASE;
-  
+
   public synchronized void setRenderingBy(RenderBy type) {
     renderType = type;
     needsRender = true;
   }
-  
+
   public DataTreeView(DataTree data, double scroll) {
     this.data = data;
     this.scrollFraction = scroll;
@@ -35,15 +35,15 @@ public class DataTreeView {
   public DataTreeView(DataTree data) {
     this(data, SCROLL_TOP);
   }
-  
+
   public synchronized DataTree getData() {
     return this.data;
   }
-  
+
   public synchronized double getScroll() {
     return this.scrollFraction;
   }
-  
+
   public synchronized void setScroll(double scroll) {
     this.scrollFraction = scroll;
     this.needsRender = true;
@@ -64,7 +64,7 @@ public class DataTreeView {
     return true;
   }
 
-  public synchronized HierNode getStartingLine() {
+  public synchronized ScrollInfo getScrollRenderInfo() {
     HierNode parent = null;
     // 1 - scroll because top of file is 1.0 and bottom is 0.0
     int index = -1;
@@ -87,12 +87,14 @@ public class DataTreeView {
     default:
       throw new RuntimeException("Can't search for starting line at this hierarchy level");
     }
-    int lineNum = (int)(data.getNumNodes(index) * (1 - this.scrollFraction));
+    double fracLines = data.getNumNodes(index) * (1 - this.scrollFraction);
+    int lineNum = (int)fracLines;
+    double lineFrac = fracLines - lineNum;
     lineNum = Math.min(lineNum, data.getNumNodes(index) - 1);
-    return data.findNode(index, lineNum);
-
+    HierNode node = data.findNode(index, lineNum);
+    return new ScrollInfo(node, lineFrac);
   }
-  
+
   public synchronized boolean getAndClearNeedsRender() {
     boolean ret = needsRender;
     needsRender = false;

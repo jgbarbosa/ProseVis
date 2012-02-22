@@ -17,6 +17,7 @@ import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ProseModelIF;
+import prosevis.processing.model.ScrollInfo;
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
 import controlP5.Slider;
@@ -26,15 +27,15 @@ public class ProseVisSketch extends PApplet {
   private static final int VIEW_WIDTH = 1440;
   private static final int VIEW_HEIGHT = 900;
   private static final double SLIDER_FRACTION = 0.01;
-  private static final double DScrollInertia = 0.1;
-  
+  private static final double DScrollInertia = 0.3;
+
   private ControlP5 controlP5;
   private final ProseModelIF theModel;
   private final ArrayList<Slider> sliders;
   private DataTreeView[] lastViews;
   private RFont vectorFont;
   private final HashMap<Integer, PFont> fonts;
-  private int curFontSize;
+  private final int curFontSize;
   private int lastY;
   private int lastViewScrollIdx;
   private long lastUpdate;
@@ -42,7 +43,7 @@ public class ProseVisSketch extends PApplet {
   private int inertialScrollIdx;
   private long lastDt;
   private int lastDy;
-  
+
   public ProseVisSketch() {
     theModel = new ApplicationModel();
     sliders = new ArrayList<Slider>();
@@ -52,9 +53,11 @@ public class ProseVisSketch extends PApplet {
     lastViewScrollIdx = -1;
   }
 
+  @Override
   public void keyReleased() {
   }
-  
+
+  @Override
   public void setup() {
     // size call must be first, Processing is possibly the worst library ever written
     size(VIEW_WIDTH, VIEW_HEIGHT, OPENGL);
@@ -67,9 +70,10 @@ public class ProseVisSketch extends PApplet {
     frameRate(25);
     fill(0, 0, 0);
     fonts.put(curFontSize, createFont("Monospaced.plain", curFontSize));
-    textFont(fonts.get(14), 14); 
+    textFont(fonts.get(14), 14);
 
     EventQueue.invokeLater(new Runnable() {
+      @Override
       public void run() {
         try {
           ControllerGUI window = new ControllerGUI(theModel);
@@ -80,12 +84,13 @@ public class ProseVisSketch extends PApplet {
       }
     });
     }
-  
+
+  @Override
   public void draw() {
     DataTreeView[] views = theModel.getRenderingData();
     final int viewHeight = VIEW_HEIGHT;
     final int viewWidth = (views.length < 1)
-        ? VIEW_WIDTH 
+        ? VIEW_WIDTH
         : VIEW_WIDTH / views.length;
     final int sliderWidth = max((int)(viewWidth * SLIDER_FRACTION), 10);
 
@@ -108,7 +113,7 @@ public class ProseVisSketch extends PApplet {
         slider.setLabelVisible(false);
         slider.setId(sliders.size());
         slider.setMoveable(false);
-        
+
         // because they don't implement listeners, we'll need to keep a reference for ourselves
         sliders.add(slider);
         renderView(views[i], i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
@@ -125,7 +130,7 @@ public class ProseVisSketch extends PApplet {
         } else {
           scrollInertia = Math.min(0.0, scrollInertia + DScrollInertia);
         }
-        
+
       }
       for (int i = 0 ; i < views.length; i++) {
         if (views[i].getAndClearNeedsRender()) {
@@ -134,7 +139,7 @@ public class ProseVisSketch extends PApplet {
       }
     }
   }
-  
+
   @Override
   public void mouseDragged() {
     if (mouseButton == LEFT && focused && lastViewScrollIdx >= 0) {
@@ -150,7 +155,7 @@ public class ProseVisSketch extends PApplet {
       sliders.get(lastViewScrollIdx).setValue((float)newScroll);
     }
   }
-  
+
   @Override
   public void mousePressed() {
     if (mouseButton == LEFT && focused && lastViews != null && lastViews.length > 0) {
@@ -158,6 +163,7 @@ public class ProseVisSketch extends PApplet {
       int y = emouseY;
       if (x >= 0 && x < width && y > 0 && y < height) {
         lastY = y;
+        lastDy = 0;
         lastUpdate = mouseEvent.getWhen();
         scrollInertia = 0.0;
         inertialScrollIdx = -1;
@@ -178,30 +184,32 @@ public class ProseVisSketch extends PApplet {
       if (lastDt > 0.0 && lastDy != 0.0) {
         // estimate the velocity in pixels per millisecond
         scrollInertia = lastDy / (double)(lastDt);
-        
+
         inertialScrollIdx = lastViewScrollIdx;
       }
     }
     lastViewScrollIdx = -1;
   }
-  
- 
+
+
   @Override
   public void focusLost() {
     lastViewScrollIdx = -1;
     inertialScrollIdx = -1;
     scrollInertia = 0.0;
   }
-  
+
   private void renderView(DataTreeView dataTreeView, int minX, int minY,
       int viewWidth, int viewHeight) {
+    final int lineHeight = curFontSize; // hope this works in general
+    final int charWidth = curFontSize / 2 + 1; // hope this works in general
     fill(255);
     rect(minX, minY, viewWidth, viewHeight);
     fill(0);
-    HierNode lineNode = dataTreeView.getStartingLine();
+    ScrollInfo scrollInfo = dataTreeView.getScrollRenderInfo();
+    HierNode lineNode = scrollInfo.lineNode;
+    minY -= (int)(scrollInfo.lineFrac * lineHeight);
     int renderedHeight = 0;
-    final int lineHeight = curFontSize; // hope this works in general
-    final int charWidth = curFontSize / 2 + 1; // hope this works in general
     int renderedWidth;
     int wordWidth;
     String word;
@@ -254,7 +262,7 @@ public class ProseVisSketch extends PApplet {
     DataTreeView updateData = lastViews[theEvent.controller().id()];
     updateData.setScroll(updated.value());
   }
-  
+
   /**
    * @param args
    */
