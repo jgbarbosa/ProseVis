@@ -1,4 +1,4 @@
-package prosevis.processing;
+package prosevis.processing.controller;
 
 import java.awt.Frame;
 import java.io.BufferedReader;

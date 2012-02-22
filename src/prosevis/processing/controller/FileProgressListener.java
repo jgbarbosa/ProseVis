@@ -1,4 +1,4 @@
-package prosevis.processing;
+package prosevis.processing.controller;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;

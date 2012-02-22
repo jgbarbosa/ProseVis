@@ -9,6 +9,7 @@ import processing.core.PFont;
 import prosevis.data.HierNode;
 import prosevis.data.NodeIterator;
 import prosevis.data.WordNode;
+import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ProseModelIF;

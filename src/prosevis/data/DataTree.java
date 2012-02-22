@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import prosevis.processing.IProgressNotifiable;
+import prosevis.processing.controller.IProgressNotifiable;
 
 public class DataTree {
   // The first nodes at each level of the tree
