@@ -28,7 +28,6 @@ public class ProseVisSketch extends PApplet {
   private DataTreeView[] lastViews;
   private final HashMap<Integer, PFont> fonts;
   private int curFontSize;
-  private boolean[] needsUpdate;
   private int lastY;
   private int lastX;
   private int lastViewScrollIdx;
@@ -39,7 +38,6 @@ public class ProseVisSketch extends PApplet {
     lastViews = null;
     fonts = new HashMap<Integer, PFont>();
     curFontSize = 14;
-    needsUpdate = null;
     lastViewScrollIdx = -1;
   }
 
