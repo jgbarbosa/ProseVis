@@ -31,7 +31,6 @@ public class ProseVisSketch extends PApplet {
   private final HashMap<Integer, PFont> fonts;
   private int curFontSize;
   private int lastY;
-  private int lastX;
   private int lastViewScrollIdx;
   private long lastUpdate;
   private double scrollInertia;
@@ -107,9 +106,9 @@ public class ProseVisSketch extends PApplet {
         renderView(views[i], i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
       }
     } else {
-      if (this.scrollInertia != 0.0 && this.inertialScrollIdx >= 0 && inertialScrollIdx < views.length) {
-        long now = System.currentTimeMillis();
-        long dT = now - lastUpdate;
+      long now = System.currentTimeMillis();
+      long dT = now - lastUpdate;
+      if (this.scrollInertia != 0.0 && this.inertialScrollIdx >= 0 && inertialScrollIdx < views.length && dT > 0) {
         lastUpdate = now;
         double scroll = views[inertialScrollIdx].addScrollOffset((int)(scrollInertia * dT));
         sliders.get(inertialScrollIdx).setValue((float)scroll);
@@ -131,10 +130,8 @@ public class ProseVisSketch extends PApplet {
   @Override
   public void mouseDragged() {
     if (mouseButton == LEFT && focused && lastViewScrollIdx >= 0) {
-      int x = emouseX;
       int y = emouseY;
       int dy = emouseY - lastY;
-      lastX = x;
       lastY = y;
       lastDt = mouseEvent.getWhen() - lastUpdate;
       lastDy = dy;
@@ -152,7 +149,6 @@ public class ProseVisSketch extends PApplet {
       int x = emouseX;
       int y = emouseY;
       if (x >= 0 && x < width && y > 0 && y < height) {
-        lastX = x;
         lastY = y;
         lastUpdate = mouseEvent.getWhen();
         scrollInertia = 0.0;
@@ -171,10 +167,10 @@ public class ProseVisSketch extends PApplet {
   @Override
   public void mouseReleased() {
     if (lastViewScrollIdx >= 0) {
-      int dy = emouseY - lastY;
-      if (dy != 0) {
+      if (lastDt > 0.0 && lastDy != 0.0) {
         // estimate the velocity in pixels per millisecond
         scrollInertia = lastDy / (double)(lastDt);
+        
         inertialScrollIdx = lastViewScrollIdx;
       }
     }
