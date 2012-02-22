@@ -22,6 +22,7 @@ public class ProseVisSketch extends PApplet {
   private static final int VIEW_WIDTH = 1440;
   private static final int VIEW_HEIGHT = 900;
   private static final double SLIDER_FRACTION = 0.01;
+  private static final double DScrollInertia = 0.1;
   
   private ControlP5 controlP5;
   private final ProseModelIF theModel;
@@ -32,6 +33,11 @@ public class ProseVisSketch extends PApplet {
   private int lastY;
   private int lastX;
   private int lastViewScrollIdx;
+  private long lastUpdate;
+  private double scrollInertia;
+  private int inertialScrollIdx;
+  private long lastDt;
+  private int lastDy;
   
   public ProseVisSketch() {
     theModel = new ApplicationModel();
@@ -66,7 +72,6 @@ public class ProseVisSketch extends PApplet {
         }
       }
     });
-
     }
   
   public void draw() {
@@ -99,10 +104,22 @@ public class ProseVisSketch extends PApplet {
         
         // because they don't implement listeners, we'll need to keep a reference for ourselves
         sliders.add(slider);
-        System.out.println("registeded slider");
         renderView(views[i], i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
       }
     } else {
+      if (this.scrollInertia != 0.0 && this.inertialScrollIdx >= 0 && inertialScrollIdx < views.length) {
+        long now = System.currentTimeMillis();
+        long dT = now - lastUpdate;
+        lastUpdate = now;
+        double scroll = views[inertialScrollIdx].addScrollOffset((int)(scrollInertia * dT));
+        sliders.get(inertialScrollIdx).setValue((float)scroll);
+        if (scrollInertia > 0) {
+          scrollInertia = Math.max(0.0, scrollInertia - DScrollInertia);
+        } else {
+          scrollInertia = Math.min(0.0, scrollInertia + DScrollInertia);
+        }
+        
+      }
       for (int i = 0 ; i < views.length; i++) {
         if (views[i].getAndClearNeedsRender()) {
           renderView(views[i], i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
@@ -119,6 +136,11 @@ public class ProseVisSketch extends PApplet {
       int dy = emouseY - lastY;
       lastX = x;
       lastY = y;
+      lastDt = mouseEvent.getWhen() - lastUpdate;
+      lastDy = dy;
+      lastUpdate = mouseEvent.getWhen();
+      scrollInertia = 0.0;
+      inertialScrollIdx = -1;
       double newScroll = lastViews[lastViewScrollIdx].addScrollOffset(dy);
       sliders.get(lastViewScrollIdx).setValue((float)newScroll);
     }
@@ -127,11 +149,14 @@ public class ProseVisSketch extends PApplet {
   @Override
   public void mousePressed() {
     if (mouseButton == LEFT && focused && lastViews != null && lastViews.length > 0) {
-      int x = mouseX;
-      int y = mouseY;
+      int x = emouseX;
+      int y = emouseY;
       if (x >= 0 && x < width && y > 0 && y < height) {
         lastX = x;
         lastY = y;
+        lastUpdate = mouseEvent.getWhen();
+        scrollInertia = 0.0;
+        inertialScrollIdx = -1;
         int viewWidth = width / lastViews.length;
         for (int i = 0; i < lastViews.length; i++) {
           if (x < (i + 1) * viewWidth && x >= i * viewWidth) {
@@ -145,6 +170,14 @@ public class ProseVisSketch extends PApplet {
 
   @Override
   public void mouseReleased() {
+    if (lastViewScrollIdx >= 0) {
+      int dy = emouseY - lastY;
+      if (dy != 0) {
+        // estimate the velocity in pixels per millisecond
+        scrollInertia = lastDy / (double)(lastDt);
+        inertialScrollIdx = lastViewScrollIdx;
+      }
+    }
     lastViewScrollIdx = -1;
   }
   
@@ -152,6 +185,8 @@ public class ProseVisSketch extends PApplet {
   @Override
   public void focusLost() {
     lastViewScrollIdx = -1;
+    inertialScrollIdx = -1;
+    scrollInertia = 0.0;
   }
   
   private void renderView(DataTreeView dataTreeView, int minX, int minY,
