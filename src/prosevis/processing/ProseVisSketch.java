@@ -1,6 +1,10 @@
 package prosevis.processing;
 
+import geomerative.RFont;
+import geomerative.RG;
+
 import java.awt.EventQueue;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,6 +32,7 @@ public class ProseVisSketch extends PApplet {
   private final ProseModelIF theModel;
   private final ArrayList<Slider> sliders;
   private DataTreeView[] lastViews;
+  private RFont vectorFont;
   private final HashMap<Integer, PFont> fonts;
   private int curFontSize;
   private int lastY;
@@ -53,8 +58,11 @@ public class ProseVisSketch extends PApplet {
   public void setup() {
     // size call must be first, Processing is possibly the worst library ever written
     size(VIEW_WIDTH, VIEW_HEIGHT, OPENGL);
+//    smooth();
     // can't do this in the constructor
     controlP5 = new ControlP5(this);
+    RG.init(this);
+    vectorFont = new RFont("resources" + File.separatorChar + "Anonymous Pro.ttf", 12, RFont.LEFT);
     background(255, 255, 255);
     frameRate(25);
     fill(0, 0, 0);
@@ -195,7 +203,10 @@ public class ProseVisSketch extends PApplet {
     final int lineHeight = curFontSize; // hope this works in general
     final int charWidth = curFontSize / 2 + 1; // hope this works in general
     int renderedWidth;
+    int wordWidth;
     String word;
+    pushMatrix();
+    translate(minX, minY + lineHeight);
 
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
@@ -213,14 +224,19 @@ public class ProseVisSketch extends PApplet {
           words.clearDisplayBreak();
           break;
         }
-        text(word, renderedWidth + minX,  renderedHeight + lineHeight + minY);
-        renderedWidth += (word.length() + 1) * charWidth;     
+        vectorFont.draw(word);
+//        text(word, renderedWidth + minX,  renderedHeight + lineHeight + minY);
+        wordWidth = (word.length() + 1) * charWidth;
+        renderedWidth += wordWidth;
+        translate(wordWidth, 0);
         wordNode = (WordNode)words.next();
       }
+      translate(-renderedWidth, lineHeight);
       
       lineNode = (HierNode)lineNode.getNext();
       renderedHeight += lineHeight;
-    }    
+    }
+    popMatrix();
   }
 
   public void controlEvent(ControlEvent theEvent) {
