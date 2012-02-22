@@ -13,6 +13,7 @@ import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ProseModelIF;
+import prosevis.processing.model.ScrollInfo;
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
 import controlP5.Slider;
@@ -22,7 +23,7 @@ public class ProseVisSketch extends PApplet {
   private static final int VIEW_WIDTH = 1440;
   private static final int VIEW_HEIGHT = 900;
   private static final double SLIDER_FRACTION = 0.01;
-  private static final double DScrollInertia = 0.1;
+  private static final double DScrollInertia = 0.3;
 
   private ControlP5 controlP5;
   private final ProseModelIF theModel;
@@ -154,6 +155,7 @@ public class ProseVisSketch extends PApplet {
       int y = emouseY;
       if (x >= 0 && x < width && y > 0 && y < height) {
         lastY = y;
+        lastDy = 0;
         lastUpdate = mouseEvent.getWhen();
         scrollInertia = 0.0;
         inertialScrollIdx = -1;
@@ -191,13 +193,15 @@ public class ProseVisSketch extends PApplet {
 
   private void renderView(DataTreeView dataTreeView, int minX, int minY,
       int viewWidth, int viewHeight) {
+    final int lineHeight = curFontSize; // hope this works in general
+    final int charWidth = curFontSize / 2 + 1; // hope this works in general
     fill(255);
     rect(minX, minY, viewWidth, viewHeight);
     fill(0);
-    HierNode lineNode = dataTreeView.getStartingLine();
+    ScrollInfo scrollInfo = dataTreeView.getScrollRenderInfo();
+    HierNode lineNode = scrollInfo.lineNode;
+    minY -= (int)(scrollInfo.lineFrac * lineHeight);
     int renderedHeight = 0;
-    final int lineHeight = curFontSize; // hope this works in general
-    final int charWidth = curFontSize / 2 + 1; // hope this works in general
     int renderedWidth;
     String word;
 
