@@ -58,7 +58,7 @@ public class ProseVisSketch extends PApplet {
   public void setup() {
     // size call must be first, Processing is possibly the worst library ever written
     size(VIEW_WIDTH, VIEW_HEIGHT, OPENGL);
-//    smooth();
+    smooth();
     // can't do this in the constructor
     controlP5 = new ControlP5(this);
     RG.init(this);
@@ -205,9 +205,10 @@ public class ProseVisSketch extends PApplet {
     int renderedWidth;
     int wordWidth;
     String word;
+    StringBuilder screen = new StringBuilder();
     pushMatrix();
     translate(minX, minY + lineHeight);
-
+    
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
       NodeIterator words = new NodeIterator(lineNode);
@@ -224,18 +225,22 @@ public class ProseVisSketch extends PApplet {
           words.clearDisplayBreak();
           break;
         }
-        vectorFont.draw(word);
-//        text(word, renderedWidth + minX,  renderedHeight + lineHeight + minY);
+        screen.append(word);
+        screen.append(' ');
+//        vectorFont.draw(word);
         wordWidth = (word.length() + 1) * charWidth;
         renderedWidth += wordWidth;
-        translate(wordWidth, 0);
+//        translate(wordWidth, 0);
         wordNode = (WordNode)words.next();
       }
-      translate(-renderedWidth, lineHeight);
+      vectorFont.draw(screen.toString());
+      screen.setLength(0);
+      translate(0, lineHeight);
       
       lineNode = (HierNode)lineNode.getNext();
       renderedHeight += lineHeight;
     }
+    vectorFont.draw(screen.toString());
     popMatrix();
   }
 
