@@ -6,11 +6,11 @@ import prosevis.data.DataTree;
 
 public class ApplicationModel implements ProseModelIF {
 
-  private static final int ZOOM_SENSITIVITY = 3;
+  private static final int ZOOM_SENSITIVITY = 5;
   private static final int ZOOM_MIN = 7 * ZOOM_SENSITIVITY;
   private static final int ZOOM_MAX = 28 * ZOOM_SENSITIVITY;
   private ArrayList<DataTreeView> data = new ArrayList<DataTreeView>();
-  private int zoomLevel = 5;
+  private int zoomLevel = 14 * ZOOM_SENSITIVITY;
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#addData(prosevis.data.DataTree)
    */
@@ -23,7 +23,7 @@ public class ApplicationModel implements ProseModelIF {
         return;
       }
     }
-    data.add(new DataTreeView(newTree));
+    data.add(new DataTreeView(newTree, zoomLevel / ZOOM_SENSITIVITY));
   }
 
   /* (non-Javadoc)

@@ -26,14 +26,11 @@ public class DataTreeView {
     needsRender = true;
   }
 
-  public DataTreeView(DataTree data, double scroll) {
+  public DataTreeView(DataTree data, int fontSz) {
     this.data = data;
-    this.scrollFraction = scroll;
+    this.scrollFraction = SCROLL_TOP;
   }
 
-  public DataTreeView(DataTree data) {
-    this(data, SCROLL_TOP);
-  }
 
   public synchronized DataTree getData() {
     return this.data;

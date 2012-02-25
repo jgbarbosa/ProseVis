@@ -30,7 +30,7 @@ public class ProseVisSketch extends PApplet {
   private final ArrayList<Slider> sliders;
   private DataTreeView[] lastViews;
   private final HashMap<Integer, PFont> fonts;
-  private final int curFontSize;
+  private int curFontSize;
   private int lastY;
   private int lastViewScrollIdx;
   private long lastUpdate;
@@ -209,20 +209,18 @@ public class ProseVisSketch extends PApplet {
 
   private void renderView(DataTreeView dataTreeView, int minX, int minY,
       int viewWidth, int viewHeight) {
-    final int lineHeight = curFontSize; // hope this works in general
-    final int charWidth = curFontSize / 2 + 1; // hope this works in general
     fill(255);
     rect(minX, minY, viewWidth, viewHeight);
     fill(0);
     ScrollInfo scrollInfo = dataTreeView.getScrollRenderInfo();
     HierNode lineNode = scrollInfo.lineNode;
-    minY -= (int)(scrollInfo.lineFrac * lineHeight);
     int renderedHeight = 0;
     final int lineHeight = dataTreeView.getFontSize(); // hope this works in general
     setFont(lineHeight);
-    final int charWidth = curFontSize / 2 + 1; // hope this works in general
-    int renderedWidth;
+    final double charWidth = curFontSize * 0.618033988; // hope this works in general
+    minY -= (int)(scrollInfo.lineFrac * lineHeight);
     String word;
+    StringBuilder lineBuffer = new StringBuilder();
 
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
@@ -232,19 +230,19 @@ public class ProseVisSketch extends PApplet {
         // we're out of lines, not even one word in this one
         break;
       }
-      renderedWidth = 0;
       while (wordNode != null) {
         word = wordNode.getWord();
-        if (renderedWidth + word.length() * charWidth > viewWidth) {
+        if ((word.length() + lineBuffer.length()) * charWidth > viewWidth) {
           // garbage collect the page breaks
           words.clearDisplayBreak();
           break;
         }
-        text(word, renderedWidth + minX,  renderedHeight + lineHeight + minY);
-        renderedWidth += (word.length() + 1) * charWidth;
+        lineBuffer.append(word);
+        lineBuffer.append(' ');
         wordNode = words.next();
       }
-
+      text(lineBuffer.toString(), minX,  renderedHeight + lineHeight + minY);
+      lineBuffer.setLength(0);
       lineNode = (HierNode)lineNode.getNext();
       renderedHeight += lineHeight;
     }
