@@ -6,9 +6,11 @@ import prosevis.data.DataTree;
 
 public class ApplicationModel implements ProseModelIF {
 
+  private static final int ZOOM_SENSITIVITY = 3;
+  private static final int ZOOM_MIN = 7 * ZOOM_SENSITIVITY;
+  private static final int ZOOM_MAX = 28 * ZOOM_SENSITIVITY;
   private ArrayList<DataTreeView> data = new ArrayList<DataTreeView>();
-  private int numberRows = 1;
-  
+  private int zoomLevel = 5;
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#addData(prosevis.data.DataTree)
    */
@@ -23,7 +25,7 @@ public class ApplicationModel implements ProseModelIF {
     }
     data.add(new DataTreeView(newTree));
   }
-  
+
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#getFileList()
    */
@@ -35,7 +37,7 @@ public class ApplicationModel implements ProseModelIF {
     }
     return ret;
   }
-  
+
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#removeAllData()
    */
@@ -50,5 +52,17 @@ public class ApplicationModel implements ProseModelIF {
   @Override
   public synchronized DataTreeView[] getRenderingData() {
     return data.toArray(new DataTreeView[0]);
+  }
+
+  @Override
+  public synchronized void updateZoom(int lastDy) {
+    if (lastDy == 0) {
+      return;
+    }
+    zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomLevel + lastDy));
+    int newSize = zoomLevel / ZOOM_SENSITIVITY;
+    for (DataTreeView view : data) {
+      view.setSize(newSize);
+    }
   }
 }

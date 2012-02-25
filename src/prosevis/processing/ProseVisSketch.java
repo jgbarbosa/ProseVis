@@ -43,7 +43,7 @@ public class ProseVisSketch extends PApplet {
     sliders = new ArrayList<Slider>();
     lastViews = null;
     fonts = new HashMap<Integer, PFont>();
-    curFontSize = 14;
+    curFontSize = -1;
     lastViewScrollIdx = -1;
   }
 
@@ -60,8 +60,7 @@ public class ProseVisSketch extends PApplet {
     background(255, 255, 255);
     frameRate(25);
     fill(0, 0, 0);
-    fonts.put(curFontSize, createFont("Monospaced.plain", curFontSize));
-    textFont(fonts.get(14), 14);
+    setFont(14);
 
     EventQueue.invokeLater(new Runnable() {
       @Override
@@ -75,6 +74,16 @@ public class ProseVisSketch extends PApplet {
       }
     });
     }
+
+  private void setFont(int size) {
+    if (curFontSize != size) {
+      if (!fonts.containsKey(size)) {
+        fonts.put(size, createFont("Monospaced.plain", size));
+      }
+      textFont(fonts.get(size), size);
+      curFontSize = size;
+    }
+  }
 
   @Override
   public void draw() {
@@ -133,37 +142,45 @@ public class ProseVisSketch extends PApplet {
 
   @Override
   public void mouseDragged() {
-    if (mouseButton == LEFT && focused && lastViewScrollIdx >= 0) {
+    if (focused) {
       int y = emouseY;
       int dy = emouseY - lastY;
       lastY = y;
       lastDt = mouseEvent.getWhen() - lastUpdate;
       lastDy = dy;
       lastUpdate = mouseEvent.getWhen();
-      scrollInertia = 0.0;
-      inertialScrollIdx = -1;
-      double newScroll = lastViews[lastViewScrollIdx].addScrollOffset(dy);
-      sliders.get(lastViewScrollIdx).setValue((float)newScroll);
+      if (mouseButton == LEFT && lastViewScrollIdx >= 0) {
+        scrollInertia = 0.0;
+        inertialScrollIdx = -1;
+        double newScroll = lastViews[lastViewScrollIdx].addScrollOffset(dy);
+        sliders.get(lastViewScrollIdx).setValue((float)newScroll);
+      } else if (mouseButton == RIGHT) {
+        theModel.updateZoom(lastDy);
+      }
     }
   }
 
   @Override
   public void mousePressed() {
-    if (mouseButton == LEFT && focused && lastViews != null && lastViews.length > 0) {
-      int x = emouseX;
-      int y = emouseY;
-      if (x >= 0 && x < width && y > 0 && y < height) {
-        lastY = y;
-        lastUpdate = mouseEvent.getWhen();
-        scrollInertia = 0.0;
-        inertialScrollIdx = -1;
-        int viewWidth = width / lastViews.length;
-        for (int i = 0; i < lastViews.length; i++) {
-          if (x < (i + 1) * viewWidth && x >= i * viewWidth) {
-            lastViewScrollIdx = i;
-            break;
+    int x = emouseX;
+    int y = emouseY;
+    if (focused && lastViews != null && lastViews.length > 0) {
+      lastY = y;
+      lastUpdate = mouseEvent.getWhen();
+      if (mouseButton == LEFT) {
+        if (x >= 0 && x < width && y > 0 && y < height) {
+          scrollInertia = 0.0;
+          inertialScrollIdx = -1;
+          int viewWidth = width / lastViews.length;
+          for (int i = 0; i < lastViews.length; i++) {
+            if (x < (i + 1) * viewWidth && x >= i * viewWidth) {
+              lastViewScrollIdx = i;
+              break;
+            }
           }
         }
+      } else if (mouseButton == RIGHT) {
+       // nothing to do here, it suffices to have updated the lastY earlier
       }
     }
   }
@@ -196,7 +213,8 @@ public class ProseVisSketch extends PApplet {
     fill(0);
     HierNode lineNode = dataTreeView.getStartingLine();
     int renderedHeight = 0;
-    final int lineHeight = curFontSize; // hope this works in general
+    final int lineHeight = dataTreeView.getFontSize(); // hope this works in general
+    setFont(lineHeight);
     final int charWidth = curFontSize / 2 + 1; // hope this works in general
     int renderedWidth;
     String word;

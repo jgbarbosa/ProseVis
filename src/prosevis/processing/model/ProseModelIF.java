@@ -11,6 +11,8 @@ public interface ProseModelIF {
   ArrayList<String> getFileList();
 
   void removeAllData();
-  
+
   DataTreeView[] getRenderingData();
+
+  void updateZoom(int lastDy);
 }

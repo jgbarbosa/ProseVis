@@ -9,7 +9,7 @@ public class DataTreeView {
   private double scrollFraction;
   private boolean needsRender = true;
   private int currentFontSize = 14;
-  
+
   public static final double SCROLL_TOP = 1.0;
   public static final double SCROLL_BOTTOM = 0.0;
   private static final double SCROLL_MULTIPLIER = 1.0;
@@ -18,15 +18,15 @@ public class DataTreeView {
     SECTION,
     PARAGRAPH,
     SENTENCE,
-    PHRASE,    
+    PHRASE,
   };
   private static RenderBy renderType = RenderBy.PHRASE;
-  
+
   public synchronized void setRenderingBy(RenderBy type) {
     renderType = type;
     needsRender = true;
   }
-  
+
   public DataTreeView(DataTree data, double scroll) {
     this.data = data;
     this.scrollFraction = scroll;
@@ -35,15 +35,15 @@ public class DataTreeView {
   public DataTreeView(DataTree data) {
     this(data, SCROLL_TOP);
   }
-  
+
   public synchronized DataTree getData() {
     return this.data;
   }
-  
+
   public synchronized double getScroll() {
     return this.scrollFraction;
   }
-  
+
   public synchronized void setScroll(double scroll) {
     this.scrollFraction = scroll;
     this.needsRender = true;
@@ -92,7 +92,7 @@ public class DataTreeView {
     return data.findNode(index, lineNum);
 
   }
-  
+
   public synchronized boolean getAndClearNeedsRender() {
     boolean ret = needsRender;
     needsRender = false;
@@ -122,5 +122,16 @@ public class DataTreeView {
     this.scrollFraction = Math.max(0.0, Math.min(1.0, scrollFraction));
     this.needsRender = true;
     return this.scrollFraction;
+  }
+
+  public synchronized void setSize(int newSize) {
+    if (currentFontSize != newSize) {
+      this.needsRender = true;
+    }
+    this.currentFontSize = newSize;
+  }
+
+  public synchronized int getFontSize() {
+    return currentFontSize;
   }
 }
