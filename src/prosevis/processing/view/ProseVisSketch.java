@@ -1,4 +1,4 @@
-package prosevis.processing;
+package prosevis.processing.view;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
