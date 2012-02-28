@@ -22,15 +22,16 @@ public class DataTreeView {
   private static RenderBy renderType = RenderBy.PHRASE;
 
   public synchronized void setRenderingBy(RenderBy type) {
-    renderType = type;
-    needsRender = true;
+    if (renderType != type) {
+      needsRender = true;
+      renderType = type;
+    }
   }
 
   public DataTreeView(DataTree data, int fontSz) {
     this.data = data;
     this.scrollFraction = SCROLL_TOP;
   }
-
 
   public synchronized DataTree getData() {
     return this.data;

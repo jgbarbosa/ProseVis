@@ -15,4 +15,8 @@ public interface ProseModelIF {
   DataTreeView[] getRenderingData();
 
   void updateZoom(int lastDy);
+
+  void setBreakLevel(DataTreeView.RenderBy level);
+
+  DataTreeView.RenderBy getBreakLevel();
 }

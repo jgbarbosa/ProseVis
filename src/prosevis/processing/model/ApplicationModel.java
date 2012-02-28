@@ -3,6 +3,7 @@ package prosevis.processing.model;
 import java.util.ArrayList;
 
 import prosevis.data.DataTree;
+import prosevis.processing.model.DataTreeView.RenderBy;
 
 public class ApplicationModel implements ProseModelIF {
 
@@ -10,7 +11,9 @@ public class ApplicationModel implements ProseModelIF {
   private static final int ZOOM_MIN = 7 * ZOOM_SENSITIVITY;
   private static final int ZOOM_MAX = 28 * ZOOM_SENSITIVITY;
   private ArrayList<DataTreeView> data = new ArrayList<DataTreeView>();
+  private DataTreeView.RenderBy lineBreaks = DataTreeView.RenderBy.PHRASE;
   private int zoomLevel = 14 * ZOOM_SENSITIVITY;
+
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#addData(prosevis.data.DataTree)
    */
@@ -23,7 +26,9 @@ public class ApplicationModel implements ProseModelIF {
         return;
       }
     }
-    data.add(new DataTreeView(newTree, zoomLevel / ZOOM_SENSITIVITY));
+    DataTreeView view = new DataTreeView(newTree, zoomLevel / ZOOM_SENSITIVITY);
+    view.setRenderingBy(lineBreaks);
+    data.add(view);
   }
 
   /* (non-Javadoc)
@@ -64,5 +69,17 @@ public class ApplicationModel implements ProseModelIF {
     for (DataTreeView view : data) {
       view.setSize(newSize);
     }
+  }
+
+  @Override
+  public synchronized void setBreakLevel(RenderBy level) {
+    for (DataTreeView view : data) {
+      view.setRenderingBy(level);
+    }
+  }
+
+  @Override
+  public synchronized RenderBy getBreakLevel() {
+    return lineBreaks;
   }
 }

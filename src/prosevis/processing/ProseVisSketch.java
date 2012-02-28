@@ -217,11 +217,13 @@ public class ProseVisSketch extends PApplet {
     int renderedHeight = 0;
     final int lineHeight = dataTreeView.getFontSize(); // hope this works in general
     setFont(lineHeight);
-    final double charWidth = curFontSize * 0.618033988; // hope this works in general
+    final float spaceWidth = textWidth(' ');
+    //final double charWidth = curFontSize * 0.618033988; // hope this works in general
+    // assume all characters are the same width, guesstimate the widths
     minY -= (int)(scrollInfo.lineFrac * lineHeight);
     String word;
     StringBuilder lineBuffer = new StringBuilder();
-
+    float renderedWidth = 0;
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
       NodeIterator words = new NodeIterator(lineNode);
@@ -230,15 +232,18 @@ public class ProseVisSketch extends PApplet {
         // we're out of lines, not even one word in this one
         break;
       }
+      renderedWidth = 0;
       while (wordNode != null) {
         word = wordNode.getWord();
-        if ((word.length() + lineBuffer.length()) * charWidth > viewWidth) {
+        final float wordWidth = textWidth(word);
+        if (wordWidth + renderedWidth > viewWidth) {
           // garbage collect the page breaks
           words.clearDisplayBreak();
           break;
         }
         lineBuffer.append(word);
         lineBuffer.append(' ');
+        renderedWidth += wordWidth + spaceWidth;
         wordNode = words.next();
       }
       text(lineBuffer.toString(), minX,  renderedHeight + lineHeight + minY);
