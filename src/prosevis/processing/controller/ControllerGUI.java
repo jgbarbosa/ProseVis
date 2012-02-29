@@ -66,7 +66,7 @@ public class ControllerGUI {
    * Initialize the contents of the frame.
    */
   private void initialize() {
-    JList<String> list = new JList<String>();
+    JList list = new JList();
     final FileListModel listModel = new FileListModel();
     list.setModel(listModel);
     JLabel lblProgress = new JLabel("");
@@ -195,7 +195,7 @@ public class ControllerGUI {
     gbc_lblLineBreaksBy.gridy = 1;
     renderPane.add(lblLineBreaksBy, gbc_lblLineBreaksBy);
 
-    JComboBox<String> comboBox = new JComboBox<String>();
+    JComboBox comboBox = new JComboBox();
     for (RenderBy breakType : RenderBy.values()){
       comboBox.addItem(breakType.toString().toLowerCase());
     }
@@ -204,7 +204,7 @@ public class ControllerGUI {
     comboBox.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JComboBox<String> cb = (JComboBox)e.getSource();
+        JComboBox cb = (JComboBox)e.getSource();
         String typeStr = (String)cb.getSelectedItem();
         model.setBreakLevel(RenderBy.valueOf(typeStr.toUpperCase()));
       }
@@ -223,7 +223,7 @@ public class ControllerGUI {
   }
 }
 
-class FileListModel extends AbstractListModel<String> {
+class FileListModel extends AbstractListModel {
   private static final long serialVersionUID = 8940049949482647158L;
   private ArrayList<String> files = new ArrayList<String>();
 

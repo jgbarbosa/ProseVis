@@ -20,8 +20,8 @@ import controlP5.Slider;
 
 public class ProseVisSketch extends PApplet {
   private static final long serialVersionUID = 1L;
-  private static final int VIEW_WIDTH = 1440;
-  private static final int VIEW_HEIGHT = 900;
+  private static final int VIEW_WIDTH = 5000;
+  private static final int VIEW_HEIGHT = 1800;
   private static final double SLIDER_FRACTION = 0.01;
   private static final double DScrollInertia = 0.3;
 
@@ -268,7 +268,7 @@ public class ProseVisSketch extends PApplet {
    * @param args
    */
   public static void main(String[] args) {
-//    PApplet.main(new String[] { "--present", "prosevis.processing.ProseVisSketch" });
-    PApplet.main(new String[] {"prosevis.processing.ProseVisSketch"});
+    PApplet.main(new String[] { "--present", "prosevis.processing.ProseVisSketch" });
+  //  PApplet.main(new String[] {"prosevis.processing.ProseVisSketch"});
   }
 }
