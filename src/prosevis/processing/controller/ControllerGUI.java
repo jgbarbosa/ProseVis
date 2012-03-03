@@ -26,6 +26,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView.RenderBy;
 import prosevis.processing.model.ProseModelIF;
+import prosevis.processing.view.ProseColorBy;
 
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -195,13 +196,13 @@ public class ControllerGUI {
     gbc_lblLineBreaksBy.gridy = 1;
     renderPane.add(lblLineBreaksBy, gbc_lblLineBreaksBy);
 
-    JComboBox comboBox = new JComboBox();
+    JComboBox breakLineByDropdown = new JComboBox();
     for (RenderBy breakType : RenderBy.values()){
-      comboBox.addItem(breakType.toString().toLowerCase());
+      breakLineByDropdown.addItem(breakType.toString().toLowerCase());
     }
-    comboBox.setSelectedItem(theModel.getBreakLevel().toString().toLowerCase());
+    breakLineByDropdown.setSelectedItem(theModel.getBreakLevel().toString().toLowerCase());
     final ProseModelIF model = this.theModel;
-    comboBox.addActionListener(new ActionListener() {
+    breakLineByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         JComboBox cb = (JComboBox)e.getSource();
@@ -215,7 +216,35 @@ public class ControllerGUI {
     gbc_comboBox.insets = new Insets(0, 0, 5, 0);
     gbc_comboBox.gridx = 2;
     gbc_comboBox.gridy = 1;
-    renderPane.add(comboBox, gbc_comboBox);
+    renderPane.add(breakLineByDropdown, gbc_comboBox);
+
+    JLabel lblColorBy = new JLabel("  Color by:  ");
+    GridBagConstraints gbc_lblColorBy = new GridBagConstraints();
+    gbc_lblColorBy.anchor = GridBagConstraints.EAST;
+    gbc_lblColorBy.insets = new Insets(0, 0, 0, 5);
+    gbc_lblColorBy.gridx = 1;
+    gbc_lblColorBy.gridy = 2;
+    renderPane.add(lblColorBy, gbc_lblColorBy);
+
+    JComboBox colorByDropdown = new JComboBox();
+    for (ProseColorBy opt: ProseColorBy.values()) {
+      colorByDropdown.addItem(opt.toString().toLowerCase());
+    }
+    colorByDropdown.setSelectedItem(theModel.getColorBy().toString().toLowerCase());
+    colorByDropdown.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        JComboBox cb = (JComboBox)e.getSource();
+        String typeStr = (String)cb.getSelectedItem();
+        model.setColorBy(ProseColorBy.valueOf(typeStr.toUpperCase()));
+      }
+    });
+
+    GridBagConstraints gbc_comboBox_1 = new GridBagConstraints();
+    gbc_comboBox_1.anchor = GridBagConstraints.WEST;
+    gbc_comboBox_1.gridx = 2;
+    gbc_comboBox_1.gridy = 2;
+    renderPane.add(colorByDropdown, gbc_comboBox_1);
   }
 
   public void go() {
@@ -225,7 +254,7 @@ public class ControllerGUI {
 
 class FileListModel extends AbstractListModel {
   private static final long serialVersionUID = 8940049949482647158L;
-  private ArrayList<String> files = new ArrayList<String>();
+  private final ArrayList<String> files = new ArrayList<String>();
 
   @Override
   public String getElementAt(int index) {

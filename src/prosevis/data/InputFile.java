@@ -8,9 +8,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
 
 public class InputFile {
   private File file;
@@ -30,16 +32,20 @@ public class InputFile {
                                    // level
   public double[] maxPOSWidth; // Node with the max phoneme width at each level
 
-  public ArrayList<String> wordCode;
-  public ArrayList<String> posCode;
-  public ArrayList<String> accentCode;
-  public ArrayList<String> toneCode;
-  public ArrayList<String> soundexCode;
-
   public ArrayList<String> phonemeCode;
   public ArrayList<String> phoC1Code;
   public ArrayList<String> phoVCode;
   public ArrayList<String> phoC2Code;
+
+  // a mapping from lower-case words/punc to unique ids for that word
+  private final HashMap<String, Integer> wordIds = new HashMap<String, Integer>();
+  // similar, but for tones to tone ids
+  private final HashMap<String, Integer> toneIds = new HashMap<String, Integer>();
+  // similar for soundexs
+  private final HashMap<String, Integer> soundIds = new HashMap<String, Integer>();
+  // similar, but now the id's are the indices, and the strings are the values
+  // we need this to make the reverse lookup fast
+  private final ArrayList<String> accentIds = new ArrayList<String>();
 
   public int lineCount = 0;
 
@@ -49,12 +55,6 @@ public class InputFile {
   public boolean hasComparisonData = false;
 
   public InputFile(File nFile, Graphics2D nG) {
-    wordCode = new ArrayList<String>();
-    posCode = new ArrayList<String>();
-    accentCode = new ArrayList<String>();
-    toneCode = new ArrayList<String>();
-    soundexCode = new ArrayList<String>();
-
     phonemeCode = new ArrayList<String>();
     phoC1Code = new ArrayList<String>();
     phoVCode = new ArrayList<String>();
@@ -64,11 +64,10 @@ public class InputFile {
   }
 
   public InputFile(InputFile template, File nFile, Graphics2D nG) {
-    wordCode = template.wordCode;
-    posCode = template.posCode;
-    accentCode = template.accentCode;
-    toneCode = template.toneCode;
-    soundexCode = template.soundexCode;
+    wordIds.putAll(template.wordIds);
+    accentIds.addAll(template.accentIds);
+    toneIds.putAll(template.toneIds);
+    soundIds.putAll(template.soundIds);
 
     phonemeCode = template.phonemeCode;
     phoC1Code = template.phoC1Code;
@@ -237,11 +236,8 @@ public class InputFile {
     // Does this syllable start a new word?
     if (currWord == null || !currWord.getWord().equals(line[ICon.WORD_IND])) {
 
-      int[] wAttributes = updateWordAttr(line);
-
       // Create new word
-      WordNode newWord = new WordNode(line[ICon.WORD_IND], wAttributes,
-          sAttributes, prob, ParsingTools.notPunct(line[ICon.WORD_IND]));
+      WordNode newWord = buildWordNode(line, sAttributes, prob);
 
       // Determine word, pos, and phoneme length
       double wordWidth = getTextWidth(line[ICon.WORD_IND]);
@@ -322,7 +318,7 @@ public class InputFile {
   public boolean hasComparisonData() {
     return this.hasComparisonData;
   }
-
+/*
   // Update lists that are specific to the word
   public int[] updateWordAttr(String[] line) {
     int[] attr = new int[5];
@@ -362,6 +358,43 @@ public class InputFile {
 
     return attr;
   }
+  */
+  private WordNode buildWordNode(String[] line, int[] sAttributes, float[] prob) {
+    String word = line[ICon.WORD_IND];
+    POSType pos = POSType.fromString(line[ICon.POS_IND]);
+
+    // Update lists that are specific to the word
+    String lowerWord = word.toLowerCase();
+    if (!wordIds.containsKey(lowerWord)) {
+      wordIds.put(lowerWord, wordIds.size());
+    }
+    int wordId = wordIds.get(lowerWord);
+
+    String accent = line[ICon.ACCENT_IND];
+    if (!accentIds.contains(accent)) {
+      accentIds.add(accent);
+    }
+    int accentId = accentIds.indexOf(accent);
+
+    String tone = line[ICon.TONE_IND];
+    if (!toneIds.containsKey(tone)) {
+      toneIds.put(tone, toneIds.size());
+    }
+    int toneId = toneIds.get(tone);
+
+    String moddedWord = line[ICon.WORD_IND];
+    if (moddedWord.isEmpty()) {
+      moddedWord = ",";
+    }
+    String soundCode = ParsingTools.soundex(moddedWord);
+    if (!soundIds.containsKey(soundCode)) {
+      soundIds.put(soundCode, soundIds.size());
+    }
+    int soundexId = soundIds.get(soundCode);
+
+    return new WordNode(word, pos, wordId, accentId, toneId, soundexId, sAttributes, prob);
+  }
+
 
   public double getTextWidth(String input) {
     String text = input + " ";
@@ -517,12 +550,38 @@ public class InputFile {
     return maxPhonemes[depth];
   }
 
-  public String getPOSText(int index) {
-    return posCode.get(index);
+  public String getAccentText(int index) {
+    return accentIds.get(index);
   }
 
-  public String getAccentText(int index) {
-    return accentCode.get(index);
+  public int getNumAccents() {
+    return accentIds.size();
+  }
+
+  public int getNumTones() {
+    return toneIds.size();
+  }
+
+  public int getNumSounds() {
+    return soundIds.size();
+  }
+
+  public int getNumUniqueWords() {
+    return wordIds.size();
+  }
+
+  public int getSoundexId(String term) {
+    if (soundIds.containsKey(term)) {
+      return soundIds.get(term);
+    }
+    return -1;
+  }
+
+  public int getWordId(String wordLC) {
+    if (wordIds.containsKey(wordLC)) {
+      return wordIds.get(wordLC);
+    }
+    return -1;
   }
 
 }

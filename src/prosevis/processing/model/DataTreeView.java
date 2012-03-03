@@ -3,12 +3,16 @@ package prosevis.processing.model;
 import prosevis.data.DataTree;
 import prosevis.data.HierNode;
 import prosevis.data.ICon;
+import prosevis.processing.view.ColorSet;
+import prosevis.processing.view.ProseColorBy;
 
 public class DataTreeView {
   private final DataTree data;
   private double scrollFraction;
   private boolean needsRender = true;
   private int currentFontSize = 14;
+  private final ColorSet colorSet = new ColorSet();
+  private ProseColorBy colorBy = ProseColorBy.NONE;
   public static final double SCROLL_TOP = 1.0;
   public static final double SCROLL_BOTTOM = 0.0;
   private static final double SCROLL_MULTIPLIER = 1.0;
@@ -62,7 +66,6 @@ public class DataTreeView {
   }
 
   public synchronized ScrollInfo getScrollRenderInfo() {
-    HierNode parent = null;
     // 1 - scroll because top of file is 1.0 and bottom is 0.0
     int index = -1;
     switch (renderType) {
@@ -132,5 +135,20 @@ public class DataTreeView {
 
   public synchronized int getFontSize() {
     return currentFontSize;
+  }
+
+  public synchronized ProseColorBy getColorStyle() {
+    return this.colorBy;
+  }
+
+  public synchronized ColorSet getColorSet() {
+    return this.colorSet ;
+  }
+
+  public synchronized void setColorBy(ProseColorBy value) {
+    if (colorBy != value) {
+      colorBy = value;
+      needsRender = true;
+    }
   }
 }

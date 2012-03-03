@@ -15,12 +15,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JViewport;
 
 import prosevis.data.HierNode;
 import prosevis.data.ICon;
 import prosevis.data.InputFile;
 import prosevis.data.NodeIterator;
+import prosevis.data.POSType;
 import prosevis.data.Syllable;
 import prosevis.data.WordNode;
 
@@ -31,11 +38,11 @@ import prosevis.data.WordNode;
  */
 public class VizController extends JSplitPane implements ComponentListener{
 	private static final long serialVersionUID = -7142290362614932354L;
-	
+
 	//Visualization Panels
 	public JScrollPane[] panels = new JScrollPane[2];
 	public Visualization[] vizzes = new Visualization[2];
-				
+
 	//Attributes of the visualization area
 	double zoom;
 	double vizWidth;
@@ -49,7 +56,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 
 	//Files being displayed
 	public boolean[] open = new boolean[2];
-	private HashMap<String, InputFile> files;
+	private final HashMap<String, InputFile> files;
 	private InputFile lastInput;
 
 	//Color variables
@@ -60,12 +67,12 @@ public class VizController extends JSplitPane implements ComponentListener{
 	//Rendering Options
 	public boolean renderText;
 	public int textRenderVar;
-	public boolean renderTone; 
-	public boolean renderColor; 
+	public boolean renderTone;
+	public boolean renderColor;
 	public boolean tileHorizontal;
 	public boolean searchInd;
 	public boolean renderDdata;
-		
+
 	//Tooltip variable
 	boolean displayTooltip;
 	int tooltipVar;
@@ -79,38 +86,38 @@ public class VizController extends JSplitPane implements ComponentListener{
 	int lastPosition;
 	public ArrayList<Point> lineNumbers;
 	JScrollPane lastPane;
-	
+
 	//Level of tree where line breaks occur
 	int lineLevel = 4;
 
 	//Text font
 	private Font gFont;
 	private Font scaledFont;
-	
+
 	//Navigator
 	public Navigator nav;
-	
+
 	// David's data active files
 	boolean[] actFiles = new boolean[ICon.MAX_PROB];
 
 	int maxLines;
 	double totalHeight;
 	double maxLineAdvance;
-	
-	public VizController(int orientation, JScrollPane leftComponent, JScrollPane rightComponent, 
+
+	public VizController(int orientation, JScrollPane leftComponent, JScrollPane rightComponent,
 			Visualization leftViz, Visualization rightViz) {
 		super(orientation, leftComponent, rightComponent);
-		
+
 		//Initialize visualization objects in the split pane
 		panels[0] = leftComponent;
 		panels[1] = rightComponent;
-				
+
 		vizzes[0] = leftViz;
 		vizzes[1] = rightViz;
-		
+
 		vizzes[0].setController(this);
 		vizzes[1].setController(this);
-	
+
 		//Initialize rendering options
 		zoom = 1;
 
@@ -133,7 +140,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		curColors = new ArrayList<Color>();
 		lineNumbers = new ArrayList<Point>();
 		lastPane = null;
-		
+
 		yAccPts = new HashMap<String, ArrayList<Integer>>();
 		xAccPts = new HashMap<String, ArrayList<Integer>>();
 
@@ -171,27 +178,27 @@ public class VizController extends JSplitPane implements ComponentListener{
 		yAccPts.put("L*+H", new ArrayList<Integer>(Arrays.asList(LhY)));
 
 		files = new HashMap<String, InputFile>();
-		
+
 		for (int i = 0; i < ICon.MAX_PROB; i++)
 			actFiles[i] = true;
 	}
-	
+
 	/* Current font in use */
 	public Font getSFont(){
 		return scaledFont;
 	}
-	
+
 	/* Set pointer to the navigation panel */
 	public void setNav(Navigator nav){
 		this.nav = nav;
 	}
-	
+
 	/* Add a file to the visualization */
 	public void addFile(InputFile file) {
 		JMenuBar nameBar = new JMenuBar();
 		JMenu name = new JMenu(file.getName());
 		nameBar.add(name);
-		
+
 		if(!open[0]){
 			vizzes[0].setFile(file);
 			open[0] = true;
@@ -203,7 +210,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 			panels[1].setColumnHeaderView(nameBar);
 			lastPane = panels[1];
 		}
-		
+
 		files.put(file.getName(), file);
 		lastInput = file;
 		resetFileSetup();
@@ -226,7 +233,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 	/* Close all the files in the visualization */
 	public void closeFiles() {
 		files.clear();
-		
+
 		for(int i = 0; i < open.length; i++){
 			if (open[i] == true) {
 				open[i] = false;
@@ -253,10 +260,10 @@ public class VizController extends JSplitPane implements ComponentListener{
 				}
 			}
 		}
-		
+
 		resetFileSetup();
 	}
-	
+
 	/* Reset the divider location and last input */
 	public void resetFileSetup(){
 		if(open[0] && open[1]){
@@ -273,7 +280,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 			}
 		}
 	}
-	
+
 	/* Reset the divider location */
 	public void resetDivider(){
 		if(!(open[0] && open[1])){
@@ -311,7 +318,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		TextLayout layoutData = new TextLayout(text, font, frc);
 		return layoutData.getAdvance() + layoutData.getLeading();
 	}
-	
+
 	public boolean isDavidDataSet() {
 		for (boolean value : actFiles) {
 			if (value)
@@ -319,9 +326,9 @@ public class VizController extends JSplitPane implements ComponentListener{
 		}
 		return false;
 	}
-	
-	/* 
-	 * This method performs the layout computations for the two visualizations 
+
+	/*
+	 * This method performs the layout computations for the two visualizations
 	 */
 	public void prepViz(Graphics2D g, double vWidth, double vHeight, boolean vizPrep) {
 		int maxPhonemes = 0;
@@ -331,12 +338,12 @@ public class VizController extends JSplitPane implements ComponentListener{
 		//double totalWidth = 0;
 		totalHeight = 0;
 		maxLines = 0;
-		
+
 		//Determine the maximum column width based on the display settings
 		for (InputFile file: files.values()) {
 
 			int lineCt = file.getNodeCount(lineLevel);
-			
+
 			if(lineCt > maxLines){
 				maxLines = lineCt;
 			}
@@ -362,7 +369,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		}
 
 		//Provides room for the tone rendering
-		maxLineHeight *= 1.5;  
+		maxLineHeight *= 1.5;
 
 		//Determine total width and height
 		totalHeight = maxLineHeight * maxLines;
@@ -375,9 +382,9 @@ public class VizController extends JSplitPane implements ComponentListener{
 		double xScale = (totalWidth + 4) / vWidth;
 		double yScale = (totalHeight + 4) / vHeight;
 		double scale;
-		
+
 		if (xScale < yScale) {
-			scale = xScale; 
+			scale = xScale;
 		} else {
 			scale = yScale;
 		}
@@ -387,7 +394,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 			if(open[i]){
 				InputFile file = vizzes[i].getFile();
 				vizzes[i].setScaledFont(gFont);
-				
+
 				double lineAdv;
 				if(textRenderVar == 0){
 					lineAdv = file.getMaxWordWidth(lineLevel);
@@ -396,10 +403,10 @@ public class VizController extends JSplitPane implements ComponentListener{
 				}else{
 					lineAdv = file.getMaxPOSWidth(lineLevel);
 				}
-				
+
 				int prefWidth = (int)(lineAdv * charAdvance + 12);
 				int prefHeight = (int)(file.getNodeCount(lineLevel) * maxLineHeight + 12);
-				
+
 				vizzes[i].setPreferredSize(new Dimension(prefWidth, prefHeight));
 				vizzes[i].revalidate();
 			}
@@ -407,24 +414,29 @@ public class VizController extends JSplitPane implements ComponentListener{
 	}
 
 	/* PAINT  PAINT  PAINT */
-	public void paintComponent(Graphics g) {
+	@Override
+  public void paintComponent(Graphics g) {
 
 		if (!files.isEmpty()) {
 			prepViz((Graphics2D) g, vizWidth, vizHeight, true);
 		}
 	}
 
-	public void componentHidden(ComponentEvent e) {
+	@Override
+  public void componentHidden(ComponentEvent e) {
 	}
 
-	public void componentMoved(ComponentEvent e) {
+	@Override
+  public void componentMoved(ComponentEvent e) {
 	}
 
-	public void componentShown(ComponentEvent e) {
+	@Override
+  public void componentShown(ComponentEvent e) {
 	}
 
 	/* Reset size attributes */
-	public void componentResized(ComponentEvent e) {
+	@Override
+  public void componentResized(ComponentEvent e) {
 		myWidth = this.getWidth();
 		myHeight = this.getHeight();
 		vizWidth = zoom * myWidth;
@@ -433,7 +445,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		scaleT.setToScale(zoom, zoom);
 		gFont = gFont.deriveFont(scaleT);
 	}
-	
+
 	/* Returns the display color of a given WordNode */
 	public Color getCurColor(WordNode wordNode, int i){
 
@@ -454,7 +466,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		}else if(colorVar.equals("Stress")){
 			return curColors.get(wordNode.getSyllables().get(i).getStress());
 		}else if(colorVar.equals("POS")){
-			return curColors.get(wordNode.getPOS());
+			return curColors.get(wordNode.getPOS().ordinal());
 		}else if(colorVar.equals("Accent")){
 			return curColors.get(wordNode.getAccent());
 		}else if(colorVar.equals("Tone")){
@@ -468,7 +480,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		return curColors.get(0);
 	}
 
-	
+
 	/* Generates the color mappings based on the current color variable */
 	public void generateColors(){
 		int colorCount = 0;
@@ -505,37 +517,37 @@ public class VizController extends JSplitPane implements ComponentListener{
 
 		}else if(colorVar.equals("POS")){
 			for (InputFile file: files.values()) {
-				if(file.posCode.size() > colorCount){
-					colorCount = file.posCode.size();
+				if(POSType.values().length > colorCount){
+					colorCount = POSType.values().length;
 				}
 			}
 		}else if(colorVar.equals("Accent")){
 			for (InputFile file: files.values()) {
-				if(file.accentCode.size() > colorCount){
-					colorCount = file.accentCode.size();
+				if(file.getNumAccents() > colorCount){
+					colorCount = file.getNumAccents();
 				}
 			}
 		}else if(colorVar.equals("Tone")){
 			for (InputFile file: files.values()) {
-				if(file.toneCode.size() > colorCount){
-					colorCount = file.toneCode.size();
+				if(file.getNumTones() > colorCount){
+					colorCount = file.getNumTones();
 				}
 			}
 		}else if(colorVar.equals("Soundex")){
 			for (InputFile file: files.values()) {
-				if(file.soundexCode.size() > colorCount){
-					colorCount = file.soundexCode.size();
+				if(file.getNumSounds() > colorCount){
+					colorCount = file.getNumSounds();
 				}
 			}
 		}else if(colorVar.equals("Word")){
 			for (InputFile file: files.values()) {
-				if(file.wordCode.size() > colorCount){
-					colorCount = file.wordCode.size();
+				if(file.getNumUniqueWords() > colorCount){
+					colorCount = file.getNumUniqueWords();
 				}
 			}
 		}
 		int stepCount = 30;
-		ArrayList<Color> cl = new ArrayList<Color>(); 
+		ArrayList<Color> cl = new ArrayList<Color>();
 		for(int i = 0; i < stepCount; i++){
 			for(int j = i; j < colorCount; j=j+stepCount) {
 				Color color = Color.getHSBColor((float) j / (float) colorCount, 0.5f, 0.90f);
@@ -550,14 +562,14 @@ public class VizController extends JSplitPane implements ComponentListener{
 			}
 		}
 	}
-	
+
 	/* Initialize size of visualizations and divider location */
 	public void initializeSizes(){
 		myWidth = this.getWidth();
 		myHeight = this.getHeight();
 		vizWidth = this.getWidth();
 		vizHeight = this.getHeight();
-		
+
 		this.setDividerLocation(1.0);
 	}
 
@@ -587,7 +599,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		renderText = policy;
 		textRenderVar = 0;
 	}
-	
+
 	/* Display tooltips or not */
 	public void setTooltipPolicy(int policy){
 		if(policy == 0){
@@ -595,7 +607,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		}else{
 			displayTooltip = true;
 		}
-		
+
 		tooltipVar = policy;
 	}
 
@@ -606,7 +618,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 
 	/* Render tone or not */
 	public void setToneRenderPolicy(boolean policy) {
-		renderTone = policy;    	
+		renderTone = policy;
 	}
 
 	/* Set color variables and make call to generate colors */
@@ -614,7 +626,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 		this.colorVar = colorVar;
 
 		if(colorVar.equals("None")){
-			renderColor = false; 
+			renderColor = false;
 		}else{
 			renderColor = true;
 			generateColors();
@@ -632,7 +644,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 	public int getNumFiles(){
 		return files.size();
 	}
-	
+
 	/* Prep to display search terms */
 	public void setSearch(String term, int searchVar, int phoVar){
 		if(files.size() == 0){
@@ -652,11 +664,11 @@ public class VizController extends JSplitPane implements ComponentListener{
 				return;
 			}
 		}
-		
+
 		searchStr = term;
 		lineNumbers.clear();
 		if(searchVar == 0){
-			searchTerm = findIndex(term, lastInput.wordCode);
+			searchTerm = lastInput.getWordId(term.toLowerCase());
 		}else if(searchVar == 1){
 			if(phoVar == 0){
 				searchTerm = findIndex(term, lastInput.phonemeCode);
@@ -668,9 +680,9 @@ public class VizController extends JSplitPane implements ComponentListener{
 				searchTerm = findIndex(term, lastInput.phoC2Code);
 			}
 		}else if(searchVar == 2){
-			searchTerm = findIndex(term, lastInput.posCode);
+			searchTerm = POSType.fromString(term).ordinal();
 		}else if(searchVar == 3){
-			searchTerm = findIndex(term, lastInput.soundexCode);
+			searchTerm = lastInput.getSoundexId(term);
 		}
 
 		if(searchTerm != -1){
@@ -680,14 +692,14 @@ public class VizController extends JSplitPane implements ComponentListener{
 		}else{
 			searchInd = false;
 		}
-		
+
 		boolean found = search();
 		if (found) {
 			searchCount = 0;
 			searchDisplay(searchCount);
 		}
 	}
-	
+
 	/* Checks to see whether the current node matches the current search parameters */
 	public boolean searchMatch(WordNode node){
 		if(searchVar == 0){
@@ -720,7 +732,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 
 			return false;
 		}else if(searchVar == 2){
-			return (node.getPOS() == searchTerm);
+			return (node.getPOS().ordinal() == searchTerm);
 		}else if(searchVar == 3){
 			return (node.getSoundex() == searchTerm);
 		}
@@ -758,10 +770,10 @@ public class VizController extends JSplitPane implements ComponentListener{
 			}
 			count++;
 			wordNode = words.next();
-		}		
+		}
 		return;
 	}
-	
+
 	public boolean search() {
 		HierNode lineNode = lastInput.firstElements.get(lineLevel);
 		Integer number = -1;
@@ -777,9 +789,9 @@ public class VizController extends JSplitPane implements ComponentListener{
 		}
 		return true;
 	}
-	
+
 	public void searchDisplay(int idx) {
-				
+
 		JViewport currView = lastPane.getViewport();
 		int newYPosition = (int)((totalHeight / maxLines) * lineNumbers.get(idx).x);
 		if (lastPosition == newYPosition)

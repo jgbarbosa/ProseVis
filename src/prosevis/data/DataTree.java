@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -13,40 +14,43 @@ import prosevis.processing.controller.IProgressNotifiable;
 
 public class DataTree {
   // The first nodes at each level of the tree
-  private ArrayList<HierNode> firstElements;
+  private final ArrayList<HierNode> firstElements;
   // Current node at each hierarchical level of the tree
-  private ArrayList<HierNode> currentElements;
+  private final ArrayList<HierNode> currentElements;
   // simple flag for whether this tree has already been loaded or not
   private boolean loaded;
   // The file from whence this data was parsed
   private String sourceFile;
   private String shortName;
   // how many nodes we have at each level
-  private int[] nodeCount;
-  
+  private final int[] nodeCount;
+
   // HERE BE DRAGONS, DEEP NLP STUFF
-  private int[] currIndices;
-  private int[] maxWords;
-  private int[] maxPhonemes;
+  private final int[] currIndices;
+  private final int[] maxWords;
+  private final int[] maxPhonemes;
   private boolean hasComparisonData;
   private HierNode head;
   private WordNode currentWord;
-  private ArrayList<String> phonemeCode;
-  private ArrayList<String> phoC1Code;
-  private ArrayList<String> phoVCode;
-  private ArrayList<String> phoC2Code;
-  private ArrayList<String> wordCode;
-  private ArrayList<String> posCode;
-  private ArrayList<String> accentCode;
-  private ArrayList<String> toneCode;
-  private ArrayList<String> soundexCode;
+  private final ArrayList<String> phonemeCode;
+  private final ArrayList<String> phoC1Code;
+  private final ArrayList<String> phoVCode;
+  private final ArrayList<String> phoC2Code;
+  // a mapping from lower-case words/punc to unique ids for that word
+  private final HashMap<String, Integer> wordIds = new HashMap<String, Integer>();
+  // similar, but for accents to accent ids
+  private final HashMap<String, Integer> accentIds = new HashMap<String, Integer>();
+  // similar, but for tones to tone ids
+  private final HashMap<String, Integer> toneIds = new HashMap<String, Integer>();
+  // similar for soundexs
+  private final HashMap<String, Integer> soundIds = new HashMap<String, Integer>();
   // This is related to rendering and basically corresponds to the maximum width of
   // words/phonemes/parts of speech at each hierarchical level
-  private double[] maxWordWidth;
-  private double[] maxPhonemeWidth;
-  private double[] maxPOSWidth;
+  private final double[] maxWordWidth;
+  private final double[] maxPhonemeWidth;
+  private final double[] maxPOSWidth;
   private HierNode findNodeResult;
-  
+
   public DataTree() {
     firstElements = new ArrayList<HierNode>();
     currentElements = new ArrayList<HierNode>();
@@ -59,19 +63,13 @@ public class DataTree {
     nodeCount = new int[ICon.MAX_DEPTH];
     loaded = false;
     hasComparisonData = false;
-    
+
     phonemeCode = new ArrayList<String>();
     phoC1Code = new ArrayList<String>();
     phoVCode = new ArrayList<String>();
     phoC2Code = new ArrayList<String>();
-    
-    wordCode = new ArrayList<String>();
-    posCode = new ArrayList<String>();
-    accentCode = new ArrayList<String>();
-    toneCode = new ArrayList<String>();
-    soundexCode = new ArrayList<String>();
   }
-  
+
   public boolean load(File file) {
     return load(file, null);
   }
@@ -80,10 +78,10 @@ public class DataTree {
       throw new RuntimeException("You can't load this tree twice");
     }
     loaded = true;
-    
+
     sourceFile = file.getAbsolutePath();
     shortName = file.getName();
-    
+
     long totalBytes = file.length();
     long bytesProcessed = 0L;
     try {
@@ -92,7 +90,7 @@ public class DataTree {
       // this may be slightly off on Windows (\r\n)
       bytesProcessed += line.length() + 1;
       String[] columns  = line.split("\t");
-      
+
       if (columns.length < ICon.TOTAL_COL) {
         String message = "Incompatible Input file format, aborting Open";
         JOptionPane.showMessageDialog(new JFrame(), message, "Error",
@@ -103,7 +101,7 @@ public class DataTree {
       if (columns.length == ICon.MAX_COLS) {
         hasComparisonData = true;
       }
-      
+
       // Alright, we're done validating the file, lets try and get some data
       line = reader.readLine();
       if (line != null) {
@@ -134,7 +132,7 @@ public class DataTree {
           JOptionPane.ERROR_MESSAGE);
       return false;
     }
-    
+
     return true;
   }
   private void finalizeMaximums() {
@@ -163,7 +161,7 @@ public class DataTree {
       currIndices[i] = 1;
       if (!columns[i].equals("NULL") && !columns[i].equals("null")) {
         try {
-          currIndices[i] = Integer.parseInt(columns[i]);                  
+          currIndices[i] = Integer.parseInt(columns[i]);
         } catch (NumberFormatException e) {
           System.err.println("Found badly formatted section number, but recovering.");
         }
@@ -205,7 +203,7 @@ public class DataTree {
     currentElements.add(sent);
     currentElements.add(phra);
   }
-  
+
   private void processInputLine(String[] line) {
     // Trim each field
     for (int i = 0; i < line.length; i++) {
@@ -217,7 +215,7 @@ public class DataTree {
       int currIndex = 1;
       if (!line[i].equals("NULL") && !line[i].equals("null")) {
         try {
-          currIndex = Integer.parseInt(line[i]);                  
+          currIndex = Integer.parseInt(line[i]);
         } catch (NumberFormatException e) {
           System.err.println("Found badly formatted section number, but recovering.");
         }
@@ -242,7 +240,7 @@ public class DataTree {
     // Process the line once structural changes are complete
     processSyllable(line);
   }
-  
+
   private void processSyllable(String[] line) {
     // Clean-up for quotes around commas
     if (line[ICon.WORD_IND].equals("\",\""))
@@ -261,11 +259,8 @@ public class DataTree {
     // Does this syllable start a new word?
     if (currentWord == null || !currentWord.getWord().equals(line[ICon.WORD_IND])) {
 
-      int[] wAttributes = updateWordAttr(line);
-
       // Create new word
-      WordNode newWord = new WordNode(line[ICon.WORD_IND], wAttributes,
-          sAttributes, prob, ParsingTools.notPunct(line[ICon.WORD_IND]));
+      WordNode newWord = buildWordNode(line, sAttributes, prob);
 
       // Determine word, pos, and phoneme length
       double wordWidth = getTextWidth(line[ICon.WORD_IND]);
@@ -304,7 +299,43 @@ public class DataTree {
       }
     }
   }
-  
+
+  private WordNode buildWordNode(String[] line, int[] sAttributes, float[] prob) {
+    String word = line[ICon.WORD_IND];
+    POSType pos = POSType.fromString(line[ICon.POS_IND]);
+
+    // Update lists that are specific to the word
+    String lowerWord = word.toLowerCase();
+    if (!wordIds.containsKey(lowerWord)) {
+      wordIds.put(lowerWord, wordIds.size());
+    }
+    int wordId = wordIds.get(lowerWord);
+
+    String accent = line[ICon.ACCENT_IND];
+    if (!accentIds.containsKey(accent)) {
+      accentIds.put(accent, accentIds.size());
+    }
+    int accentId = accentIds.get(accent);
+
+    String tone = line[ICon.TONE_IND];
+    if (!toneIds.containsKey(tone)) {
+      toneIds.put(tone, toneIds.size());
+    }
+    int toneId = toneIds.get(tone);
+
+    String moddedWord = line[ICon.WORD_IND];
+    if (moddedWord.isEmpty()) {
+      moddedWord = ",";
+    }
+    String soundCode = ParsingTools.soundex(moddedWord);
+    if (!soundIds.containsKey(soundCode)) {
+      soundIds.put(soundCode, soundIds.size());
+    }
+    int soundexId = soundIds.get(soundCode);
+
+    return new WordNode(word, pos, wordId, accentId, toneId, soundexId, sAttributes, prob);
+  }
+
   private double getTextWidth(String str) {
     // stub for now, we'll revisit this
     return 12 * (str.length() + 1) / 72.0;
@@ -357,11 +388,11 @@ public class DataTree {
     currentElements.set(depth, node);
     return node;
   }
-  
+
   // Update lists that are specific to the syllable
   public int[] updateSylAttr(String[] line, String[] sylComp) {
     int[] attr = new int[5];
-    
+
     attr[0] = -1;
     if (!line[ICon.STRESS_IND].equals("NULL")
         && !line[ICon.STRESS_IND].equals("\"NULL\"")) {
@@ -394,46 +425,6 @@ public class DataTree {
     if (attr[4] == -1) {
       phoC2Code.add(sylComp[2]);
       attr[4] = phoC2Code.size() - 1;
-    }
-
-    return attr;
-  }
-
-  // Update lists that are specific to the word
-  public int[] updateWordAttr(String[] line) {
-    int[] attr = new int[5];
-
-    attr[0] = wordCode.indexOf(line[ICon.WORD_IND].toLowerCase());
-    if (attr[0] == -1) {
-      wordCode.add(line[ICon.WORD_IND].toLowerCase());
-      attr[0] = wordCode.size() - 1;
-    }
-
-    attr[1] = posCode.indexOf(line[ICon.POS_IND]);
-    if (attr[1] == -1) {
-      posCode.add(line[ICon.POS_IND]);
-      attr[1] = posCode.size() - 1;
-    }
-
-    attr[2] = accentCode.indexOf(line[ICon.ACCENT_IND]);
-    if (attr[2] == -1) {
-      accentCode.add(line[ICon.ACCENT_IND]);
-      attr[2] = accentCode.size() - 1;
-    }
-
-    attr[3] = toneCode.indexOf(line[ICon.TONE_IND]);
-    if (attr[3] == -1) {
-      toneCode.add(line[ICon.TONE_IND]);
-      attr[3] = toneCode.size() - 1;
-    }
-
-    if (line[ICon.WORD_IND].equals(""))
-      line[ICon.WORD_IND] = ",";
-    String soundCode = ParsingTools.soundex(line[ICon.WORD_IND]);
-    attr[4] = soundexCode.indexOf(soundCode);
-    if (attr[4] == -1) {
-      soundexCode.add(soundCode);
-      attr[4] = toneCode.size() - 1;
     }
 
     return attr;

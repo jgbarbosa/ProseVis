@@ -3,6 +3,7 @@ package prosevis.processing.model;
 import java.util.ArrayList;
 
 import prosevis.data.DataTree;
+import prosevis.processing.view.ProseColorBy;
 
 public interface ProseModelIF {
 
@@ -19,4 +20,8 @@ public interface ProseModelIF {
   void setBreakLevel(DataTreeView.RenderBy level);
 
   DataTreeView.RenderBy getBreakLevel();
+
+  ProseColorBy getColorBy();
+
+  void setColorBy(ProseColorBy value);
 }

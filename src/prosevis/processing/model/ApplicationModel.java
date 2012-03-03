@@ -4,15 +4,17 @@ import java.util.ArrayList;
 
 import prosevis.data.DataTree;
 import prosevis.processing.model.DataTreeView.RenderBy;
+import prosevis.processing.view.ProseColorBy;
 
 public class ApplicationModel implements ProseModelIF {
 
   private static final int ZOOM_SENSITIVITY = 5;
   private static final int ZOOM_MIN = 7 * ZOOM_SENSITIVITY;
   private static final int ZOOM_MAX = 28 * ZOOM_SENSITIVITY;
-  private ArrayList<DataTreeView> data = new ArrayList<DataTreeView>();
+  private final ArrayList<DataTreeView> data = new ArrayList<DataTreeView>();
   private DataTreeView.RenderBy lineBreaks = DataTreeView.RenderBy.PHRASE;
   private int zoomLevel = 14 * ZOOM_SENSITIVITY;
+  private ProseColorBy colorBy = ProseColorBy.NONE;
 
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#addData(prosevis.data.DataTree)
@@ -28,6 +30,7 @@ public class ApplicationModel implements ProseModelIF {
     }
     DataTreeView view = new DataTreeView(newTree, zoomLevel / ZOOM_SENSITIVITY);
     view.setRenderingBy(lineBreaks);
+    view.setColorBy(colorBy);
     data.add(view);
   }
 
@@ -76,10 +79,24 @@ public class ApplicationModel implements ProseModelIF {
     for (DataTreeView view : data) {
       view.setRenderingBy(level);
     }
+    lineBreaks = level;
   }
 
   @Override
   public synchronized RenderBy getBreakLevel() {
     return lineBreaks;
+  }
+
+  @Override
+  public synchronized ProseColorBy getColorBy() {
+    return colorBy;
+  }
+
+  @Override
+  public synchronized void setColorBy(ProseColorBy value) {
+    for (DataTreeView view : data) {
+      view.setColorBy(value);
+    }
+    colorBy = value;
   }
 }

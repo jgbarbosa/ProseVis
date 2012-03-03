@@ -86,7 +86,7 @@ public class Visualization extends JPanel implements ComponentListener {
         double levelWidth = lineLevelText.getAdvance();
         DisplayBlock displayLevelBlock = new DisplayBlock(levelWidth, this,
             this.ctr, lineLevelText);
-        displayLevelBlock.setBounds(new Rectangle((int) 0,
+        displayLevelBlock.setBounds(new Rectangle(0,
             (int) (yPos - lineHeight), (int) levelWidth, (int) lineHeight));
         displayLevelBlock.setBorder(BorderFactory.createEtchedBorder());
         this.add(displayLevelBlock);
@@ -122,7 +122,7 @@ public class Visualization extends JPanel implements ComponentListener {
               if (text.contains("NULL"))
                 text = wordNode.getWord();
             } else {
-              text = file.getPOSText(wordNode.getPOS());
+              text = wordNode.getPOS().toString().toLowerCase();
             }
 
             textToRender = new TextLayout(text + " ", scaledFont,
@@ -140,7 +140,7 @@ public class Visualization extends JPanel implements ComponentListener {
           // Generate tooltip
           if (ctr.displayTooltip) {
             if (ctr.tooltipVar == 1) {
-              block.setToolTipText(file.getPOSText(wordNode.getPOS()));
+              block.setToolTipText(wordNode.getPOS().toString().toLowerCase());
             } else if (ctr.tooltipVar == 2) {
               block.setToolTipText(file.reconstructPhonemeT(wordNode));
             } else {
@@ -160,7 +160,7 @@ public class Visualization extends JPanel implements ComponentListener {
       }
       /*
        * Display blank lines between consecutive rendered lines
-       * 
+       *
        * yPos += lineHeight; // Leave a blank line TextLayout blankLineText =
        * new TextLayout(" ", scaledFont, g.getFontRenderContext()); DisplayBlock
        * displayBlankLineBlock = new DisplayBlock(levelWidth, this, this.ctr,
@@ -198,6 +198,7 @@ public class Visualization extends JPanel implements ComponentListener {
   }
 
   /* PAINT PAINT PAINT */
+  @Override
   public void paintComponent(Graphics g) {
     super.paintComponent(g);
     setBackground(Color.white);
@@ -213,16 +214,20 @@ public class Visualization extends JPanel implements ComponentListener {
     }
   }
 
+  @Override
   public void componentHidden(ComponentEvent e) {
   }
 
+  @Override
   public void componentMoved(ComponentEvent e) {
   }
 
+  @Override
   public void componentShown(ComponentEvent e) {
   }
 
   /* Reset size attributes */
+  @Override
   public void componentResized(ComponentEvent e) {
     ctr.resetDivider();
   }

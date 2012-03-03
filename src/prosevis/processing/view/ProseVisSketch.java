@@ -1,5 +1,6 @@
 package prosevis.processing.view;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +21,8 @@ import controlP5.Slider;
 
 public class ProseVisSketch extends PApplet {
   private static final long serialVersionUID = 1L;
-  private static final int VIEW_WIDTH = 5000;
-  private static final int VIEW_HEIGHT = 1800;
+  private static final int VIEW_WIDTH = 1440;
+  private static final int VIEW_HEIGHT = 800;
   private static final double SLIDER_FRACTION = 0.01;
   private static final double DScrollInertia = 0.3;
 
@@ -84,6 +85,10 @@ public class ProseVisSketch extends PApplet {
       textFont(fonts.get(size), size);
       curFontSize = size;
     }
+  }
+
+  private int getFontDescent() {
+    return (int)(fonts.get(curFontSize).descent()  * curFontSize);
   }
 
   @Override
@@ -217,6 +222,7 @@ public class ProseVisSketch extends PApplet {
     int renderedHeight = 0;
     final int lineHeight = dataTreeView.getFontSize(); // hope this works in general
     setFont(lineHeight);
+    final int dLine = getFontDescent();
     final float spaceWidth = textWidth(' ');
     //final double charWidth = curFontSize * 0.618033988; // hope this works in general
     // assume all characters are the same width, guesstimate the widths
@@ -224,6 +230,8 @@ public class ProseVisSketch extends PApplet {
     String word;
     StringBuilder lineBuffer = new StringBuilder();
     float renderedWidth = 0;
+    final ProseColorBy colorBy = dataTreeView.getColorStyle();
+    final ColorSet colorSet = dataTreeView.getColorSet();
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
       NodeIterator words = new NodeIterator(lineNode);
@@ -236,6 +244,9 @@ public class ProseVisSketch extends PApplet {
       while (wordNode != null) {
         word = wordNode.getWord();
         final float wordWidth = textWidth(word);
+        if (colorBy != ProseColorBy.NONE) {
+          colorBackground(colorBy, colorSet, wordNode, (int)renderedWidth + minX, renderedHeight + minY + dLine, (int)wordWidth, lineHeight - dLine);
+        }
         if (wordWidth + renderedWidth > viewWidth) {
           // garbage collect the page breaks
           words.clearDisplayBreak();
@@ -246,10 +257,23 @@ public class ProseVisSketch extends PApplet {
         renderedWidth += wordWidth + spaceWidth;
         wordNode = words.next();
       }
+      fill(0);
       text(lineBuffer.toString(), minX,  renderedHeight + lineHeight + minY);
       lineBuffer.setLength(0);
       lineNode = (HierNode)lineNode.getNext();
       renderedHeight += lineHeight;
+    }
+  }
+
+  private void colorBackground(ProseColorBy colorBy, ColorSet colorSet, WordNode wordNode, int topX, int topY,
+      int dx, int dy) {
+    switch (colorBy) {
+    case POS:
+      Color c = colorSet.getColorForPOS(wordNode.getPOS());
+      fill(c.getRed(), c.getGreen(), c.getBlue());
+      rect(topX, topY, dx, dy);
+      break;
+
     }
   }
 
@@ -268,7 +292,7 @@ public class ProseVisSketch extends PApplet {
    * @param args
    */
   public static void main(String[] args) {
-    PApplet.main(new String[] { "--present", "prosevis.processing.ProseVisSketch" });
-  //  PApplet.main(new String[] {"prosevis.processing.ProseVisSketch"});
+  //  PApplet.main(new String[] { "--present", "prosevis.processing.view.ProseVisSketch" });
+    PApplet.main(new String[] {"prosevis.processing.view.ProseVisSketch"});
   }
 }
