@@ -22,5 +22,4 @@ public class ColorView {
   public Color getColor(int labelIdx, int typeIdx) {
     return colorLookup.get(labelIdx).get(typeIdx);
   }
-
 }
