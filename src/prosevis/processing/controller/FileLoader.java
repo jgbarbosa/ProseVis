@@ -11,15 +11,18 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import prosevis.data.DataTree;
+import prosevis.data.TypeMap;
 
-public class FileLoader implements Runnable, IProgressNotifiable {  
+public class FileLoader implements Runnable, IProgressNotifiable {
   private final static String LAST_PATH_SAVE = ".lastpath.txt";
-  private JFrame parentComponent;
-  
-  public FileLoader(JFrame parent) {
+  private final JFrame parentComponent;
+  private final TypeMap typeMap;
+
+  public FileLoader(JFrame parent, TypeMap typeMap) {
     parentComponent = parent;
+    this.typeMap = typeMap;
  }
-  
+
   private DataTree loadFile() {
     String lastPath = null;
     try {
@@ -29,7 +32,7 @@ public class FileLoader implements Runnable, IProgressNotifiable {
     } catch (IOException e) {
       System.err.println("Couldn't find "+ LAST_PATH_SAVE);
     }
-    
+
     if (null == lastPath || lastPath.length() < 1) {
       lastPath = "Data" + File.pathSeparator;
     }
@@ -49,22 +52,22 @@ public class FileLoader implements Runnable, IProgressNotifiable {
       } catch (IOException e) {
         System.err.println("Couldn't save last used path to file.");
       }
-      
+
       DataTree tree = new DataTree();
-      if (tree.load(file, this)) {
+      if (tree.load(file, this, typeMap)) {
         return tree;
       }
-    }    
+    }
     return null;
   }
 
   @Override
   public void run() {
-    parentComponent.dispatchEvent(new FileProgressEvent(Frame.getWindows()[0], loadFile()));
+    parentComponent.dispatchEvent(new FileProgressEvent(Frame.getWindows()[0], loadFile(), this.typeMap));
   }
 
   @Override
   public void notifyProgess(double d) {
-    parentComponent.dispatchEvent(new FileProgressEvent(Frame.getWindows()[0], d)); 
+    parentComponent.dispatchEvent(new FileProgressEvent(Frame.getWindows()[0], d));
   }
 }

@@ -3,8 +3,8 @@ package prosevis.processing.model;
 import java.util.ArrayList;
 
 import prosevis.data.DataTree;
+import prosevis.data.TypeMap;
 import prosevis.processing.model.DataTreeView.RenderBy;
-import prosevis.processing.view.ProseColorBy;
 
 public class ApplicationModel implements ProseModelIF {
 
@@ -14,13 +14,14 @@ public class ApplicationModel implements ProseModelIF {
   private final ArrayList<DataTreeView> data = new ArrayList<DataTreeView>();
   private DataTreeView.RenderBy lineBreaks = DataTreeView.RenderBy.PHRASE;
   private int zoomLevel = 14 * ZOOM_SENSITIVITY;
-  private ProseColorBy colorBy = ProseColorBy.NONE;
+  private int colorByLabelIdx = TypeMap.kNoLabelIdx;
+  private final ColorMap colorDB = new ColorMap();
 
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#addData(prosevis.data.DataTree)
    */
   @Override
-  public synchronized void addData(DataTree newTree) {
+  public synchronized void addData(DataTree newTree, TypeMap correspondingTypeMap) {
     String newFilePath = newTree.getPath();
     for (DataTreeView tree: data) {
       if (tree.getData().getPath().equals(newFilePath)) {
@@ -28,9 +29,10 @@ public class ApplicationModel implements ProseModelIF {
         return;
       }
     }
+    colorDB.mergeTypeMap(correspondingTypeMap);
     DataTreeView view = new DataTreeView(newTree, zoomLevel / ZOOM_SENSITIVITY);
     view.setRenderingBy(lineBreaks);
-    view.setColorBy(colorBy);
+    view.setColorBy(colorByLabelIdx);
     data.add(view);
   }
 
@@ -88,15 +90,26 @@ public class ApplicationModel implements ProseModelIF {
   }
 
   @Override
-  public synchronized ProseColorBy getColorBy() {
-    return colorBy;
+  public synchronized int getColorBy() {
+    return colorByLabelIdx;
   }
 
   @Override
-  public synchronized void setColorBy(ProseColorBy value) {
+  public synchronized void setColorBy(String label) {
+    int labelIdx = colorDB.getLabelIdx(label);
     for (DataTreeView view : data) {
-      view.setColorBy(value);
+      view.setColorBy(labelIdx);
     }
-    colorBy = value;
+    colorByLabelIdx = labelIdx;
+  }
+
+  @Override
+  public synchronized TypeMap getTypeMapCopy() {
+    return colorDB.getTypeMapCopy();
+  }
+
+  @Override
+  public synchronized ColorView getColorView() {
+    return colorDB.getColorView();
   }
 }

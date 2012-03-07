@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -29,27 +28,19 @@ public class DataTree {
   private final int[] currIndices;
   private final int[] maxWords;
   private final int[] maxPhonemes;
-  private boolean hasComparisonData;
+  private final boolean hasComparisonData;
   private HierNode head;
-  private WordNode currentWord;
+  private ImplicitWordNode currentWord;
   private final ArrayList<String> phonemeCode;
   private final ArrayList<String> phoC1Code;
   private final ArrayList<String> phoVCode;
   private final ArrayList<String> phoC2Code;
-  // a mapping from lower-case words/punc to unique ids for that word
-  private final HashMap<String, Integer> wordIds = new HashMap<String, Integer>();
-  // similar, but for accents to accent ids
-  private final HashMap<String, Integer> accentIds = new HashMap<String, Integer>();
-  // similar, but for tones to tone ids
-  private final HashMap<String, Integer> toneIds = new HashMap<String, Integer>();
-  // similar for soundexs
-  private final HashMap<String, Integer> soundIds = new HashMap<String, Integer>();
+
   // This is related to rendering and basically corresponds to the maximum width of
   // words/phonemes/parts of speech at each hierarchical level
   private final double[] maxWordWidth;
   private final double[] maxPhonemeWidth;
   private final double[] maxPOSWidth;
-  private HierNode findNodeResult;
 
   public DataTree() {
     firstElements = new ArrayList<HierNode>();
@@ -70,10 +61,7 @@ public class DataTree {
     phoC2Code = new ArrayList<String>();
   }
 
-  public boolean load(File file) {
-    return load(file, null);
-  }
-  public boolean load(File file, IProgressNotifiable prog) {
+  public boolean load(File file, IProgressNotifiable prog, TypeMap typeMap) {
     if (loaded) {
       throw new RuntimeException("You can't load this tree twice");
     }
@@ -91,15 +79,9 @@ public class DataTree {
       bytesProcessed += line.length() + 1;
       String[] columns  = line.split("\t");
 
-      if (columns.length < ICon.TOTAL_COL) {
-        String message = "Incompatible Input file format, aborting Open";
-        JOptionPane.showMessageDialog(new JFrame(), message, "Error",
-            JOptionPane.ERROR_MESSAGE);
-        return false;
-      }
-      // Check if file has Comparison Data
-      if (columns.length == ICon.MAX_COLS) {
-        hasComparisonData = true;
+      // create a fresh color map, we'll merge it with existing maps later
+      for (int i = TypeMap.kWordLabelIdx; i < columns.length; i++) {
+        typeMap.addLabel(columns[i], i);
       }
 
       // Alright, we're done validating the file, lets try and get some data
@@ -121,7 +103,7 @@ public class DataTree {
         columns = line.split("\t");
         if (columns.length < ICon.TOTAL_COL)
           continue;
-        processInputLine(columns);
+        processInputLine(columns, typeMap);
       } while ((line = reader.readLine()) != null);
 
       finalizeMaximums();
@@ -204,7 +186,7 @@ public class DataTree {
     currentElements.add(phra);
   }
 
-  private void processInputLine(String[] line) {
+  private void processInputLine(String[] line, TypeMap typeMap) {
     // Trim each field
     for (int i = 0; i < line.length; i++) {
       line[i] = line[i].trim();
@@ -238,10 +220,10 @@ public class DataTree {
     }
 
     // Process the line once structural changes are complete
-    processSyllable(line);
+    processSyllable(line, typeMap);
   }
 
-  private void processSyllable(String[] line) {
+  private void processSyllable(String[] line, TypeMap typeMap) {
     // Clean-up for quotes around commas
     if (line[ICon.WORD_IND].equals("\",\""))
       line[ICon.WORD_IND] = ",";
@@ -256,11 +238,13 @@ public class DataTree {
     if (hasComparisonData == true)
       prob = ParsingTools.getProb(line);
 
+    // TODO(wiley) Aha! This adds syllables to duplicate words following each other, like "that that"
     // Does this syllable start a new word?
-    if (currentWord == null || !currentWord.getWord().equals(line[ICon.WORD_IND])) {
+    String word = (currentWord == null)?null:typeMap.getTypeForIdx(TypeMap.kWordLabelIdx, currentWord.getTypeIdxForLabelIdx(TypeMap.kWordLabelIdx));
+    if (currentWord == null || !word.equals(line[ICon.WORD_IND])) {
 
       // Create new word
-      WordNode newWord = buildWordNode(line, sAttributes, prob);
+      ImplicitWordNode newWord = buildWordNode(line, sAttributes, prob, typeMap);
 
       // Determine word, pos, and phoneme length
       double wordWidth = getTextWidth(line[ICon.WORD_IND]);
@@ -300,40 +284,22 @@ public class DataTree {
     }
   }
 
-  private WordNode buildWordNode(String[] line, int[] sAttributes, float[] prob) {
-    String word = line[ICon.WORD_IND];
-    POSType pos = POSType.fromString(line[ICon.POS_IND]);
-
-    // Update lists that are specific to the word
-    String lowerWord = word.toLowerCase();
-    if (!wordIds.containsKey(lowerWord)) {
-      wordIds.put(lowerWord, wordIds.size());
+  private ImplicitWordNode buildWordNode(String[] line, int[] sAttributes, float[] prob, TypeMap typeMap) {
+    ImplicitWordNode result = new ImplicitWordNode(sAttributes, prob);
+    for (int idx = TypeMap.kWordLabelIdx; idx < line.length; idx++) {
+      int typeIdx = typeMap.getTypeIdx(idx, line[idx].toLowerCase());
+      result.addLabelTypePair(idx, typeIdx);
     }
-    int wordId = wordIds.get(lowerWord);
 
-    String accent = line[ICon.ACCENT_IND];
-    if (!accentIds.containsKey(accent)) {
-      accentIds.put(accent, accentIds.size());
-    }
-    int accentId = accentIds.get(accent);
-
-    String tone = line[ICon.TONE_IND];
-    if (!toneIds.containsKey(tone)) {
-      toneIds.put(tone, toneIds.size());
-    }
-    int toneId = toneIds.get(tone);
-
-    String moddedWord = line[ICon.WORD_IND];
+    String moddedWord = line[TypeMap.kWordLabelIdx];
     if (moddedWord.isEmpty()) {
       moddedWord = ",";
     }
     String soundCode = ParsingTools.soundex(moddedWord);
-    if (!soundIds.containsKey(soundCode)) {
-      soundIds.put(soundCode, soundIds.size());
-    }
-    int soundexId = soundIds.get(soundCode);
+    int soundexTypeIdx = typeMap.getTypeIdx(TypeMap.kSoundexIdx, soundCode);
+    result.addLabelTypePair(TypeMap.kSoundexIdx, soundexTypeIdx);
 
-    return new WordNode(word, pos, wordId, accentId, toneId, soundexId, sAttributes, prob);
+    return result;
   }
 
   private double getTextWidth(String str) {

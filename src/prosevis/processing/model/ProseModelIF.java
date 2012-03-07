@@ -3,11 +3,16 @@ package prosevis.processing.model;
 import java.util.ArrayList;
 
 import prosevis.data.DataTree;
-import prosevis.processing.view.ProseColorBy;
+import prosevis.data.TypeMap;
 
 public interface ProseModelIF {
+  TypeMap getTypeMapCopy();
 
-  void addData(DataTree newTree);
+  // modifiedTypes must be compatible with the last call to getTypeMapCopy()
+  // ie you have to take that typeMap you got, modify it, then send it along
+  // with the dataTree
+  // implicitly, this means you can only load one file at a time, for now
+  void addData(DataTree newTree, TypeMap modifiedTypes);
 
   ArrayList<String> getFileList();
 
@@ -21,7 +26,10 @@ public interface ProseModelIF {
 
   DataTreeView.RenderBy getBreakLevel();
 
-  ProseColorBy getColorBy();
+  // returns a labelIdx
+  int getColorBy();
 
-  void setColorBy(ProseColorBy value);
+  void setColorBy(String labelStr);
+
+  ColorView getColorView();
 }

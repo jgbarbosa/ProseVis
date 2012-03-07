@@ -6,7 +6,7 @@ import java.awt.font.TextLayout;
 import java.util.ArrayList;
 
 
-public class WordNode extends ProseNode{
+public class WordNode extends AbstractWordNode {
 	String theWord;
 
 	int wrd;
@@ -114,11 +114,13 @@ public class WordNode extends ProseNode{
 	}
 
 	/* Display breaks are used by the iterator to tag line breaks */
-	public boolean getDisplayBreak(){
+	@Override
+  public boolean getDisplayBreak(){
 		return displayBreak;
 	}
 
-	public void setDisplayBreak(boolean displayBreak){
+	@Override
+  public void setDisplayBreak(boolean displayBreak){
 		this.displayBreak = displayBreak;
 	}
 }

@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -22,11 +23,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
+import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView.RenderBy;
 import prosevis.processing.model.ProseModelIF;
-import prosevis.processing.view.ProseColorBy;
 
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -67,6 +70,12 @@ public class ControllerGUI {
    * Initialize the contents of the frame.
    */
   private void initialize() {
+    StringListModel colorByModel = new StringListModel();
+    colorByModel.addItem(TypeMap.kNoLabelLabel);
+    StringListModel textByModel = new StringListModel();
+    textByModel.addItem(TypeMap.kNoLabelLabel);
+
+
     JList list = new JList();
     final FileListModel listModel = new FileListModel();
     list.setModel(listModel);
@@ -75,7 +84,7 @@ public class ControllerGUI {
 
     frame = new JFrame();
     FileProgressListener fplistener =
-        new FileProgressListener(theModel, listModel, lblProgress, btnAddFile);
+        new FileProgressListener(theModel, listModel, lblProgress, btnAddFile, colorByModel, textByModel);
     frame.addWindowStateListener(fplistener);
     frame.setBounds(100, 100, 693, 558);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -104,8 +113,9 @@ public class ControllerGUI {
     btnAddFile.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent arg0) {
+        TypeMap typeMap = theModel.getTypeMapCopy();
         btnAddFile.setEnabled(false);
-        Thread workerThread = new Thread(new FileLoader(frame));
+        Thread workerThread = new Thread(new FileLoader(frame, typeMap));
         workerThread.start();
       }
     });
@@ -201,13 +211,12 @@ public class ControllerGUI {
       breakLineByDropdown.addItem(breakType.toString().toLowerCase());
     }
     breakLineByDropdown.setSelectedItem(theModel.getBreakLevel().toString().toLowerCase());
-    final ProseModelIF model = this.theModel;
     breakLineByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         JComboBox cb = (JComboBox)e.getSource();
         String typeStr = (String)cb.getSelectedItem();
-        model.setBreakLevel(RenderBy.valueOf(typeStr.toUpperCase()));
+        theModel.setBreakLevel(RenderBy.valueOf(typeStr.toUpperCase()));
       }
     });
 
@@ -226,17 +235,14 @@ public class ControllerGUI {
     gbc_lblColorBy.gridy = 2;
     renderPane.add(lblColorBy, gbc_lblColorBy);
 
-    JComboBox colorByDropdown = new JComboBox();
-    for (ProseColorBy opt: ProseColorBy.values()) {
-      colorByDropdown.addItem(opt.toString().toLowerCase());
-    }
-    colorByDropdown.setSelectedItem(theModel.getColorBy().toString().toLowerCase());
+    JComboBox colorByDropdown = new JComboBox(colorByModel);
+    colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
     colorByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         JComboBox cb = (JComboBox)e.getSource();
-        String typeStr = (String)cb.getSelectedItem();
-        model.setColorBy(ProseColorBy.valueOf(typeStr.toUpperCase()));
+        String labelStr = (String)cb.getSelectedItem();
+        theModel.setColorBy(labelStr);
       }
     });
 
@@ -249,6 +255,59 @@ public class ControllerGUI {
 
   public void go() {
     this.frame.setVisible(true);
+  }
+}
+
+class StringListModel implements ComboBoxModel<String> {
+  private final ArrayList<String> labels = new ArrayList<String>();
+  private final ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
+  private int selectedIdx = -1;
+  @Override
+  public void addListDataListener(ListDataListener l) {
+    listeners.add(l);
+  }
+
+  @Override
+  public String getElementAt(int index) {
+    return labels.get(index);
+  }
+
+  @Override
+  public int getSize() {
+    return labels.size();
+  }
+
+  @Override
+  public void removeListDataListener(ListDataListener l) {
+    listeners.remove(l);
+  }
+
+  @Override
+  public Object getSelectedItem() {
+    return (selectedIdx == -1)?null:labels.get(selectedIdx);
+  }
+
+  @Override
+  public void setSelectedItem(Object anItem) {
+    if (!(anItem instanceof String)) {
+      return;
+    }
+    String str = (String)anItem;
+    for (int i = 0; i < labels.size(); i++) {
+      if (str.equals(labels.get(i))) {
+        selectedIdx = i;
+        return;
+      }
+    }
+  }
+
+  public void addItem(String item) {
+    if (!labels.contains(item)) {
+      labels.add(item);
+      for (ListDataListener l: this.listeners) {
+        l.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, labels.size() - 1, labels.size()));
+      }
+    }
   }
 }
 

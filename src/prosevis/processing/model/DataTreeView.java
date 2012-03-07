@@ -3,16 +3,15 @@ package prosevis.processing.model;
 import prosevis.data.DataTree;
 import prosevis.data.HierNode;
 import prosevis.data.ICon;
-import prosevis.processing.view.ColorSet;
-import prosevis.processing.view.ProseColorBy;
+import prosevis.data.TypeMap;
 
 public class DataTreeView {
   private final DataTree data;
   private double scrollFraction;
   private boolean needsRender = true;
   private int currentFontSize = 14;
-  private final ColorSet colorSet = new ColorSet();
-  private ProseColorBy colorBy = ProseColorBy.NONE;
+  private int colorByLabelIdx = TypeMap.kNoLabelIdx;
+  private int textByLabelIdx = TypeMap.kWordLabelIdx;
   public static final double SCROLL_TOP = 1.0;
   public static final double SCROLL_BOTTOM = 0.0;
   private static final double SCROLL_MULTIPLIER = 1.0;
@@ -137,18 +136,19 @@ public class DataTreeView {
     return currentFontSize;
   }
 
-  public synchronized ProseColorBy getColorStyle() {
-    return this.colorBy;
+
+  public synchronized void setTextBy(int labelIdx) {
+    textByLabelIdx = labelIdx;
   }
 
-  public synchronized ColorSet getColorSet() {
-    return this.colorSet ;
+  public synchronized int getTextBy() {
+    return textByLabelIdx;
   }
 
-  public synchronized void setColorBy(ProseColorBy value) {
-    if (colorBy != value) {
-      colorBy = value;
-      needsRender = true;
-    }
+  public synchronized void setColorBy(int labelIdx) {
+    colorByLabelIdx = labelIdx;
+  }
+  public synchronized int getColorBy() {
+    return colorByLabelIdx;
   }
 }

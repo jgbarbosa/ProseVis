@@ -94,7 +94,7 @@ public class Visualization extends JPanel implements ComponentListener {
       }
 
       // For each token in the line
-      NodeIterator words = new NodeIterator(lineNode);
+      NodeIterator<WordNode> words = new NodeIterator<WordNode>(lineNode);
       WordNode wordNode = words.next();
 
       Rectangle2D lineArea = new Rectangle2D.Double(xPos, yPos - lineHeight,

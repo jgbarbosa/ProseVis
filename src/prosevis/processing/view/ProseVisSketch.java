@@ -8,10 +8,12 @@ import java.util.HashMap;
 import processing.core.PApplet;
 import processing.core.PFont;
 import prosevis.data.HierNode;
+import prosevis.data.ImplicitWordNode;
 import prosevis.data.NodeIterator;
-import prosevis.data.WordNode;
+import prosevis.data.TypeMap;
 import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
+import prosevis.processing.model.ColorView;
 import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ProseModelIF;
 import prosevis.processing.model.ScrollInfo;
@@ -94,6 +96,7 @@ public class ProseVisSketch extends PApplet {
   @Override
   public void draw() {
     DataTreeView[] views = theModel.getRenderingData();
+    ColorView colorView = theModel.getColorView();
     final int viewHeight = VIEW_HEIGHT;
     final int viewWidth = (views.length < 1)
         ? VIEW_WIDTH
@@ -122,7 +125,7 @@ public class ProseVisSketch extends PApplet {
 
         // because they don't implement listeners, we'll need to keep a reference for ourselves
         sliders.add(slider);
-        renderView(views[i], i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
+        renderView(views[i], colorView, i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
       }
     } else {
       long now = System.currentTimeMillis();
@@ -140,7 +143,7 @@ public class ProseVisSketch extends PApplet {
       }
       for (int i = 0 ; i < views.length; i++) {
         if (views[i].getAndClearNeedsRender()) {
-          renderView(views[i], i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
+          renderView(views[i], colorView, i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
         }
       }
     }
@@ -212,7 +215,7 @@ public class ProseVisSketch extends PApplet {
     scrollInertia = 0.0;
   }
 
-  private void renderView(DataTreeView dataTreeView, int minX, int minY,
+  private void renderView(DataTreeView dataTreeView, ColorView colorView, int minX, int minY,
       int viewWidth, int viewHeight) {
     fill(255);
     rect(minX, minY, viewWidth, viewHeight);
@@ -227,32 +230,34 @@ public class ProseVisSketch extends PApplet {
     //final double charWidth = curFontSize * 0.618033988; // hope this works in general
     // assume all characters are the same width, guesstimate the widths
     minY -= (int)(scrollInfo.lineFrac * lineHeight);
-    String word;
+    String renderedText;
     StringBuilder lineBuffer = new StringBuilder();
     float renderedWidth = 0;
-    final ProseColorBy colorBy = dataTreeView.getColorStyle();
-    final ColorSet colorSet = dataTreeView.getColorSet();
+    // for instance, if we're rendering words, we'll get the idx for the word field
+    final int renderTextByLabelIdx = dataTreeView.getTextBy();
+    final int colorByLabelIdx = dataTreeView.getColorBy();
+
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
-      NodeIterator words = new NodeIterator(lineNode);
-      WordNode wordNode = words.next();
+      NodeIterator<ImplicitWordNode> words = new NodeIterator<ImplicitWordNode>(lineNode);
+      ImplicitWordNode wordNode = words.next();
       if (wordNode == null) {
         // we're out of lines, not even one word in this one
         break;
       }
       renderedWidth = 0;
       while (wordNode != null) {
-        word = wordNode.getWord();
-        final float wordWidth = textWidth(word);
-        if (colorBy != ProseColorBy.NONE) {
-          colorBackground(colorBy, colorSet, wordNode, (int)renderedWidth + minX, renderedHeight + minY + dLine, (int)wordWidth, lineHeight - dLine);
+        renderedText = colorView.getType(renderTextByLabelIdx, wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx));
+        final float wordWidth = textWidth(renderedText);
+        if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
+          colorBackground(colorByLabelIdx, colorView, wordNode, (int)renderedWidth + minX, renderedHeight + minY + dLine, (int)wordWidth, lineHeight - dLine);
         }
         if (wordWidth + renderedWidth > viewWidth) {
           // garbage collect the page breaks
           words.clearDisplayBreak();
           break;
         }
-        lineBuffer.append(word);
+        lineBuffer.append(renderedText);
         lineBuffer.append(' ');
         renderedWidth += wordWidth + spaceWidth;
         wordNode = words.next();
@@ -265,16 +270,12 @@ public class ProseVisSketch extends PApplet {
     }
   }
 
-  private void colorBackground(ProseColorBy colorBy, ColorSet colorSet, WordNode wordNode, int topX, int topY,
-      int dx, int dy) {
-    switch (colorBy) {
-    case POS:
-      Color c = colorSet.getColorForPOS(wordNode.getPOS());
-      fill(c.getRed(), c.getGreen(), c.getBlue());
-      rect(topX, topY, dx, dy);
-      break;
-
-    }
+  private void colorBackground(int colorByLabelIdx, ColorView colorView,
+      ImplicitWordNode wordNode, int topX, int topY, int dx, int dy) {
+    Color c = colorView.getColor(
+        colorByLabelIdx, wordNode.getTypeIdxForLabelIdx(colorByLabelIdx));
+    fill(c.getRed(), c.getGreen(), c.getBlue());
+    rect(topX, topY, dx, dy);
   }
 
   public void controlEvent(ControlEvent theEvent) {

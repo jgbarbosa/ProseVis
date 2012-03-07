@@ -516,11 +516,9 @@ public class VizController extends JSplitPane implements ComponentListener{
 			colorCount = 3;
 
 		}else if(colorVar.equals("POS")){
-			for (InputFile file: files.values()) {
-				if(POSType.values().length > colorCount){
-					colorCount = POSType.values().length;
-				}
-			}
+          if(POSType.values().length > colorCount){
+            colorCount = POSType.values().length;
+          }
 		}else if(colorVar.equals("Accent")){
 			for (InputFile file: files.values()) {
 				if(file.getNumAccents() > colorCount){
@@ -761,7 +759,7 @@ public class VizController extends JSplitPane implements ComponentListener{
 
 	public void searchLine(HierNode lineNode, int number) {
 		int count = 0;
-		NodeIterator words = new NodeIterator(lineNode);
+		NodeIterator<WordNode> words = new NodeIterator<WordNode>(lineNode);
 		WordNode wordNode = words.next();
 		while (wordNode != null) {
 			if (this.searchMatch(wordNode)) {
