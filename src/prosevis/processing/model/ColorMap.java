@@ -1,6 +1,7 @@
 package prosevis.processing.model;
 
 import java.awt.Color;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,6 +12,8 @@ public class ColorMap {
 
   // maps from a labelIdx to a mapping from typeIdxs for that label to colors for those types
   private final Map<Integer, Map<Integer, Color>> colorLookup = new HashMap<Integer, Map<Integer,Color>>();
+  // a labelIdx maps to true iff a custom color scheme is loaded
+  private final Map<Integer, Boolean> customSchemes = new HashMap<Integer, Boolean>();
   private final TypeMap typeMap = new TypeMap();
   private ColorView cachedColorView;
   private boolean cacheValid = false;
@@ -29,8 +32,41 @@ public class ColorMap {
   }
 
   public void mergeTypeMap(TypeMap typeMap) {
-    this.typeMap.mergeTypeMap(typeMap);
-    cacheValid = false;
+    boolean changed = this.typeMap.mergeTypeMap(typeMap);
+    if (changed) {
+      refreshColors();
+    }
+    cacheValid = cacheValid && !changed;
+  }
+
+  private void refreshColors() {
+    for (int labelIdx: typeMap.getLabelIdxs()) {
+      if (!customSchemes.containsKey(labelIdx)) {
+        // if we don't even have colors for this scheme, we definitely don't
+        // have a custom scheme for it
+        customSchemes.put(labelIdx, false);
+      }
+    }
+    for (int labelIdx: customSchemes.keySet()) {
+      if (customSchemes.get(labelIdx)) {
+        continue;
+      }
+      // no custom scheme here, make sure our colors are synced to the number of types
+      if (!colorLookup.containsKey(labelIdx)) {
+        colorLookup.put(labelIdx, new HashMap<Integer, Color>());
+      }
+      Map<Integer, Color> colors = colorLookup.get(labelIdx);
+      Collection<Integer> types = typeMap.getTypeIdxsForLabel(labelIdx);
+      if (types.size() != colors.size()) {
+        colors.clear();
+        final int steps = types.size() + 1;
+        int i = 0;
+        for (Integer typeIdx: types) {
+          colors.put(typeIdx, Color.getHSBColor(i / (float)steps, 0.9f, 0.9f));
+          i++;
+        }
+      }
+    }
   }
 
   public ColorView getColorView() {

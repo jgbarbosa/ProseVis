@@ -1,5 +1,6 @@
 package prosevis.data;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,9 +27,7 @@ public class TypeMap {
 
   public TypeMap(TypeMap other) {
     this();
-    for (Entry<String, Integer> entry: other.label2labelIdx.entrySet()) {
-      this.label2labelIdx.put(entry.getKey(), entry.getValue());
-    }
+    label2labelIdx.putAll(other.label2labelIdx);
     for (Entry<Integer, Map<String, Integer>> entry: other.type2typeIdx.entrySet()) {
       Map<String, Integer> t2tidx = new HashMap<String, Integer>();
       t2tidx.putAll(entry.getValue());
@@ -69,26 +68,32 @@ public class TypeMap {
     return this.typeIdx2type.get(labelIdx).get(typeIdx);
   }
 
-  public void mergeTypeMap(TypeMap other) {
+  public boolean mergeTypeMap(TypeMap other) {
+    boolean changed = false;
     // first reconcile the labels, looking for conflicts
     for (Entry<String, Integer> s: other.label2labelIdx.entrySet()) {
-      if (label2labelIdx.containsKey(s.getKey()) && label2labelIdx.get(s.getKey()) != s.getValue()) {
+      if (!label2labelIdx.containsKey(s.getKey())) {
+        label2labelIdx.put(s.getKey(), s.getValue());
+        changed = true;
+      } else if (label2labelIdx.get(s.getKey()) != s.getValue()) {
         throw new RuntimeException("Error, somehow our type maps got out of sync with each other");
       }
-      label2labelIdx.put(s.getKey(), s.getValue());
     }
 
     for (Entry<Integer, Map<String, Integer>> s: other.type2typeIdx.entrySet()) {
       Map<String, Integer> theirs = s.getValue();
       if (!type2typeIdx.containsKey(s.getKey())) {
         type2typeIdx.put(s.getKey(), new HashMap<String, Integer>());
+        changed = true;
       }
       Map<String, Integer> mine = type2typeIdx.get(s.getKey());
       for (Entry<String, Integer> t: theirs.entrySet()) {
-        if (mine.containsKey(t.getKey()) && t.getValue() != mine.get(t.getKey())) {
+        if (!mine.containsKey(t.getKey())) {
+          mine.put(t.getKey(), t.getValue());
+          changed = true;
+        } else if (t.getValue() != mine.get(t.getKey())) {
           throw new RuntimeException("Error, somehow our type maps got out of sync with each other!");
         }
-        mine.put(t.getKey(), t.getValue());
       }
     }
 
@@ -96,15 +101,19 @@ public class TypeMap {
       Map<Integer, String> theirs = s.getValue();
       if (!typeIdx2type.containsKey(s.getKey())) {
         typeIdx2type.put(s.getKey(), new HashMap<Integer, String>());
+        changed = true;
       }
       Map<Integer, String> mine = typeIdx2type.get(s.getKey());
       for (Entry<Integer, String> t: theirs.entrySet()) {
-        if (mine.containsKey(t.getKey()) && t.getValue() != mine.get(t.getKey())) {
+        if (!mine.containsKey(t.getKey())) {
+          mine.put(t.getKey(), t.getValue());
+          changed = true;
+        } else if (t.getValue() != mine.get(t.getKey())) {
           throw new RuntimeException("Error, somehow our type maps got out of sync with each other!!");
         }
-        mine.put(t.getKey(), t.getValue());
       }
     }
+    return changed;
   }
 
   public int getLabelIdx(String label) {
@@ -113,5 +122,13 @@ public class TypeMap {
 
   public boolean hasLabel(String label) {
     return label2labelIdx.containsKey(label);
+  }
+
+  public Collection<Integer> getLabelIdxs() {
+    return this.label2labelIdx.values();
+  }
+
+  public Collection<Integer> getTypeIdxsForLabel(int labelIdx) {
+    return this.typeIdx2type.get(labelIdx).keySet();
   }
 }

@@ -136,7 +136,6 @@ public class DataTreeView {
     return currentFontSize;
   }
 
-
   public synchronized void setTextBy(int labelIdx) {
     textByLabelIdx = labelIdx;
   }
@@ -147,6 +146,7 @@ public class DataTreeView {
 
   public synchronized void setColorBy(int labelIdx) {
     colorByLabelIdx = labelIdx;
+    this.needsRender = true;
   }
   public synchronized int getColorBy() {
     return colorByLabelIdx;
