@@ -192,9 +192,9 @@ public class ControllerGUI {
     dataPane.addTab("Render", null, renderPane, null);
     GridBagLayout gbl_renderPane = new GridBagLayout();
     gbl_renderPane.columnWidths = new int[]{0, 0, 0, 0};
-    gbl_renderPane.rowHeights = new int[]{0, 0, 0, 0};
+    gbl_renderPane.rowHeights = new int[]{0, 0, 0, 0, 0};
     gbl_renderPane.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
-    gbl_renderPane.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+    gbl_renderPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
     renderPane.setLayout(gbl_renderPane);
 
     JLabel lblLineBreaksBy = new JLabel("  Line breaks by:  ");
@@ -220,17 +220,17 @@ public class ControllerGUI {
       }
     });
 
-    GridBagConstraints gbc_comboBox = new GridBagConstraints();
-    gbc_comboBox.anchor = GridBagConstraints.WEST;
-    gbc_comboBox.insets = new Insets(0, 0, 5, 0);
-    gbc_comboBox.gridx = 2;
-    gbc_comboBox.gridy = 1;
-    renderPane.add(breakLineByDropdown, gbc_comboBox);
+    GridBagConstraints breakLineConstraints = new GridBagConstraints();
+    breakLineConstraints.anchor = GridBagConstraints.WEST;
+    breakLineConstraints.insets = new Insets(0, 0, 5, 0);
+    breakLineConstraints.gridx = 2;
+    breakLineConstraints.gridy = 1;
+    renderPane.add(breakLineByDropdown, breakLineConstraints);
 
     JLabel lblColorBy = new JLabel("  Color by:  ");
     GridBagConstraints gbc_lblColorBy = new GridBagConstraints();
     gbc_lblColorBy.anchor = GridBagConstraints.EAST;
-    gbc_lblColorBy.insets = new Insets(0, 0, 0, 5);
+    gbc_lblColorBy.insets = new Insets(0, 0, 5, 5);
     gbc_lblColorBy.gridx = 1;
     gbc_lblColorBy.gridy = 2;
     renderPane.add(lblColorBy, gbc_lblColorBy);
@@ -246,11 +246,27 @@ public class ControllerGUI {
       }
     });
 
-    GridBagConstraints gbc_comboBox_1 = new GridBagConstraints();
-    gbc_comboBox_1.anchor = GridBagConstraints.WEST;
-    gbc_comboBox_1.gridx = 2;
-    gbc_comboBox_1.gridy = 2;
-    renderPane.add(colorByDropdown, gbc_comboBox_1);
+    GridBagConstraints colorByConstraints = new GridBagConstraints();
+    colorByConstraints.insets = new Insets(0, 0, 5, 0);
+    colorByConstraints.anchor = GridBagConstraints.WEST;
+    colorByConstraints.gridx = 2;
+    colorByConstraints.gridy = 2;
+    renderPane.add(colorByDropdown, colorByConstraints);
+
+    JLabel lblText = new JLabel("  Text:  ");
+    GridBagConstraints gbc_lblText = new GridBagConstraints();
+    gbc_lblText.anchor = GridBagConstraints.EAST;
+    gbc_lblText.insets = new Insets(0, 0, 0, 5);
+    gbc_lblText.gridx = 1;
+    gbc_lblText.gridy = 3;
+    renderPane.add(lblText, gbc_lblText);
+
+    JComboBox textByDropdown = new JComboBox();
+    GridBagConstraints textByConstraints = new GridBagConstraints();
+    textByConstraints.anchor = GridBagConstraints.WEST;
+    textByConstraints.gridx = 2;
+    textByConstraints.gridy = 3;
+    renderPane.add(textByDropdown, textByConstraints);
   }
 
   public void go() {
