@@ -230,9 +230,6 @@ public class InputFile {
 
     float[] prob = null;
 
-    if (hasComparisonData == true)
-      prob = ParsingTools.getProb(line);
-
     // Does this syllable start a new word?
     if (currWord == null || !currWord.getWord().equals(line[ICon.WORD_IND])) {
 

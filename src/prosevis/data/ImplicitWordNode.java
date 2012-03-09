@@ -12,9 +12,11 @@ public class ImplicitWordNode extends AbstractWordNode {
   private final Map<Integer, Integer> labels2types = new HashMap<Integer, Integer>();
   private boolean displayBreak = false;
   private final ArrayList<Syllable> syllables = new ArrayList<Syllable>();
+  private final boolean isPunctuation;
 
-  public ImplicitWordNode(int[] sAttributes, float[] prob) {
-    syllables.add(new Syllable(sAttributes, prob));
+  public ImplicitWordNode(String word, Syllable s) {
+    syllables.add(s);
+    isPunctuation = !ParsingTools.notPunct(word);
   }
 
   public void addLabelTypePair(int idx, int typeIdx) {
@@ -23,6 +25,15 @@ public class ImplicitWordNode extends AbstractWordNode {
 
   public int getTypeIdxForLabelIdx(int labelIdx) {
     return labels2types.get(labelIdx);
+  }
+
+  public int getTypeIdxForLabelIdx(int labelIdx, int syllableIdx) {
+    for (int labelType : TypeMap.kSyllableTypes) {
+      if (labelType == labelIdx) {
+        return syllables.get(syllableIdx).getTypeIdxForLabelIdx(labelIdx);
+      }
+    }
+    return getTypeIdxForLabelIdx(labelIdx);
   }
 
   /* Display breaks are used by the iterator to tag line breaks */
@@ -35,8 +46,9 @@ public class ImplicitWordNode extends AbstractWordNode {
   public void setDisplayBreak(boolean displayBreak){
       this.displayBreak = displayBreak;
   }
-  public void addSyllable(int[] syllableAttr, float[] prob){
-    syllables.add(new Syllable(syllableAttr, prob));
+
+  public void addSyllable(Syllable s){
+    syllables.add(s);
   }
 
   public int getSyllableCount(){
@@ -53,5 +65,9 @@ public class ImplicitWordNode extends AbstractWordNode {
       TextLayout layoutData = new TextLayout(text, font, frc);
 
       return layoutData.getAdvance();
+  }
+
+  public boolean isPunct() {
+    return isPunctuation;
   }
 }

@@ -272,10 +272,35 @@ public class ProseVisSketch extends PApplet {
 
   private void colorBackground(int colorByLabelIdx, ColorView colorView,
       ImplicitWordNode wordNode, int topX, int topY, int dx, int dy) {
-    Color c = colorView.getColor(
-        colorByLabelIdx, wordNode.getTypeIdxForLabelIdx(colorByLabelIdx));
-    fill(c.getRed(), c.getGreen(), c.getBlue());
-    rect(topX, topY, dx, dy);
+    if (wordNode.isPunct()) {
+      return;
+    }
+    switch (colorByLabelIdx) {
+    case TypeMap.kStressIdx:
+    case TypeMap.kPhonemeIdx:
+    case TypeMap.kPhonemeC1Idx:
+    case TypeMap.kPhonemeVIdx:
+    case TypeMap.kPhonemeC2Idx:
+      final int phonemeCount = wordNode.getSyllableCount();
+      final double ddx = dx / (double) phonemeCount;
+      double nextX = topX + ddx;
+      int lastX = topX;
+      for (int i = 0; i < phonemeCount; i++) {
+        Color c = colorView.getColor(
+            colorByLabelIdx, wordNode.getTypeIdxForLabelIdx(colorByLabelIdx, i));
+        fill(c.getRed(), c.getGreen(), c.getBlue());
+        rect(lastX, topY, (int)(nextX - lastX), dy);
+        lastX = (int)nextX;
+        nextX += ddx;
+      }
+      break;
+    default:
+      Color c = colorView.getColor(
+          colorByLabelIdx, wordNode.getTypeIdxForLabelIdx(colorByLabelIdx));
+      fill(c.getRed(), c.getGreen(), c.getBlue());
+      rect(topX, topY, dx, dy);
+      break;
+    }
   }
 
   public void controlEvent(ControlEvent theEvent) {

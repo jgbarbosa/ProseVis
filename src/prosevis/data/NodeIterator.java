@@ -49,7 +49,7 @@ public class NodeIterator<T extends AbstractWordNode> {
       itr = (HierNode)itr.getLastChild();
     }
 
-    WordNode lastWord = (WordNode) itr.getLastChild();
+    T lastWord = (T)itr.getLastChild();
     lastWord.setDisplayBreak(false);
   }
 }

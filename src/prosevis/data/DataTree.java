@@ -28,7 +28,6 @@ public class DataTree {
   private final int[] currIndices;
   private final int[] maxWords;
   private final int[] maxPhonemes;
-  private final boolean hasComparisonData;
   private HierNode head;
   private ImplicitWordNode currentWord;
   private final ArrayList<String> phonemeCode;
@@ -53,7 +52,6 @@ public class DataTree {
     maxPOSWidth = new double[ICon.MAX_DEPTH];
     nodeCount = new int[ICon.MAX_DEPTH];
     loaded = false;
-    hasComparisonData = false;
 
     phonemeCode = new ArrayList<String>();
     phoC1Code = new ArrayList<String>();
@@ -81,6 +79,10 @@ public class DataTree {
 
       // create a fresh color map, we'll merge it with existing maps later
       for (int i = TypeMap.kWordLabelIdx; i < columns.length; i++) {
+        if ("part_of_speech".equals(columns[i])) {
+          // hack, I think part_of_speech is rather long
+          columns[i] = "pos";
+        }
         typeMap.addLabel(columns[i], i);
       }
 
@@ -225,31 +227,23 @@ public class DataTree {
 
   private void processSyllable(String[] line, TypeMap typeMap) {
     // Clean-up for quotes around commas
-    if (line[ICon.WORD_IND].equals("\",\""))
-      line[ICon.WORD_IND] = ",";
+    if (line[TypeMap.kWordLabelIdx].equals("\",\""))
+      line[TypeMap.kWordLabelIdx] = ",";
 
-    // Parse phoneme into three components
-    String[] sylComp = ParsingTools.parsePhoneme(line[ICon.PHONEME_IND]);
-
-    int[] sAttributes = updateSylAttr(line, sylComp);
-
-    float[] prob = null;
-
-    if (hasComparisonData == true)
-      prob = ParsingTools.getProb(line);
+    Syllable s = buildSyllable(line, typeMap);
 
     // TODO(wiley) Aha! This adds syllables to duplicate words following each other, like "that that"
     // Does this syllable start a new word?
     String word = (currentWord == null)?null:typeMap.getTypeForIdx(TypeMap.kWordLabelIdx, currentWord.getTypeIdxForLabelIdx(TypeMap.kWordLabelIdx));
-    if (currentWord == null || !word.equals(line[ICon.WORD_IND])) {
+    if (currentWord == null || !word.equals(line[TypeMap.kWordLabelIdx])) {
 
       // Create new word
-      ImplicitWordNode newWord = buildWordNode(line, sAttributes, prob, typeMap);
+      ImplicitWordNode newWord = buildWordNode(line, s, typeMap);
 
       // Determine word, pos, and phoneme length
-      double wordWidth = getTextWidth(line[ICon.WORD_IND]);
-      double phonemeWidth = getTextWidth(line[ICon.PHONEME_IND]);
-      double posWidth = getTextWidth(line[ICon.POS_IND]);
+      double wordWidth = getTextWidth(line[TypeMap.kWordLabelIdx]);
+      double phonemeWidth = getTextWidth(line[TypeMap.kPhonemeIdx]);
+      double posWidth = getTextWidth(line[TypeMap.kPOSLabelIdx]);
 
       if (currentWord != null) {
         currentWord.setNext(newWord);
@@ -271,10 +265,10 @@ public class DataTree {
     } else {
 
       // Add syllable to the current word
-      currentWord.addSyllable(sAttributes, prob);
+      currentWord.addSyllable(s);
 
       // Determine word and phoneme length
-      double phonemeWidth = getTextWidth(line[ICon.PHONEME_IND]);
+      double phonemeWidth = getTextWidth(line[TypeMap.kPhonemeIdx]);
 
       // Increment phoneme count at each level
       for (int i = 0; i < currentElements.size(); i++) {
@@ -284,8 +278,8 @@ public class DataTree {
     }
   }
 
-  private ImplicitWordNode buildWordNode(String[] line, int[] sAttributes, float[] prob, TypeMap typeMap) {
-    ImplicitWordNode result = new ImplicitWordNode(sAttributes, prob);
+  private ImplicitWordNode buildWordNode(String[] line, Syllable s, TypeMap typeMap) {
+    ImplicitWordNode result = new ImplicitWordNode(line[TypeMap.kWordLabelIdx], s);
     for (int idx = TypeMap.kWordLabelIdx; idx < line.length; idx++) {
       int typeIdx = typeMap.getTypeIdx(idx, line[idx].toLowerCase());
       result.addLabelTypePair(idx, typeIdx);
@@ -356,44 +350,26 @@ public class DataTree {
   }
 
   // Update lists that are specific to the syllable
-  public int[] updateSylAttr(String[] line, String[] sylComp) {
+  public Syllable buildSyllable(String[] line, TypeMap typeMap) {
+    // Parse phoneme into three components
+    String[] sylComp = ParsingTools.parsePhoneme(line[TypeMap.kPhonemeIdx]);
+
     int[] attr = new int[5];
 
-    attr[0] = -1;
-    if (!line[ICon.STRESS_IND].equals("NULL")
-        && !line[ICon.STRESS_IND].equals("\"NULL\"")) {
-      try {
-        attr[0] = Integer.parseInt(line[ICon.STRESS_IND]);
-      } catch (NumberFormatException e) {
-        System.err.println("Error parsing syllable attributes, recovering.");
-      }
-    }
 
-    attr[1] = phonemeCode.indexOf(line[ICon.PHONEME_IND]);
-    if (attr[1] == -1) {
-      phonemeCode.add(line[ICon.PHONEME_IND]);
-      attr[1] = phonemeCode.size() - 1;
+    // this one is a little weird, because the field itself is actually an
+    // integer, or null, but we want to interpret it as a string
+    String stressType = line[TypeMap.kStressIdx].toLowerCase().replaceAll("\"", "");
+    if (stressType.isEmpty()) {
+      stressType = "null";
     }
+    attr[0] = typeMap.getTypeIdx(TypeMap.kStressIdx, stressType);
+    attr[1] = typeMap.getTypeIdx(TypeMap.kPhonemeIdx, line[TypeMap.kPhonemeIdx]);
+    attr[2] = typeMap.getTypeIdx(TypeMap.kPhonemeC1Idx, sylComp[0]);
+    attr[3] = typeMap.getTypeIdx(TypeMap.kPhonemeVIdx, sylComp[1]);
+    attr[4] = typeMap.getTypeIdx(TypeMap.kPhonemeC2Idx, sylComp[2]);
 
-    attr[2] = phoC1Code.indexOf(sylComp[0]);
-    if (attr[2] == -1) {
-      phoC1Code.add(sylComp[0]);
-      attr[2] = phoC1Code.size() - 1;
-    }
-
-    attr[3] = phoVCode.indexOf(sylComp[1]);
-    if (attr[3] == -1) {
-      phoVCode.add(sylComp[1]);
-      attr[3] = phoVCode.size() - 1;
-    }
-
-    attr[4] = phoC2Code.indexOf(sylComp[2]);
-    if (attr[4] == -1) {
-      phoC2Code.add(sylComp[2]);
-      attr[4] = phoC2Code.size() - 1;
-    }
-
-    return attr;
+    return new Syllable(attr);
   }
 
   public String getPath() {

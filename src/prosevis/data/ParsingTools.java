@@ -41,20 +41,6 @@ public abstract class ParsingTools {
     }
     return breakDown;
   }
-  
-  // Given a whole line of data, gives back the probability that this line is
-  // similar to each of the compared data sets
-  // assumes the original fixed set of comparison points
-  public static float[] getProb(String[] line) {
-    float[] prob = new float[ICon.MAX_PROB];
-    int end = line.length;
-    int start = end - ICon.MAX_PROB;
-
-    for (int itr = start, count = 0; itr < end; count++, itr++) {
-      prob[count] = Float.parseFloat(line[itr]);
-    }
-    return prob;
-  }
 
   public static boolean notPunct(String test) {
     String word = test.trim().toLowerCase();

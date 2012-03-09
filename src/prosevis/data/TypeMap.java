@@ -6,14 +6,33 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class TypeMap {
-  public static final int kSoundexIdx = 0;
+  // second consonant of the phoneme
+  public static final int kPhonemeC2Idx = -4;
+  // vowel of the phoneme
+  public static final int kPhonemeVIdx = -3;
+  // first consonant of the phoneme
+  public static final int kPhonemeC1Idx = -2;
   public static final int kNoLabelIdx = -1;
-  public static final int kPOSLabelIdx = 6;
+  // your guess is as good as mine
+  public static final int kSoundexIdx = 0;
   public static final int kWordLabelIdx = 5;
-  // not reall immutable, but nothing lasts forever
-  public static final String[] kPossibleColorByLabels = {"none", "word", "pos"};
-  public static final String[] kPossibleTextByLabels = {"none", "word", "pos"};
+  public static final int kPOSLabelIdx = 6;
+  public static final int kAccentIdx = 7;
+  // idx for the whole phoneme
+  public static final int kPhonemeIdx = 8;
+  public static final int kStressIdx = 9;
+  public static final int kToneIdx = 10;
   public static String kNoLabelLabel = "none";
+  public static String kPhonemeAllLabel = "sound";
+  public static String kPhonemeStartLabel = "sound-initial";
+  public static String kPhonemeVowelLabel = "sound-vowel";
+  public static String kPhonemeFinalLabel = "sound-final";
+
+  // not reall immutable, but nothing lasts forever
+  public static final String[] kPossibleColorByLabels = {"none", "stress", "pos", "tone", "accent", "soundex", "word", kPhonemeAllLabel, kPhonemeStartLabel, kPhonemeVowelLabel, kPhonemeFinalLabel};
+  public static final String[] kPossibleTextByLabels = {"none", "pos", "sound", "word"};
+  public static final int[] kSyllableTypes = {kPhonemeC2Idx, kPhonemeVIdx, kPhonemeC1Idx, kPhonemeIdx, kStressIdx};
+
   // maps from labels to labelIdx's
   private final Map<String, Integer> label2labelIdx = new HashMap<String, Integer>();
   // maps from labelIdx to individual mappings from types to typeIdx
@@ -21,8 +40,12 @@ public class TypeMap {
   // maps from labelIdx to Map<TypeIdx, Type>
   private final Map<Integer, Map<Integer, String>> typeIdx2type = new HashMap<Integer, Map<Integer, String>>();
   public TypeMap() {
-    addLabel("soundex", 0);
+    addLabel("soundex", kSoundexIdx);
     addLabel(kNoLabelLabel, kNoLabelIdx);
+    addLabel(kPhonemeAllLabel, kPhonemeIdx);
+    addLabel(kPhonemeStartLabel, kPhonemeC1Idx);
+    addLabel(kPhonemeVowelLabel, kPhonemeVIdx);
+    addLabel(kPhonemeFinalLabel, kPhonemeC2Idx);
   }
 
   public TypeMap(TypeMap other) {
