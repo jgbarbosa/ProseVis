@@ -59,11 +59,8 @@ public class ColorMap {
       Collection<Integer> types = typeMap.getTypeIdxsForLabel(labelIdx);
       if (types.size() != colors.size()) {
         colors.clear();
-//        final int steps = types.size() + 1;
-//        int i = 0;
         for (Integer typeIdx: types) {
           colors.put(typeIdx, Color.getHSBColor((float)Math.random(), 0.7f, 0.9f));
-//          i++;
         }
       }
     }

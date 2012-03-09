@@ -30,10 +30,6 @@ public class DataTree {
   private final int[] maxPhonemes;
   private HierNode head;
   private ImplicitWordNode currentWord;
-  private final ArrayList<String> phonemeCode;
-  private final ArrayList<String> phoC1Code;
-  private final ArrayList<String> phoVCode;
-  private final ArrayList<String> phoC2Code;
 
   // This is related to rendering and basically corresponds to the maximum width of
   // words/phonemes/parts of speech at each hierarchical level
@@ -52,11 +48,6 @@ public class DataTree {
     maxPOSWidth = new double[ICon.MAX_DEPTH];
     nodeCount = new int[ICon.MAX_DEPTH];
     loaded = false;
-
-    phonemeCode = new ArrayList<String>();
-    phoC1Code = new ArrayList<String>();
-    phoVCode = new ArrayList<String>();
-    phoC2Code = new ArrayList<String>();
   }
 
   public boolean load(File file, IProgressNotifiable prog, TypeMap typeMap) {
