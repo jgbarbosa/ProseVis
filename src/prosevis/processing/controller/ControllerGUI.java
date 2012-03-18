@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -89,12 +90,12 @@ public class ControllerGUI {
     frame.setBounds(100, 100, 693, 558);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    JTabbedPane dataPane = new JTabbedPane(JTabbedPane.TOP);
-    frame.getContentPane().add(dataPane, BorderLayout.CENTER);
+    JTabbedPane controllerTabGroup = new JTabbedPane(JTabbedPane.TOP);
+    frame.getContentPane().add(controllerTabGroup, BorderLayout.CENTER);
 
-    JPanel dataPaneSubPanel1 = new JPanel();
-    dataPane.addTab("Data", null, dataPaneSubPanel1, null);
-    dataPaneSubPanel1.setLayout(new FormLayout(new ColumnSpec[] {
+    JPanel dataPane = new JPanel();
+    controllerTabGroup.addTab("Data", null, dataPane, null);
+    dataPane.setLayout(new FormLayout(new ColumnSpec[] {
         FormFactory.RELATED_GAP_COLSPEC,
         ColumnSpec.decode("left:min"),
         FormFactory.RELATED_GAP_COLSPEC,
@@ -105,8 +106,8 @@ public class ControllerGUI {
         RowSpec.decode("default:grow"),
         FormFactory.RELATED_GAP_ROWSPEC,}));
 
-    JPanel dataPaneSubPanel2 = new JPanel();
-    dataPaneSubPanel1.add(dataPaneSubPanel2, "2, 2, left, fill");
+    JPanel dataPaneButtonPanel = new JPanel();
+    dataPane.add(dataPaneButtonPanel, "2, 2, left, fill");
 
     JLabel lblActions = new JLabel("Actions");
 
@@ -145,12 +146,12 @@ public class ControllerGUI {
       }
     });
 
-    GroupLayout gl_dataPaneSubPanel2 = new GroupLayout(dataPaneSubPanel2);
-    gl_dataPaneSubPanel2.setHorizontalGroup(
-      gl_dataPaneSubPanel2.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_dataPaneSubPanel2.createSequentialGroup()
+    GroupLayout gl_dataPaneButtonPanel = new GroupLayout(dataPaneButtonPanel);
+    gl_dataPaneButtonPanel.setHorizontalGroup(
+      gl_dataPaneButtonPanel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_dataPaneButtonPanel.createSequentialGroup()
           .addContainerGap()
-          .addGroup(gl_dataPaneSubPanel2.createParallelGroup(Alignment.LEADING)
+          .addGroup(gl_dataPaneButtonPanel.createParallelGroup(Alignment.LEADING)
             .addComponent(lblActions)
             .addComponent(btnAddFile)
             .addComponent(btnRemoveFiles)
@@ -159,9 +160,9 @@ public class ControllerGUI {
             .addComponent(lblProgress))
           .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
-    gl_dataPaneSubPanel2.setVerticalGroup(
-      gl_dataPaneSubPanel2.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_dataPaneSubPanel2.createSequentialGroup()
+    gl_dataPaneButtonPanel.setVerticalGroup(
+      gl_dataPaneButtonPanel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_dataPaneButtonPanel.createSequentialGroup()
           .addComponent(lblActions)
           .addGap(18)
           .addComponent(btnAddFile)
@@ -175,10 +176,10 @@ public class ControllerGUI {
           .addComponent(lblProgress)
           .addContainerGap(298, Short.MAX_VALUE))
     );
-    dataPaneSubPanel2.setLayout(gl_dataPaneSubPanel2);
+    dataPaneButtonPanel.setLayout(gl_dataPaneButtonPanel);
 
     JScrollPane dataPaneFilePanel = new JScrollPane();
-    dataPaneSubPanel1.add(dataPaneFilePanel, "4, 2, fill, fill");
+    dataPane.add(dataPaneFilePanel, "4, 2, fill, fill");
 
     dataPaneFilePanel.setViewportView(list);
 
@@ -186,10 +187,10 @@ public class ControllerGUI {
     dataPaneFilePanel.setColumnHeaderView(lblFiles);
 
     JPanel navigationPane = new JPanel();
-    dataPane.addTab("Navigation", null, navigationPane, null);
+    controllerTabGroup.addTab("Navigation", null, navigationPane, null);
 
     JPanel renderPane = new JPanel();
-    dataPane.addTab("Render", null, renderPane, null);
+    controllerTabGroup.addTab("Render", null, renderPane, null);
     GridBagLayout gbl_renderPane = new GridBagLayout();
     gbl_renderPane.columnWidths = new int[]{0, 0, 0, 0};
     gbl_renderPane.rowHeights = new int[]{0, 0, 0, 0, 0};
@@ -267,6 +268,36 @@ public class ControllerGUI {
     textByConstraints.gridx = 2;
     textByConstraints.gridy = 3;
     renderPane.add(textByDropdown, textByConstraints);
+
+    JPanel colorPane = new JPanel();
+    controllerTabGroup.addTab("Color", null, colorPane, null);
+    colorPane.setLayout(new GridLayout(2, 1, 0, 0));
+
+    JPanel colorTop = new JPanel();
+    GridBagConstraints gbc_colorTop = new GridBagConstraints();
+    gbc_colorTop.anchor = GridBagConstraints.EAST;
+    gbc_colorTop.insets = new Insets(0, 0, 0, 5);
+    gbc_colorTop.gridx = 1;
+    gbc_colorTop.gridy = 1;
+    colorPane.add(colorTop, gbc_colorTop);
+    colorTop.setLayout(new GridLayout(1, 0, 0, 0));
+
+    JPanel colorTopLeft = new JPanel();
+    colorTop.add(colorTopLeft);
+
+    JList colorSchemes = new JList();
+    colorTopLeft.add(list_1);
+
+    JPanel colorTopRight = new JPanel();
+    colorTop.add(colorTopRight);
+
+    JPanel colorBottom = new JPanel();
+    GridBagConstraints colorBottomConstraints = new GridBagConstraints();
+    colorBottomConstraints.anchor = GridBagConstraints.EAST;
+    colorBottomConstraints.insets = new Insets(0, 0, 0, 5);
+    colorBottomConstraints.gridx = 1;
+    colorBottomConstraints.gridy = 2;
+    colorPane.add(colorBottom, colorBottomConstraints);
   }
 
   public void go() {
