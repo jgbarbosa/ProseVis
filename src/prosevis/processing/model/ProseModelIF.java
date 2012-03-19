@@ -32,4 +32,6 @@ public interface ProseModelIF {
   void setColorBy(String labelStr);
 
   ColorView getColorView();
+
+  void setTextBy(String labelStr);
 }

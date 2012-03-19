@@ -69,7 +69,7 @@ public class DataTree {
       String[] columns  = line.split("\t");
 
       // create a fresh color map, we'll merge it with existing maps later
-      for (int i = TypeMap.kWordLabelIdx; i < columns.length; i++) {
+      for (int i = TypeMap.kWordIdx; i < columns.length; i++) {
         if ("part_of_speech".equals(columns[i])) {
           // hack, I think part_of_speech is rather long
           columns[i] = "pos";
@@ -218,21 +218,21 @@ public class DataTree {
 
   private void processSyllable(String[] line, TypeMap typeMap) {
     // Clean-up for quotes around commas
-    if (line[TypeMap.kWordLabelIdx].equals("\",\""))
-      line[TypeMap.kWordLabelIdx] = ",";
+    if (line[TypeMap.kWordIdx].equals("\",\""))
+      line[TypeMap.kWordIdx] = ",";
 
     Syllable s = buildSyllable(line, typeMap);
 
     // TODO(wiley) Aha! This adds syllables to duplicate words following each other, like "that that"
     // Does this syllable start a new word?
-    String word = (currentWord == null)?null:typeMap.getTypeForIdx(TypeMap.kWordLabelIdx, currentWord.getTypeIdxForLabelIdx(TypeMap.kWordLabelIdx));
-    if (currentWord == null || !word.equals(line[TypeMap.kWordLabelIdx])) {
+    String word = (currentWord == null)?null:typeMap.getTypeForIdx(TypeMap.kWordIdx, currentWord.getTypeIdxForLabelIdx(TypeMap.kWordIdx));
+    if (currentWord == null || !word.equals(line[TypeMap.kWordIdx])) {
 
       // Create new word
       ImplicitWordNode newWord = buildWordNode(line, s, typeMap);
 
       // Determine word, pos, and phoneme length
-      double wordWidth = getTextWidth(line[TypeMap.kWordLabelIdx]);
+      double wordWidth = getTextWidth(line[TypeMap.kWordIdx]);
       double phonemeWidth = getTextWidth(line[TypeMap.kPhonemeIdx]);
       double posWidth = getTextWidth(line[TypeMap.kPOSLabelIdx]);
 
@@ -270,13 +270,13 @@ public class DataTree {
   }
 
   private ImplicitWordNode buildWordNode(String[] line, Syllable s, TypeMap typeMap) {
-    ImplicitWordNode result = new ImplicitWordNode(line[TypeMap.kWordLabelIdx], s);
-    for (int idx = TypeMap.kWordLabelIdx; idx < line.length; idx++) {
+    ImplicitWordNode result = new ImplicitWordNode(line[TypeMap.kWordIdx], s);
+    for (int idx = TypeMap.kWordIdx; idx < line.length; idx++) {
       int typeIdx = typeMap.getTypeIdx(idx, line[idx].toLowerCase());
       result.addLabelTypePair(idx, typeIdx);
     }
 
-    String moddedWord = line[TypeMap.kWordLabelIdx];
+    String moddedWord = line[TypeMap.kWordIdx];
     if (moddedWord.isEmpty()) {
       moddedWord = ",";
     }

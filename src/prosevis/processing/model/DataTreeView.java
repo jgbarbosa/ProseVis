@@ -11,7 +11,7 @@ public class DataTreeView {
   private boolean needsRender = true;
   private int currentFontSize = 14;
   private int colorByLabelIdx = TypeMap.kNoLabelIdx;
-  private int textByLabelIdx = TypeMap.kWordLabelIdx;
+  private int textByLabelIdx = TypeMap.kWordIdx;
   public static final double SCROLL_TOP = 1.0;
   public static final double SCROLL_BOTTOM = 0.0;
   private static final double SCROLL_MULTIPLIER = 1.0;
@@ -138,6 +138,7 @@ public class DataTreeView {
 
   public synchronized void setTextBy(int labelIdx) {
     textByLabelIdx = labelIdx;
+    this.needsRender = true;
   }
 
   public synchronized int getTextBy() {

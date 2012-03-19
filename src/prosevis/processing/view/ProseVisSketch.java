@@ -236,7 +236,7 @@ public class ProseVisSketch extends PApplet {
     // for instance, if we're rendering words, we'll get the idx for the word field
     final int renderTextByLabelIdx = dataTreeView.getTextBy();
     final int colorByLabelIdx = dataTreeView.getColorBy();
-
+    final StringBuilder tmp = new StringBuilder();
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
       NodeIterator<ImplicitWordNode> words = new NodeIterator<ImplicitWordNode>(lineNode);
@@ -247,15 +247,27 @@ public class ProseVisSketch extends PApplet {
       }
       renderedWidth = 0;
       while (wordNode != null) {
-        renderedText = colorView.getType(renderTextByLabelIdx, wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx));
-        final float wordWidth = textWidth(renderedText);
-        if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
-          colorBackground(colorByLabelIdx, colorView, wordNode, (int)renderedWidth + minX, renderedHeight + minY + dLine, (int)wordWidth, lineHeight - dLine);
+        if (renderTextByLabelIdx == TypeMap.kNoLabelIdx) {
+          renderedText = "        ";
+        } else if (renderTextByLabelIdx == TypeMap.kPhonemeIdx) {
+          final int phonemeCount = wordNode.getSyllableCount();
+          tmp.setLength(0);
+          for (int i = 0; i < phonemeCount; i++) {
+            tmp.append(colorView.getType(renderTextByLabelIdx, wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx, i)));
+            tmp.append(' ');
+          }
+          renderedText = tmp.toString();
+        } else {
+          renderedText = colorView.getType(renderTextByLabelIdx, wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx));
         }
+        final float wordWidth = textWidth(renderedText);
         if (wordWidth + renderedWidth > viewWidth) {
           // garbage collect the page breaks
           words.clearDisplayBreak();
           break;
+        }
+        if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
+          colorBackground(colorByLabelIdx, colorView, wordNode, (int)renderedWidth + minX, renderedHeight + minY + dLine, (int)wordWidth, lineHeight - dLine);
         }
         lineBuffer.append(renderedText);
         lineBuffer.append(' ');

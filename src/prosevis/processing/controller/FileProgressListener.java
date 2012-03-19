@@ -12,13 +12,13 @@ import prosevis.processing.model.ProseModelIF;
 
 public class FileProgressListener implements WindowStateListener {
   private final ProseModelIF model;
-  private final FileListModel fileList;
+  private final StringListModel fileList;
   private final JLabel progressLabel;
   private final JButton addBtn;
   private final StringListModel colorByModel;
   private final StringListModel textByModel;
 
-  public FileProgressListener(ProseModelIF model, FileListModel fileListModel, JLabel progressLabel, JButton btnAddFile, StringListModel colorByModel, StringListModel textByModel) {
+  public FileProgressListener(ProseModelIF model, StringListModel fileListModel, JLabel progressLabel, JButton btnAddFile, StringListModel colorByModel, StringListModel textByModel) {
     this.model = model;
     this.fileList = fileListModel;
     this.progressLabel = progressLabel;

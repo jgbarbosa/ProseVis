@@ -15,7 +15,7 @@ public class TypeMap {
   public static final int kNoLabelIdx = -1;
   // your guess is as good as mine
   public static final int kSoundexIdx = 0;
-  public static final int kWordLabelIdx = 5;
+  public static final int kWordIdx = 5;
   public static final int kPOSLabelIdx = 6;
   public static final int kAccentIdx = 7;
   // idx for the whole phoneme

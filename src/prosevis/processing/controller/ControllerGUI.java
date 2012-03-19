@@ -8,11 +8,7 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.ArrayList;
 
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -24,8 +20,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
@@ -75,17 +69,18 @@ public class ControllerGUI {
     colorByModel.addItem(TypeMap.kNoLabelLabel);
     StringListModel textByModel = new StringListModel();
     textByModel.addItem(TypeMap.kNoLabelLabel);
+    textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
 
 
     JList list = new JList();
-    final FileListModel listModel = new FileListModel();
-    list.setModel(listModel);
+    final StringListModel fileListModel = new StringListModel();
+    list.setModel(fileListModel);
     JLabel lblProgress = new JLabel("");
     final JButton btnAddFile = new JButton("Add File");
 
     frame = new JFrame();
     FileProgressListener fplistener =
-        new FileProgressListener(theModel, listModel, lblProgress, btnAddFile, colorByModel, textByModel);
+        new FileProgressListener(theModel, fileListModel, lblProgress, btnAddFile, colorByModel, textByModel);
     frame.addWindowStateListener(fplistener);
     frame.setBounds(100, 100, 693, 558);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -107,7 +102,7 @@ public class ControllerGUI {
         FormFactory.RELATED_GAP_ROWSPEC,}));
 
     JPanel dataPaneButtonPanel = new JPanel();
-    dataPane.add(dataPaneButtonPanel, "2, 2, left, fill");
+    dataPane.add(dataPaneButtonPanel, "2, 2, left, top");
 
     JLabel lblActions = new JLabel("Actions");
 
@@ -125,7 +120,7 @@ public class ControllerGUI {
     btnRemoveFiles.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.out.println("Removing files from Jlist");
+        System.out.println("Not implemented: remove file");
       }
     });
 
@@ -134,7 +129,7 @@ public class ControllerGUI {
       @Override
       public void actionPerformed(ActionEvent e) {
         theModel.removeAllData();
-        listModel.refresh(theModel.getFileList());
+        fileListModel.refresh(theModel.getFileList());
       }
     });
 
@@ -142,7 +137,7 @@ public class ControllerGUI {
     btnMoveToTop.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.out.println("Moving selected files to top.");
+        System.out.println("Not implemented: move to top");
       }
     });
 
@@ -262,7 +257,17 @@ public class ControllerGUI {
     gbc_lblText.gridy = 3;
     renderPane.add(lblText, gbc_lblText);
 
-    JComboBox textByDropdown = new JComboBox();
+    JComboBox textByDropdown = new JComboBox(textByModel);
+    textByDropdown.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        JComboBox cb = (JComboBox)e.getSource();
+        String labelStr = (String)cb.getSelectedItem();
+        theModel.setTextBy(labelStr);
+      }
+    });
+
+    colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
     GridBagConstraints textByConstraints = new GridBagConstraints();
     textByConstraints.anchor = GridBagConstraints.WEST;
     textByConstraints.gridx = 2;
@@ -280,16 +285,6 @@ public class ControllerGUI {
     gbc_colorTop.gridx = 1;
     gbc_colorTop.gridy = 1;
     colorPane.add(colorTop, gbc_colorTop);
-    colorTop.setLayout(new GridLayout(1, 0, 0, 0));
-
-    JPanel colorTopLeft = new JPanel();
-    colorTop.add(colorTopLeft);
-
-    JList colorSchemes = new JList();
-    colorTopLeft.add(list_1);
-
-    JPanel colorTopRight = new JPanel();
-    colorTop.add(colorTopRight);
 
     JPanel colorBottom = new JPanel();
     GridBagConstraints colorBottomConstraints = new GridBagConstraints();
@@ -298,6 +293,81 @@ public class ControllerGUI {
     colorBottomConstraints.gridx = 1;
     colorBottomConstraints.gridy = 2;
     colorPane.add(colorBottom, colorBottomConstraints);
+
+    colorTop.setLayout(new FormLayout(new ColumnSpec[] {
+        FormFactory.RELATED_GAP_COLSPEC,
+        ColumnSpec.decode("left:min"),
+        FormFactory.RELATED_GAP_COLSPEC,
+        ColumnSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_COLSPEC,},
+      new RowSpec[] {
+        FormFactory.RELATED_GAP_ROWSPEC,
+        RowSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_ROWSPEC,}));
+
+    JPanel colorTopButtons = new JPanel();
+    colorTop.add(colorTopButtons, "2, 2, left, top");
+    GridBagLayout gbl_colorTopButtons = new GridBagLayout();
+    gbl_colorTopButtons.columnWidths = new int[]{0, 0};
+    gbl_colorTopButtons.rowHeights = new int[]{0, 0, 0};
+    gbl_colorTopButtons.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+    gbl_colorTopButtons.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+    colorTopButtons.setLayout(gbl_colorTopButtons);
+
+    JLabel lblNewLabel = new JLabel("  Actions:  ");
+    GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+    gbc_lblNewLabel.insets = new Insets(0, 0, 5, 0);
+    gbc_lblNewLabel.gridx = 0;
+    gbc_lblNewLabel.gridy = 0;
+    colorTopButtons.add(lblNewLabel, gbc_lblNewLabel);
+
+    JScrollPane colorTopSchemasPanel = new JScrollPane();
+    JLabel lblSchemas = new JLabel("Color Schemes:");
+    colorTopSchemasPanel.setColumnHeaderView(lblSchemas);
+
+    final JList colorTopSchemasList = new JList();
+    colorTopSchemasList.setModel(new StringListModel());
+    colorTopSchemasPanel.add(colorTopSchemasList);
+    colorTop.add(colorTopSchemasPanel, "4, 2, fill, fill");
+
+    JButton btnLoadScheme = new JButton("Load scheme");
+    btnLoadScheme.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        System.err.println("not implemented: load scheme");
+      }
+    });
+
+    JButton btnRemoveScheme = new JButton("Remove scheme");
+    btnRemoveScheme.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        System.err.println("not implemented: remove scheme");
+      }
+    });
+
+    JButton btnSaveScheme = new JButton("Save scheme");
+    btnSaveScheme.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        System.err.println("not implemented: save scheme");
+      }
+    });
+
+    GridBagConstraints gbc_btnSaveScheme = new GridBagConstraints();
+    GridBagConstraints gbc_btnRemoveScheme = new GridBagConstraints();
+    GridBagConstraints gbc_btnLoadScheme = new GridBagConstraints();
+    gbc_btnLoadScheme.gridx = 0;
+    gbc_btnLoadScheme.gridy = 1;
+    gbc_btnSaveScheme.gridx = 0;
+    gbc_btnSaveScheme.gridy = 2;
+    gbc_btnRemoveScheme.gridx = 0;
+    gbc_btnRemoveScheme.gridy = 3;
+    colorTopButtons.add(btnLoadScheme, gbc_btnLoadScheme);
+    colorTopButtons.add(btnSaveScheme, gbc_btnSaveScheme);
+    colorTopButtons.add(btnRemoveScheme, gbc_btnRemoveScheme);
+
+
   }
 
   public void go() {
@@ -305,82 +375,3 @@ public class ControllerGUI {
   }
 }
 
-class StringListModel implements ComboBoxModel<String> {
-  private final ArrayList<String> labels = new ArrayList<String>();
-  private final ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
-  private int selectedIdx = -1;
-  @Override
-  public void addListDataListener(ListDataListener l) {
-    listeners.add(l);
-  }
-
-  @Override
-  public String getElementAt(int index) {
-    return labels.get(index);
-  }
-
-  @Override
-  public int getSize() {
-    return labels.size();
-  }
-
-  @Override
-  public void removeListDataListener(ListDataListener l) {
-    listeners.remove(l);
-  }
-
-  @Override
-  public Object getSelectedItem() {
-    return (selectedIdx == -1)?null:labels.get(selectedIdx);
-  }
-
-  @Override
-  public void setSelectedItem(Object anItem) {
-    if (!(anItem instanceof String)) {
-      return;
-    }
-    String str = (String)anItem;
-    for (int i = 0; i < labels.size(); i++) {
-      if (str.equals(labels.get(i))) {
-        selectedIdx = i;
-        return;
-      }
-    }
-  }
-
-  public void addItem(String item) {
-    if (!labels.contains(item)) {
-      labels.add(item);
-      for (ListDataListener l: this.listeners) {
-        l.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, labels.size() - 1, labels.size()));
-      }
-    }
-  }
-}
-
-class FileListModel extends AbstractListModel {
-  private static final long serialVersionUID = 8940049949482647158L;
-  private final ArrayList<String> files = new ArrayList<String>();
-
-  @Override
-  public String getElementAt(int index) {
-    String fullPath = files.get(index);
-    return fullPath.substring(fullPath.lastIndexOf(File.pathSeparator) + 1);
-  }
-
-  @Override
-  public int getSize() {
-    return files.size();
-  }
-
-  public void addFile(String fullPath) {
-    files.add(fullPath);
-    this.fireContentsChanged(this, files.size() - 1, files.size() - 1);
-  }
-
-  public void refresh(ArrayList<String> fileList) {
-    files.clear();
-    files.addAll(fileList);
-    fireContentsChanged(this, 0, files.size() - 1);
-  }
-}

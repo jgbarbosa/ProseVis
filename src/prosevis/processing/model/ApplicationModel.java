@@ -16,6 +16,7 @@ public class ApplicationModel implements ProseModelIF {
   private int zoomLevel = 14 * ZOOM_SENSITIVITY;
   private int colorByLabelIdx = TypeMap.kNoLabelIdx;
   private final ColorMap colorDB = new ColorMap();
+  private int textByLabelIdx = TypeMap.kWordIdx;
 
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#addData(prosevis.data.DataTree)
@@ -111,5 +112,14 @@ public class ApplicationModel implements ProseModelIF {
   @Override
   public synchronized ColorView getColorView() {
     return colorDB.getColorView();
+  }
+
+  @Override
+  public synchronized void setTextBy(String label) {
+    int labelIdx = colorDB.getLabelIdx(label);
+    for (DataTreeView view : data) {
+      view.setTextBy(labelIdx);
+    }
+    textByLabelIdx  = labelIdx;
   }
 }
