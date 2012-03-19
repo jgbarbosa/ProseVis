@@ -8,7 +8,9 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -16,6 +18,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -23,6 +26,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
+import prosevis.processing.model.ColorScheme;
 import prosevis.processing.model.DataTreeView.RenderBy;
 import prosevis.processing.model.ProseModelIF;
 
@@ -65,16 +69,16 @@ public class ControllerGUI {
    * Initialize the contents of the frame.
    */
   private void initialize() {
-    StringListModel colorByModel = new StringListModel();
-    colorByModel.addItem(TypeMap.kNoLabelLabel);
-    StringListModel textByModel = new StringListModel();
-    textByModel.addItem(TypeMap.kNoLabelLabel);
+    DefaultComboBoxModel<String> colorByModel = new DefaultComboBoxModel<String>();
+    colorByModel.addElement(TypeMap.kNoLabelLabel);
+    DefaultComboBoxModel<String> textByModel = new DefaultComboBoxModel<String>();
+    textByModel.addElement(TypeMap.kNoLabelLabel);
     textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
 
 
-    JList list = new JList();
-    final StringListModel fileListModel = new StringListModel();
-    list.setModel(fileListModel);
+    JList fileList = new JList();
+    final DefaultComboBoxModel<String> fileListModel = new DefaultComboBoxModel<String>();
+    fileList.setModel(fileListModel);
     JLabel lblProgress = new JLabel("");
     final JButton btnAddFile = new JButton("Add File");
 
@@ -129,7 +133,10 @@ public class ControllerGUI {
       @Override
       public void actionPerformed(ActionEvent e) {
         theModel.removeAllData();
-        fileListModel.refresh(theModel.getFileList());
+        fileListModel.removeAllElements();
+        for (String s : theModel.getFileList()) {
+          fileListModel.addElement(s);
+        }
       }
     });
 
@@ -176,7 +183,7 @@ public class ControllerGUI {
     JScrollPane dataPaneFilePanel = new JScrollPane();
     dataPane.add(dataPaneFilePanel, "4, 2, fill, fill");
 
-    dataPaneFilePanel.setViewportView(list);
+    dataPaneFilePanel.setViewportView(fileList);
 
     JLabel lblFiles = new JLabel("Files");
     dataPaneFilePanel.setColumnHeaderView(lblFiles);
@@ -202,7 +209,7 @@ public class ControllerGUI {
     gbc_lblLineBreaksBy.gridy = 1;
     renderPane.add(lblLineBreaksBy, gbc_lblLineBreaksBy);
 
-    JComboBox breakLineByDropdown = new JComboBox();
+    JComboBox<String> breakLineByDropdown = new JComboBox<String>();
     for (RenderBy breakType : RenderBy.values()){
       breakLineByDropdown.addItem(breakType.toString().toLowerCase());
     }
@@ -210,7 +217,7 @@ public class ControllerGUI {
     breakLineByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
+        JComboBox<String> cb = (JComboBox<String>)e.getSource();
         String typeStr = (String)cb.getSelectedItem();
         theModel.setBreakLevel(RenderBy.valueOf(typeStr.toUpperCase()));
       }
@@ -231,7 +238,7 @@ public class ControllerGUI {
     gbc_lblColorBy.gridy = 2;
     renderPane.add(lblColorBy, gbc_lblColorBy);
 
-    JComboBox colorByDropdown = new JComboBox(colorByModel);
+    JComboBox<String> colorByDropdown = new JComboBox<String>(colorByModel);
     colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
     colorByDropdown.addActionListener(new ActionListener() {
       @Override
@@ -307,34 +314,36 @@ public class ControllerGUI {
 
     JPanel colorTopButtons = new JPanel();
     colorTop.add(colorTopButtons, "2, 2, left, top");
-    GridBagLayout gbl_colorTopButtons = new GridBagLayout();
-    gbl_colorTopButtons.columnWidths = new int[]{0, 0};
-    gbl_colorTopButtons.rowHeights = new int[]{0, 0, 0};
-    gbl_colorTopButtons.columnWeights = new double[]{0.0, Double.MIN_VALUE};
-    gbl_colorTopButtons.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
-    colorTopButtons.setLayout(gbl_colorTopButtons);
 
     JLabel lblNewLabel = new JLabel("  Actions:  ");
-    GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-    gbc_lblNewLabel.insets = new Insets(0, 0, 5, 0);
-    gbc_lblNewLabel.gridx = 0;
-    gbc_lblNewLabel.gridy = 0;
-    colorTopButtons.add(lblNewLabel, gbc_lblNewLabel);
 
     JScrollPane colorTopSchemasPanel = new JScrollPane();
     JLabel lblSchemas = new JLabel("Color Schemes:");
     colorTopSchemasPanel.setColumnHeaderView(lblSchemas);
 
     final JList colorTopSchemasList = new JList();
-    colorTopSchemasList.setModel(new StringListModel());
-    colorTopSchemasPanel.add(colorTopSchemasList);
+    final DefaultComboBoxModel<String> colorTopSchemasListModel = new DefaultComboBoxModel<String>();
+    colorTopSchemasList.setModel(colorTopSchemasListModel);
+    colorTopSchemasPanel.setViewportView(colorTopSchemasList);
     colorTop.add(colorTopSchemasPanel, "4, 2, fill, fill");
-
     JButton btnLoadScheme = new JButton("Load scheme");
     btnLoadScheme.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.err.println("not implemented: load scheme");
+        File file = FileLoader.loadColorSchemeFile();
+        if (file == null) {
+          return;
+        }
+        try {
+          ColorScheme colorScheme = ColorScheme.loadFromFile(file);
+          theModel.addColorScheme(colorScheme);
+          colorTopSchemasListModel.removeAllElements();
+          for (String s: theModel.getColorSchemeList()) {
+            colorTopSchemasListModel.addElement(s);
+          }
+        } catch (InstantiationException e1) {
+          JOptionPane.showMessageDialog(frame, e1.getMessage());
+        }
       }
     });
 
@@ -342,7 +351,16 @@ public class ControllerGUI {
     btnRemoveScheme.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.err.println("not implemented: remove scheme");
+        String selectedItem = (String)colorTopSchemasListModel.getSelectedItem();
+        if (selectedItem == null) {
+          JOptionPane.showMessageDialog(frame, "Please select a color scheme to remove");
+          return;
+        }
+        theModel.removeColorScheme(selectedItem);
+        colorTopSchemasListModel.removeAllElements();
+        for (String s: theModel.getColorSchemeList()) {
+          colorTopSchemasListModel.addElement(s);
+        }
       }
     });
 
@@ -350,22 +368,42 @@ public class ControllerGUI {
     btnSaveScheme.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.err.println("not implemented: save scheme");
+        String selectedItem = (String)colorTopSchemasListModel.getSelectedItem();
+        if (selectedItem == null) {
+          JOptionPane.showMessageDialog(frame, "Please select a color scheme to save");
+          return;
+        }
+        ColorScheme colorScheme = theModel.getColorScheme(selectedItem);
+        colorScheme.saveToFile();
       }
     });
 
-    GridBagConstraints gbc_btnSaveScheme = new GridBagConstraints();
-    GridBagConstraints gbc_btnRemoveScheme = new GridBagConstraints();
-    GridBagConstraints gbc_btnLoadScheme = new GridBagConstraints();
-    gbc_btnLoadScheme.gridx = 0;
-    gbc_btnLoadScheme.gridy = 1;
-    gbc_btnSaveScheme.gridx = 0;
-    gbc_btnSaveScheme.gridy = 2;
-    gbc_btnRemoveScheme.gridx = 0;
-    gbc_btnRemoveScheme.gridy = 3;
-    colorTopButtons.add(btnLoadScheme, gbc_btnLoadScheme);
-    colorTopButtons.add(btnSaveScheme, gbc_btnSaveScheme);
-    colorTopButtons.add(btnRemoveScheme, gbc_btnRemoveScheme);
+    GroupLayout gl_colorTopButtons = new GroupLayout(colorTopButtons);
+    gl_colorTopButtons.setHorizontalGroup(
+      gl_colorTopButtons.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_colorTopButtons.createSequentialGroup()
+          .addContainerGap()
+          .addGroup(gl_colorTopButtons.createParallelGroup(Alignment.LEADING)
+            .addComponent(lblNewLabel)
+            .addComponent(btnLoadScheme)
+            .addComponent(btnSaveScheme)
+            .addComponent(btnRemoveScheme))
+          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+    gl_colorTopButtons.setVerticalGroup(
+      gl_colorTopButtons.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_colorTopButtons.createSequentialGroup()
+          .addContainerGap()
+          .addComponent(lblNewLabel)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(btnLoadScheme)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(btnSaveScheme)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(btnRemoveScheme)
+          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+    colorTopButtons.setLayout(gl_colorTopButtons);
 
 
   }

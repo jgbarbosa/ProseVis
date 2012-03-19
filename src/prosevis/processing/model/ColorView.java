@@ -9,6 +9,7 @@ public class ColorView {
 
   private final TypeMap typeMap;
   private final Map<Integer, Map<Integer, Color>> colorLookup;
+  private boolean isFirstRender = true;
 
   public ColorView(TypeMap typeMap, Map<Integer, Map<Integer, Color>> colorTable) {
     this.typeMap = typeMap;
@@ -20,6 +21,16 @@ public class ColorView {
   }
 
   public Color getColor(int labelIdx, int typeIdx) {
-    return colorLookup.get(labelIdx).get(typeIdx);
+    Map<Integer, Color> map = colorLookup.get(labelIdx);
+    if (map.containsKey(typeIdx)) {
+      return map.get(typeIdx);
+    }
+    return map.get(-1);
+  }
+
+  public boolean firstRenderSinceUpdate() {
+    boolean tmp = isFirstRender;
+    isFirstRender  = false;
+    return tmp;
   }
 }

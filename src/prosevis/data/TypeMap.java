@@ -139,7 +139,7 @@ public class TypeMap {
     return changed;
   }
 
-  public int getLabelIdx(String label) {
+  public Integer getLabelIdx(String label) {
     return label2labelIdx.get(label);
   }
 

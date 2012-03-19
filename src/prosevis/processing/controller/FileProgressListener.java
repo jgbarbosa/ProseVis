@@ -3,6 +3,7 @@ package prosevis.processing.controller;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 
@@ -12,13 +13,13 @@ import prosevis.processing.model.ProseModelIF;
 
 public class FileProgressListener implements WindowStateListener {
   private final ProseModelIF model;
-  private final StringListModel fileList;
+  private final DefaultComboBoxModel<String> fileList;
   private final JLabel progressLabel;
   private final JButton addBtn;
-  private final StringListModel colorByModel;
-  private final StringListModel textByModel;
+  private final DefaultComboBoxModel<String> colorByModel;
+  private final DefaultComboBoxModel<String> textByModel;
 
-  public FileProgressListener(ProseModelIF model, StringListModel fileListModel, JLabel progressLabel, JButton btnAddFile, StringListModel colorByModel, StringListModel textByModel) {
+  public FileProgressListener(ProseModelIF model, DefaultComboBoxModel<String> fileListModel, JLabel progressLabel, JButton btnAddFile, DefaultComboBoxModel<String> colorByModel, DefaultComboBoxModel<String> textByModel) {
     this.model = model;
     this.fileList = fileListModel;
     this.progressLabel = progressLabel;
@@ -38,16 +39,19 @@ public class FileProgressListener implements WindowStateListener {
         break;
       case FINISHED_SUCC:
         this.model.addData(fpe.getResult(), fpe.getResultingTypeMap());
-        fileList.refresh(model.getFileList());
+        fileList.removeAllElements();
+        for (String s: model.getFileList()) {
+          fileList.addElement(s);
+        }
         TypeMap typeMap = fpe.getResultingTypeMap();
         for (String l: TypeMap.kPossibleColorByLabels) {
           if (typeMap.hasLabel(l.toLowerCase())) {
-            colorByModel.addItem(l);
+            colorByModel.addElement(l);
           }
         }
         for (String l: TypeMap.kPossibleTextByLabels) {
           if (typeMap.hasLabel(l.toLowerCase())) {
-            textByModel.addItem(l);
+            textByModel.addElement(l);
           }
         }
 

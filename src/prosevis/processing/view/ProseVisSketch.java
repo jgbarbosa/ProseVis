@@ -97,6 +97,7 @@ public class ProseVisSketch extends PApplet {
   public void draw() {
     DataTreeView[] views = theModel.getRenderingData();
     ColorView colorView = theModel.getColorView();
+    boolean colorStateChanged = colorView.firstRenderSinceUpdate();
     final int viewHeight = VIEW_HEIGHT;
     final int viewWidth = (views.length < 1)
         ? VIEW_WIDTH
@@ -142,7 +143,7 @@ public class ProseVisSketch extends PApplet {
 
       }
       for (int i = 0 ; i < views.length; i++) {
-        if (views[i].getAndClearNeedsRender()) {
+        if (views[i].getAndClearNeedsRender() || colorStateChanged) {
           renderView(views[i], colorView, i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
         }
       }

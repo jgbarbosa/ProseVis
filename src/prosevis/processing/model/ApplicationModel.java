@@ -1,6 +1,7 @@
 package prosevis.processing.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import prosevis.data.DataTree;
 import prosevis.data.TypeMap;
@@ -17,6 +18,7 @@ public class ApplicationModel implements ProseModelIF {
   private int colorByLabelIdx = TypeMap.kNoLabelIdx;
   private final ColorMap colorDB = new ColorMap();
   private int textByLabelIdx = TypeMap.kWordIdx;
+  private final List<ColorScheme> colorSchemes = new ArrayList<ColorScheme>();
 
   /* (non-Javadoc)
    * @see prosevis.processing.ProseModelIF#addData(prosevis.data.DataTree)
@@ -121,5 +123,57 @@ public class ApplicationModel implements ProseModelIF {
       view.setTextBy(labelIdx);
     }
     textByLabelIdx  = labelIdx;
+  }
+
+  @Override
+  public synchronized void addColorScheme(ColorScheme colorScheme) {
+    if (!colorDB.addCustomColorScheme(colorScheme.getLabel(), colorScheme.getMapping())) {
+      return;
+    }
+    removeColorScheme(colorScheme.getLabel(), false);
+    colorSchemes.add(colorScheme);
+  }
+
+  private void removeColorScheme(String label, boolean replaceWithRandomColors) {
+    boolean foundScheme = false;
+    for (int i = 0; i < colorSchemes.size(); i++) {
+      if (colorSchemes.get(i).getLabel().equals(label)) {
+        colorSchemes.remove(i);
+        i--;
+        foundScheme = true;
+      }
+    }
+    if (!foundScheme) {
+      // don't want to drop the color pallette if we have this error
+      System.err.println("Tried to remove color scheme for label " + label + " but couldn't find it.");
+      return;
+    }
+    colorDB.dropColorsForLabel(label, replaceWithRandomColors);
+  }
+
+  @Override
+  public synchronized void removeColorScheme(String label) {
+    removeColorScheme(label, true);
+  }
+
+  @Override
+  public synchronized ArrayList<String> getColorSchemeList() {
+    ArrayList<String> labels = new ArrayList<String>();
+
+    for (ColorScheme colorScheme: colorSchemes) {
+      labels.add(colorScheme.getLabel());
+    }
+
+    return labels;
+  }
+
+  @Override
+  public synchronized ColorScheme getColorScheme(String label) {
+    for (ColorScheme colorScheme: colorSchemes) {
+      if (label.equals(colorScheme.getLabel())) {
+        return colorScheme;
+      }
+    }
+    return null;
   }
 }

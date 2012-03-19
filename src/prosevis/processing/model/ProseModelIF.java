@@ -34,4 +34,12 @@ public interface ProseModelIF {
   ColorView getColorView();
 
   void setTextBy(String labelStr);
+
+  void addColorScheme(ColorScheme colorScheme);
+
+  void removeColorScheme(String label);
+
+  ArrayList<String> getColorSchemeList();
+
+  ColorScheme getColorScheme(String label);
 }
