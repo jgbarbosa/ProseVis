@@ -32,6 +32,7 @@ public class TypeMap {
   public static final String[] kPossibleColorByLabels = {"none", "stress", "pos", "tone", "accent", "soundex", "word", kPhonemeAllLabel, kPhonemeStartLabel, kPhonemeVowelLabel, kPhonemeFinalLabel};
   public static final String[] kPossibleTextByLabels = {"none", "pos", "sound", "word"};
   public static final int[] kSyllableTypes = {kPhonemeC2Idx, kPhonemeVIdx, kPhonemeC1Idx, kPhonemeIdx, kStressIdx};
+  public static final int kMaxFields = 12;
 
   // maps from labels to labelIdx's
   private final Map<String, Integer> label2labelIdx = new HashMap<String, Integer>();

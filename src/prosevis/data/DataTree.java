@@ -271,7 +271,7 @@ public class DataTree {
 
   private ImplicitWordNode buildWordNode(String[] line, Syllable s, TypeMap typeMap) {
     ImplicitWordNode result = new ImplicitWordNode(line[TypeMap.kWordIdx], s);
-    for (int idx = TypeMap.kWordIdx; idx < line.length; idx++) {
+    for (int idx = TypeMap.kWordIdx; idx < TypeMap.kMaxFields; idx++) {
       int typeIdx = typeMap.getTypeIdx(idx, line[idx].toLowerCase());
       result.addLabelTypePair(idx, typeIdx);
     }
