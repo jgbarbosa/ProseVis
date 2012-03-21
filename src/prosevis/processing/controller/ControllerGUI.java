@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -20,8 +21,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import prosevis.data.TypeMap;
@@ -39,6 +42,7 @@ import com.jgoodies.forms.layout.RowSpec;
 public class ControllerGUI {
   private final ProseModelIF theModel;
   private JFrame frame;
+  private JTextField textField;
 
   /**
    * Launch the application.
@@ -190,6 +194,65 @@ public class ControllerGUI {
 
     JPanel navigationPane = new JPanel();
     controllerTabGroup.addTab("Navigation", null, navigationPane, null);
+
+    JLabel lblSearch = new JLabel("Search:");
+
+    textField = new JTextField();
+    textField.setColumns(10);
+
+    JRadioButton rdbtnWord = new JRadioButton("Word");
+
+    JRadioButton rdbtnPos = new JRadioButton("POS");
+
+    JRadioButton rdbtnSoundex = new JRadioButton("Soundex");
+
+    JRadioButton rdbtnSound = new JRadioButton("Sound");
+    ButtonGroup searchButtons = new ButtonGroup();
+    searchButtons.add(rdbtnWord);
+    searchButtons.add(rdbtnPos);
+    searchButtons.add(rdbtnSoundex);
+    searchButtons.add(rdbtnSound);
+
+    JComboBox comboBox = new JComboBox();
+    GroupLayout gl_navigationPane = new GroupLayout(navigationPane);
+    gl_navigationPane.setHorizontalGroup(
+      gl_navigationPane.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_navigationPane.createSequentialGroup()
+          .addContainerGap()
+          .addGroup(gl_navigationPane.createParallelGroup(Alignment.LEADING)
+            .addGroup(gl_navigationPane.createSequentialGroup()
+              .addComponent(rdbtnSound)
+              .addPreferredGap(ComponentPlacement.UNRELATED)
+              .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addComponent(rdbtnSoundex)
+            .addComponent(rdbtnPos)
+            .addComponent(rdbtnWord)
+            .addGroup(gl_navigationPane.createSequentialGroup()
+              .addComponent(lblSearch)
+              .addPreferredGap(ComponentPlacement.UNRELATED)
+              .addComponent(textField, GroupLayout.PREFERRED_SIZE, 131, GroupLayout.PREFERRED_SIZE)))
+          .addContainerGap(484, Short.MAX_VALUE))
+    );
+    gl_navigationPane.setVerticalGroup(
+      gl_navigationPane.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_navigationPane.createSequentialGroup()
+          .addContainerGap()
+          .addGroup(gl_navigationPane.createParallelGroup(Alignment.BASELINE)
+            .addComponent(lblSearch)
+            .addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(rdbtnWord)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(rdbtnPos)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(rdbtnSoundex)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addGroup(gl_navigationPane.createParallelGroup(Alignment.BASELINE)
+            .addComponent(rdbtnSound)
+            .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+          .addContainerGap(353, Short.MAX_VALUE))
+    );
+    navigationPane.setLayout(gl_navigationPane);
 
     JPanel renderPane = new JPanel();
     controllerTabGroup.addTab("Render", null, renderPane, null);
