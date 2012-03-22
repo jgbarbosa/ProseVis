@@ -218,6 +218,7 @@ public class DataTree {
     // Clean-up for quotes around commas
     if (line[TypeMap.kWordIdx].equals("\",\""))
       line[TypeMap.kWordIdx] = ",";
+    line[TypeMap.kWordIdx] = line[TypeMap.kWordIdx].toLowerCase();
 
     Syllable s = buildSyllable(line, typeMap);
 

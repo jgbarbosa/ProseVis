@@ -11,25 +11,21 @@ public class Searcher {
     if (lastResult != null) {
       lastResult.setIsSearchResult(false);
     }
-    boolean skipLastResult = false;
-    if (lineStart == lastResultLine) {
-      skipLastResult = true;
-    }
     while (lineStart.getFirstChild() != null && lineStart.getFirstChild().getFirstChild() != null) {
       lineStart = (HierNode)lineStart.getFirstChild();
     }
 
     ImplicitWordNode itr = (ImplicitWordNode)lineStart.getFirstChild();
 
+    if (lineStart == lastResultLine) {
+      itr = (ImplicitWordNode)lastResult.getNext();
+    }
+
     int i;
     boolean keepGoing = true;
     for ( ; itr != null && keepGoing; itr = (ImplicitWordNode)itr.getNext()) {
       for (i = 0; i < itr.getSyllableCount(); i++) {
         if (itr.getTypeIdxForLabelIdx(labelIdx, i) == typeIdx) {
-          if (skipLastResult && itr == lastResult) {
-            // this is not the result you're looking for :)
-            break;
-          }
           keepGoing = false;
           break;
         }
