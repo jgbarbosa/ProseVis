@@ -21,7 +21,8 @@ public class WordNode extends AbstractWordNode {
 
 	boolean displayBreak = false;
 
-	public WordNode(String word, POSType pos, int wordId, int accentId, int toneId, int soundexId, int[] sAttributes, float[] prob) {
+	public WordNode(ProseNode parent, String word, POSType pos, int wordId, int accentId, int toneId, int soundexId, int[] sAttributes, float[] prob) {
+	  super(parent);
 	    boolean notPunct = ParsingTools.notPunct(word);
 		this.syllables = new ArrayList<Syllable>();
 		this.theWord = word;
@@ -123,4 +124,9 @@ public class WordNode extends AbstractWordNode {
   public void setDisplayBreak(boolean displayBreak){
 		this.displayBreak = displayBreak;
 	}
+
+  @Override
+  public ProseNode getFirstChild() {
+    return null;
+  }
 }

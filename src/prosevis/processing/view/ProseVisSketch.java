@@ -144,6 +144,7 @@ public class ProseVisSketch extends PApplet {
       }
       for (int i = 0 ; i < views.length; i++) {
         if (views[i].getAndClearNeedsRender() || colorStateChanged) {
+          sliders.get(i).setValue((float)views[i].getScroll());
           renderView(views[i], colorView, i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
         }
       }

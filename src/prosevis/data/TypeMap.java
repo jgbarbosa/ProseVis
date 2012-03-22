@@ -77,13 +77,21 @@ public class TypeMap {
       }
   }
 
-  public int getTypeIdx(int labelIdx, String type) {
+  public int getOrAddTypeIdx(int labelIdx, String type) {
     Map<String, Integer> t2tI = type2typeIdx.get(labelIdx);
     if (!t2tI.containsKey(type)) {
       int typeIdx = t2tI.size();
       t2tI.put(type, typeIdx);
       Map<Integer, String> tI2t = typeIdx2type.get(labelIdx);
       tI2t.put(typeIdx, type);
+    }
+    return t2tI.get(type);
+  }
+
+  public int maybeGetTypeIdx(int labelIdx, String type) {
+    Map<String, Integer> t2tI = type2typeIdx.get(labelIdx);
+    if (!t2tI.containsKey(type)) {
+      return -1;
     }
     return t2tI.get(type);
   }

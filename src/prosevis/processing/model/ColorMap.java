@@ -77,7 +77,7 @@ public class ColorMap {
     return cachedColorView;
   }
 
-  public int getLabelIdx(String label) {
+  public Integer getLabelIdx(String label) {
     return typeMap.getLabelIdx(label);
   }
 
@@ -100,12 +100,16 @@ public class ColorMap {
     for (String typeLabel: colors.keySet()) {
       int typeIdx = -1;
       if (!typeLabel.equals(ColorScheme.kDefaultLabel)) {
-        typeIdx = typeMap.getTypeIdx(labelIdx, typeLabel);
+        typeIdx = typeMap.getOrAddTypeIdx(labelIdx, typeLabel);
       }
       types2colors.put(typeIdx, colors.get(typeLabel));
     }
     customSchemes.put(labelIdx, types2colors);
     cacheValid = false;
     return true;
+  }
+
+  public int maybeGetTypeIdx(int labelIdx, String type) {
+    return typeMap.maybeGetTypeIdx(labelIdx, type);
   }
 }

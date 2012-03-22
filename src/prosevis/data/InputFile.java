@@ -199,7 +199,7 @@ public class InputFile {
       if (currIndex != currIndices[i]) {
 
         // Make structural changes at the depth that changed
-        newNode(i, true);
+        newNode((i == 0)?head:currElements.get(i - 1), i, true);
 
         // Update depth information to detect future changes
         for (int j = i; j < ICon.MAX_DEPTH; j++) {
@@ -234,7 +234,7 @@ public class InputFile {
     if (currWord == null || !currWord.getWord().equals(line[ICon.WORD_IND])) {
 
       // Create new word
-      WordNode newWord = buildWordNode(line, sAttributes, prob);
+      WordNode newWord = buildWordNode(currElements.get(ICon.MAX_DEPTH - 1), line, sAttributes, prob);
 
       // Determine word, pos, and phoneme length
       double wordWidth = getTextWidth(line[ICon.WORD_IND]);
@@ -356,7 +356,7 @@ public class InputFile {
     return attr;
   }
   */
-  private WordNode buildWordNode(String[] line, int[] sAttributes, float[] prob) {
+  private WordNode buildWordNode(ProseNode parent, String[] line, int[] sAttributes, float[] prob) {
     String word = line[ICon.WORD_IND];
     POSType pos = POSType.fromString(line[ICon.POS_IND]);
 
@@ -389,7 +389,7 @@ public class InputFile {
     }
     int soundexId = soundIds.get(soundCode);
 
-    return new WordNode(word, pos, wordId, accentId, toneId, soundexId, sAttributes, prob);
+    return new WordNode(parent, word, pos, wordId, accentId, toneId, soundexId, sAttributes, prob);
   }
 
 
@@ -447,23 +447,19 @@ public class InputFile {
       maxPOSWidth[i] = 0.0;
       nodeCount[i] = 1;
     }
+    // no parent for the head
+    head = new HierNode(null, false, 1);
+    HierNode chap = new HierNode(head, false, 1);
+    HierNode sect = new HierNode(chap, false, 1);
+    HierNode para = new HierNode(sect, false, 1);
+    HierNode sent = new HierNode(para, false, 1);
+    HierNode phra = new HierNode(sent, true, 1);
 
-    HierNode phra = new HierNode(true, 1);
-
-    HierNode sent = new HierNode(false, 1);
-    sent.addChild(phra);
-
-    HierNode para = new HierNode(false, 1);
-    para.addChild(sent);
-
-    HierNode sect = new HierNode(false, 1);
-    sect.addChild(para);
-
-    HierNode chap = new HierNode(false, 1);
-    chap.addChild(sect);
-
-    head = new HierNode(false, 1);
     head.addChild(chap);
+    chap.addChild(sect);
+    sect.addChild(para);
+    para.addChild(sent);
+    sent.addChild(phra);
 
     firstElements.add(chap);
     firstElements.add(sect);
@@ -478,15 +474,15 @@ public class InputFile {
     currElements.add(phra);
   }
 
-  public HierNode newNode(int depth, boolean direct) {
+  public HierNode newNode(ProseNode parent, int depth, boolean direct) {
     HierNode node;
 
     nodeCount[depth]++;
     if (depth < ICon.MAX_DEPTH - 1) {
-      node = new HierNode(false, nodeCount[depth]);
-      node.addChild(newNode(depth + 1, false));
+      node = new HierNode(parent, false, nodeCount[depth]);
+      node.addChild(newNode(node, depth + 1, false));
     } else {
-      node = new HierNode(true, nodeCount[depth]);
+      node = new HierNode(parent, true, nodeCount[depth]);
     }
 
     if (direct) {

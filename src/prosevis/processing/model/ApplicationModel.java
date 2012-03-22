@@ -176,4 +176,26 @@ public class ApplicationModel implements ProseModelIF {
     }
     return null;
   }
+
+  @Override
+  public synchronized void searchForTerm(String searchTerm, String label, List<String> selectedFiles) {
+    Integer labelIdx = colorDB.getLabelIdx(label);
+    if (labelIdx == null) {
+      return;
+    }
+    int typeIdx = colorDB.maybeGetTypeIdx(labelIdx, searchTerm);
+    if (typeIdx < 0) {
+      // no such term exists in our data
+      return;
+    }
+    // look up datatreeviews with matching paths, and dispatch the search to them
+    for (String s: selectedFiles) {
+      for (DataTreeView v: data) {
+        if (v.getData().getPath().equals(s)) {
+          v.searchForTerm(typeIdx, labelIdx);
+          break;
+        }
+      }
+    }
+  }
 }

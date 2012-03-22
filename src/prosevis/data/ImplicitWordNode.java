@@ -13,8 +13,10 @@ public class ImplicitWordNode extends AbstractWordNode {
   private boolean displayBreak = false;
   private final ArrayList<Syllable> syllables = new ArrayList<Syllable>();
   private final boolean isPunctuation;
+  private boolean isSearchResult = false;
+  public ImplicitWordNode(ProseNode parent, String word, Syllable s) {
 
-  public ImplicitWordNode(String word, Syllable s) {
+    super(parent);
     syllables.add(s);
     isPunctuation = !ParsingTools.notPunct(word);
   }
@@ -70,4 +72,14 @@ public class ImplicitWordNode extends AbstractWordNode {
   public boolean isPunct() {
     return isPunctuation;
   }
+
+  @Override
+  public ProseNode getFirstChild() {
+    return null;
+  }
+
+  public void setIsSearchResult(boolean b) {
+    this.isSearchResult  = b;
+  }
+
 }

@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import prosevis.processing.controller.IProgressNotifiable;
+import prosevis.processing.model.DataTreeView.RenderBy;
 
 public class DataTree {
   // The first nodes at each level of the tree
@@ -149,22 +150,19 @@ public class DataTree {
       nodeCount[i] = 1;
     }
 
-    HierNode phra = new HierNode(true, 1);
+    // no parent for head naturally
+    head = new HierNode(null, false, 1);
+    HierNode chap = new HierNode(head, false, 1);
+    HierNode sect = new HierNode(chap, false, 1);
+    HierNode para = new HierNode(sect, false, 1);
+    HierNode sent = new HierNode(para, false, 1);
+    HierNode phra = new HierNode(sent, true, 1);
 
-    HierNode sent = new HierNode(false, 1);
-    sent.addChild(phra);
-
-    HierNode para = new HierNode(false, 1);
-    para.addChild(sent);
-
-    HierNode sect = new HierNode(false, 1);
-    sect.addChild(para);
-
-    HierNode chap = new HierNode(false, 1);
-    chap.addChild(sect);
-
-    head = new HierNode(false, 1);
     head.addChild(chap);
+    chap.addChild(sect);
+    sect.addChild(para);
+    para.addChild(sent);
+    sent.addChild(phra);
 
     firstElements.add(chap);
     firstElements.add(sect);
@@ -199,7 +197,7 @@ public class DataTree {
       // Check for a change at each depth
       if (currIndex != currIndices[i]) {
         // Make structural changes at the depth that changed
-        newNode(i, true);
+        newNode((i == 0)?head: currentElements.get(i - 1), i, true);
 
         // Update depth information to detect future changes
         for (int j = i; j < ICon.MAX_DEPTH; j++) {
@@ -213,10 +211,10 @@ public class DataTree {
     }
 
     // Process the line once structural changes are complete
-    processSyllable(line, typeMap);
+    processSyllable(currentElements.get(ICon.MAX_DEPTH - 1), line, typeMap);
   }
 
-  private void processSyllable(String[] line, TypeMap typeMap) {
+  private void processSyllable(ProseNode parent, String[] line, TypeMap typeMap) {
     // Clean-up for quotes around commas
     if (line[TypeMap.kWordIdx].equals("\",\""))
       line[TypeMap.kWordIdx] = ",";
@@ -229,7 +227,7 @@ public class DataTree {
     if (currentWord == null || !word.equals(line[TypeMap.kWordIdx])) {
 
       // Create new word
-      ImplicitWordNode newWord = buildWordNode(line, s, typeMap);
+      ImplicitWordNode newWord = buildWordNode(parent, line, s, typeMap);
 
       // Determine word, pos, and phoneme length
       double wordWidth = getTextWidth(line[TypeMap.kWordIdx]);
@@ -269,10 +267,10 @@ public class DataTree {
     }
   }
 
-  private ImplicitWordNode buildWordNode(String[] line, Syllable s, TypeMap typeMap) {
-    ImplicitWordNode result = new ImplicitWordNode(line[TypeMap.kWordIdx], s);
+  private ImplicitWordNode buildWordNode(ProseNode parent, String[] line, Syllable s, TypeMap typeMap) {
+    ImplicitWordNode result = new ImplicitWordNode(parent, line[TypeMap.kWordIdx], s);
     for (int idx = TypeMap.kWordIdx; idx < TypeMap.kMaxFields; idx++) {
-      int typeIdx = typeMap.getTypeIdx(idx, line[idx].toLowerCase());
+      int typeIdx = typeMap.getOrAddTypeIdx(idx, line[idx].toLowerCase());
       result.addLabelTypePair(idx, typeIdx);
     }
 
@@ -281,7 +279,7 @@ public class DataTree {
       moddedWord = ",";
     }
     String soundCode = ParsingTools.soundex(moddedWord);
-    int soundexTypeIdx = typeMap.getTypeIdx(TypeMap.kSoundexIdx, soundCode);
+    int soundexTypeIdx = typeMap.getOrAddTypeIdx(TypeMap.kSoundexIdx, soundCode);
     result.addLabelTypePair(TypeMap.kSoundexIdx, soundexTypeIdx);
 
     return result;
@@ -291,16 +289,16 @@ public class DataTree {
     // stub for now, we'll revisit this
     return 12 * (str.length() + 1) / 72.0;
   }
-  public HierNode newNode(int depth, boolean direct) {
+  public HierNode newNode(ProseNode parent, int depth, boolean direct) {
     HierNode node;
     nodeCount[depth]++;
 
 
     if (depth < ICon.MAX_DEPTH - 1) {
-      node = new HierNode(false, nodeCount[depth]);
-      node.addChild(newNode(depth + 1, false));
+      node = new HierNode(parent, false, nodeCount[depth]);
+      node.addChild(newNode(node, depth + 1, false));
     } else {
-      node = new HierNode(true, nodeCount[depth]);
+      node = new HierNode(parent, true, nodeCount[depth]);
     }
 
     if (direct) {
@@ -354,11 +352,11 @@ public class DataTree {
     if (stressType.isEmpty()) {
       stressType = "null";
     }
-    attr[0] = typeMap.getTypeIdx(TypeMap.kStressIdx, stressType);
-    attr[1] = typeMap.getTypeIdx(TypeMap.kPhonemeIdx, line[TypeMap.kPhonemeIdx]);
-    attr[2] = typeMap.getTypeIdx(TypeMap.kPhonemeC1Idx, sylComp[0]);
-    attr[3] = typeMap.getTypeIdx(TypeMap.kPhonemeVIdx, sylComp[1]);
-    attr[4] = typeMap.getTypeIdx(TypeMap.kPhonemeC2Idx, sylComp[2]);
+    attr[0] = typeMap.getOrAddTypeIdx(TypeMap.kStressIdx, stressType);
+    attr[1] = typeMap.getOrAddTypeIdx(TypeMap.kPhonemeIdx, line[TypeMap.kPhonemeIdx]);
+    attr[2] = typeMap.getOrAddTypeIdx(TypeMap.kPhonemeC1Idx, sylComp[0]);
+    attr[3] = typeMap.getOrAddTypeIdx(TypeMap.kPhonemeVIdx, sylComp[1]);
+    attr[4] = typeMap.getOrAddTypeIdx(TypeMap.kPhonemeC2Idx, sylComp[2]);
 
     return new Syllable(attr);
   }
@@ -386,5 +384,21 @@ public class DataTree {
       throw new RuntimeException("Failed while looking up node");
     }
     return wrapper.result;
+  }
+
+  public int getNodeCount(RenderBy renderType) {
+    switch(renderType) {
+    case CHAPTER:
+      return nodeCount[0];
+    case SECTION:
+      return nodeCount[1];
+    case PARAGRAPH:
+      return nodeCount[2];
+    case SENTENCE:
+      return nodeCount[3];
+    case PHRASE:
+      return nodeCount[4];
+    }
+    return -1;
   }
 }

@@ -2,6 +2,8 @@ package prosevis.processing.controller;
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -13,15 +15,15 @@ import prosevis.processing.model.ProseModelIF;
 
 public class FileProgressListener implements WindowStateListener {
   private final ProseModelIF model;
-  private final DefaultComboBoxModel<String> fileList;
+  private final List<DefaultComboBoxModel<String>> fileLists = new ArrayList<DefaultComboBoxModel<String>>();
   private final JLabel progressLabel;
   private final JButton addBtn;
   private final DefaultComboBoxModel<String> colorByModel;
   private final DefaultComboBoxModel<String> textByModel;
 
-  public FileProgressListener(ProseModelIF model, DefaultComboBoxModel<String> fileListModel, JLabel progressLabel, JButton btnAddFile, DefaultComboBoxModel<String> colorByModel, DefaultComboBoxModel<String> textByModel) {
+  public FileProgressListener(ProseModelIF model, List<DefaultComboBoxModel<String>> models, JLabel progressLabel, JButton btnAddFile, DefaultComboBoxModel<String> colorByModel, DefaultComboBoxModel<String> textByModel) {
     this.model = model;
-    this.fileList = fileListModel;
+    this.fileLists.addAll(models);
     this.progressLabel = progressLabel;
     this.addBtn = btnAddFile;
     this.colorByModel = colorByModel;
@@ -39,9 +41,11 @@ public class FileProgressListener implements WindowStateListener {
         break;
       case FINISHED_SUCC:
         this.model.addData(fpe.getResult(), fpe.getResultingTypeMap());
-        fileList.removeAllElements();
-        for (String s: model.getFileList()) {
-          fileList.addElement(s);
+        for (DefaultComboBoxModel<String> list: fileLists) {
+          list.removeAllElements();
+          for (String s: model.getFileList()) {
+            list.addElement(s);
+          }
         }
         TypeMap typeMap = fpe.getResultingTypeMap();
         for (String l: TypeMap.kPossibleColorByLabels) {

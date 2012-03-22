@@ -9,6 +9,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -42,7 +44,6 @@ import com.jgoodies.forms.layout.RowSpec;
 public class ControllerGUI {
   private final ProseModelIF theModel;
   private JFrame frame;
-  private JTextField textField;
 
   /**
    * Launch the application.
@@ -79,16 +80,19 @@ public class ControllerGUI {
     textByModel.addElement(TypeMap.kNoLabelLabel);
     textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
 
-
-    JList fileList = new JList();
     final DefaultComboBoxModel<String> fileListModel = new DefaultComboBoxModel<String>();
-    fileList.setModel(fileListModel);
+    final DefaultComboBoxModel<String> searchListModel = new DefaultComboBoxModel<String>();
+    final List<DefaultComboBoxModel<String>> models = new ArrayList<DefaultComboBoxModel<String>>();
+    models.add(fileListModel);
+    models.add(searchListModel);
+    JList<String> dataFileList = new JList<String>();
+    dataFileList.setModel(fileListModel);
     JLabel lblProgress = new JLabel("");
     final JButton btnAddFile = new JButton("Add File");
 
     frame = new JFrame();
     FileProgressListener fplistener =
-        new FileProgressListener(theModel, fileListModel, lblProgress, btnAddFile, colorByModel, textByModel);
+        new FileProgressListener(theModel, models, lblProgress, btnAddFile, colorByModel, textByModel);
     frame.addWindowStateListener(fplistener);
     frame.setBounds(100, 100, 693, 558);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -187,59 +191,63 @@ public class ControllerGUI {
     JScrollPane dataPaneFilePanel = new JScrollPane();
     dataPane.add(dataPaneFilePanel, "4, 2, fill, fill");
 
-    dataPaneFilePanel.setViewportView(fileList);
+    dataPaneFilePanel.setViewportView(dataFileList);
 
     JLabel lblFiles = new JLabel("Files");
     dataPaneFilePanel.setColumnHeaderView(lblFiles);
 
-    JPanel navigationPane = new JPanel();
-    controllerTabGroup.addTab("Navigation", null, navigationPane, null);
+    final ButtonGroup searchButtons = new ButtonGroup();
+
+    JPanel searchButtonsPanel = new JPanel();
+    JRadioButton rdbtnSound = new JRadioButton("Sound");
+    rdbtnSound.setActionCommand("sound");
+    searchButtons.add(rdbtnSound);
+
+    final JComboBox<String> searchSoundOptions = new JComboBox<String>();
+    JRadioButton rdbtnSoundex = new JRadioButton("Soundex");
+    rdbtnSoundex.setActionCommand("soundex");
+    searchButtons.add(rdbtnSoundex);
+    JRadioButton rdbtnPos = new JRadioButton("POS");
+    rdbtnPos.setActionCommand("pos");
+    searchButtons.add(rdbtnPos);
+
+    JRadioButton rdbtnWord = new JRadioButton("Word", true);
+    rdbtnWord.setActionCommand("word");
+    searchButtons.add(rdbtnWord);
 
     JLabel lblSearch = new JLabel("Search:");
 
-    textField = new JTextField();
-    textField.setColumns(10);
+    final JTextField searchTermBox = new JTextField();
+    searchTermBox.setColumns(10);
 
-    JRadioButton rdbtnWord = new JRadioButton("Word");
-
-    JRadioButton rdbtnPos = new JRadioButton("POS");
-
-    JRadioButton rdbtnSoundex = new JRadioButton("Soundex");
-
-    JRadioButton rdbtnSound = new JRadioButton("Sound");
-    ButtonGroup searchButtons = new ButtonGroup();
-    searchButtons.add(rdbtnWord);
-    searchButtons.add(rdbtnPos);
-    searchButtons.add(rdbtnSoundex);
-    searchButtons.add(rdbtnSound);
-
-    JComboBox comboBox = new JComboBox();
-    GroupLayout gl_navigationPane = new GroupLayout(navigationPane);
-    gl_navigationPane.setHorizontalGroup(
-      gl_navigationPane.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_navigationPane.createSequentialGroup()
+    JButton btnNext = new JButton("Find Next");
+    GroupLayout gl_searchButtonsPanel = new GroupLayout(searchButtonsPanel);
+    gl_searchButtonsPanel.setHorizontalGroup(
+      gl_searchButtonsPanel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_searchButtonsPanel.createSequentialGroup()
           .addContainerGap()
-          .addGroup(gl_navigationPane.createParallelGroup(Alignment.LEADING)
-            .addGroup(gl_navigationPane.createSequentialGroup()
+          .addGroup(gl_searchButtonsPanel.createParallelGroup(Alignment.LEADING)
+            .addGroup(gl_searchButtonsPanel.createSequentialGroup()
               .addComponent(rdbtnSound)
               .addPreferredGap(ComponentPlacement.UNRELATED)
-              .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+              .addComponent(searchSoundOptions, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
             .addComponent(rdbtnSoundex)
             .addComponent(rdbtnPos)
-            .addComponent(rdbtnWord)
-            .addGroup(gl_navigationPane.createSequentialGroup()
+            .addGroup(gl_searchButtonsPanel.createSequentialGroup()
               .addComponent(lblSearch)
-              .addPreferredGap(ComponentPlacement.UNRELATED)
-              .addComponent(textField, GroupLayout.PREFERRED_SIZE, 131, GroupLayout.PREFERRED_SIZE)))
-          .addContainerGap(484, Short.MAX_VALUE))
+              .addPreferredGap(ComponentPlacement.RELATED)
+              .addComponent(searchTermBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addComponent(rdbtnWord)
+            .addComponent(btnNext))
+          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
-    gl_navigationPane.setVerticalGroup(
-      gl_navigationPane.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_navigationPane.createSequentialGroup()
-          .addContainerGap()
-          .addGroup(gl_navigationPane.createParallelGroup(Alignment.BASELINE)
+    gl_searchButtonsPanel.setVerticalGroup(
+      gl_searchButtonsPanel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_searchButtonsPanel.createSequentialGroup()
+          .addGap(5)
+          .addGroup(gl_searchButtonsPanel.createParallelGroup(Alignment.BASELINE)
             .addComponent(lblSearch)
-            .addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addComponent(searchTermBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
           .addPreferredGap(ComponentPlacement.UNRELATED)
           .addComponent(rdbtnWord)
           .addPreferredGap(ComponentPlacement.UNRELATED)
@@ -247,12 +255,57 @@ public class ControllerGUI {
           .addPreferredGap(ComponentPlacement.UNRELATED)
           .addComponent(rdbtnSoundex)
           .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addGroup(gl_navigationPane.createParallelGroup(Alignment.BASELINE)
+          .addGroup(gl_searchButtonsPanel.createParallelGroup(Alignment.BASELINE)
             .addComponent(rdbtnSound)
-            .addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addContainerGap(353, Short.MAX_VALUE))
+            .addComponent(searchSoundOptions, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(btnNext)
+          .addContainerGap(310, Short.MAX_VALUE))
     );
-    navigationPane.setLayout(gl_navigationPane);
+    searchButtonsPanel.setLayout(gl_searchButtonsPanel);
+
+    JScrollPane searchScrollPanel = new JScrollPane();
+    final JList<String> searchFilesList = new JList<String>();
+    searchFilesList.setModel(searchListModel);
+    searchScrollPanel.setViewportView(searchFilesList);
+    JLabel whichFilesLabel = new JLabel("Files");
+    searchScrollPanel.setColumnHeaderView(whichFilesLabel);
+
+
+
+    btnNext.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        String label = searchButtons.getSelection().getActionCommand();
+        if ("sound".equals(label)) {
+          label += '-' + (String)searchSoundOptions.getSelectedItem();
+        }
+        String searchTerm = searchTermBox.getText();
+        List<String> selectedFiles = searchFilesList.getSelectedValuesList();
+        theModel.searchForTerm(searchTerm, label, selectedFiles);
+      }
+    });
+    searchSoundOptions.addItem("Full");
+    searchSoundOptions.addItem("Initial");
+    searchSoundOptions.addItem("Vowel");
+    searchSoundOptions.addItem("Final");
+
+    JPanel navigationPane = new JPanel();
+    navigationPane.setLayout(new FormLayout(new ColumnSpec[] {
+        FormFactory.RELATED_GAP_COLSPEC,
+        ColumnSpec.decode("left:min"),
+        FormFactory.RELATED_GAP_COLSPEC,
+        ColumnSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_COLSPEC,},
+      new RowSpec[] {
+        FormFactory.RELATED_GAP_ROWSPEC,
+        RowSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_ROWSPEC,}));
+
+    controllerTabGroup.addTab("Navigation", null, navigationPane, null);
+    navigationPane.add(searchButtonsPanel, "2, 2, left, top");
+    navigationPane.add(searchScrollPanel, "4, 2, fill, fill");
+
 
     JPanel renderPane = new JPanel();
     controllerTabGroup.addTab("Render", null, renderPane, null);
@@ -280,6 +333,7 @@ public class ControllerGUI {
     breakLineByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        @SuppressWarnings("unchecked")
         JComboBox<String> cb = (JComboBox<String>)e.getSource();
         String typeStr = (String)cb.getSelectedItem();
         theModel.setBreakLevel(RenderBy.valueOf(typeStr.toUpperCase()));
@@ -306,7 +360,8 @@ public class ControllerGUI {
     colorByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
+        @SuppressWarnings("unchecked")
+        JComboBox<String> cb = (JComboBox<String>)e.getSource();
         String labelStr = (String)cb.getSelectedItem();
         theModel.setColorBy(labelStr);
       }
@@ -327,11 +382,12 @@ public class ControllerGUI {
     gbc_lblText.gridy = 3;
     renderPane.add(lblText, gbc_lblText);
 
-    JComboBox textByDropdown = new JComboBox(textByModel);
+    JComboBox<String> textByDropdown = new JComboBox<String>(textByModel);
     textByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
+        @SuppressWarnings("unchecked")
+        JComboBox<String> cb = (JComboBox<String>)e.getSource();
         String labelStr = (String)cb.getSelectedItem();
         theModel.setTextBy(labelStr);
       }
@@ -384,7 +440,7 @@ public class ControllerGUI {
     JLabel lblSchemas = new JLabel("Color Schemes:");
     colorTopSchemasPanel.setColumnHeaderView(lblSchemas);
 
-    final JList colorTopSchemasList = new JList();
+    final JList<String> colorTopSchemasList = new JList<String>();
     final DefaultComboBoxModel<String> colorTopSchemasListModel = new DefaultComboBoxModel<String>();
     colorTopSchemasList.setModel(colorTopSchemasListModel);
     colorTopSchemasPanel.setViewportView(colorTopSchemasList);

@@ -3,6 +3,7 @@ package prosevis.processing.model;
 import prosevis.data.DataTree;
 import prosevis.data.HierNode;
 import prosevis.data.ICon;
+import prosevis.data.ImplicitWordNode;
 import prosevis.data.TypeMap;
 
 public class DataTreeView {
@@ -12,6 +13,7 @@ public class DataTreeView {
   private int currentFontSize = 14;
   private int colorByLabelIdx = TypeMap.kNoLabelIdx;
   private int textByLabelIdx = TypeMap.kWordIdx;
+  private final Searcher searcher = new Searcher();
   public static final double SCROLL_TOP = 1.0;
   public static final double SCROLL_BOTTOM = 0.0;
   private static final double SCROLL_MULTIPLIER = 1.0;
@@ -151,5 +153,48 @@ public class DataTreeView {
   }
   public synchronized int getColorBy() {
     return colorByLabelIdx;
+  }
+
+  public synchronized void searchForTerm(int typeIdx, int labelIdx) {
+    int breakLevels = 0;
+    switch (renderType) {
+    case CHAPTER:
+      breakLevels = 5;
+      break;
+    case SECTION:
+      breakLevels = 4;
+      break;
+    case PARAGRAPH:
+      breakLevels = 3;
+      break;
+    case SENTENCE:
+      breakLevels = 2;
+      break;
+    case PHRASE:
+      breakLevels = 1;
+      break;
+    }
+    ScrollInfo scrollInfo = getScrollRenderInfo();
+    HierNode lineStartInHierarchy = scrollInfo.lineNode;
+    if (scrollInfo.lineFrac > 0.2) {
+      lineStartInHierarchy = (HierNode)lineStartInHierarchy.getNext();
+    }
+    if (lineStartInHierarchy == null) {
+      return;
+    }
+
+    ImplicitWordNode result = searcher.search(breakLevels, lineStartInHierarchy, labelIdx, typeIdx);
+    if (result == null) {
+      return;
+    }
+    // now we know a word with the desired property, adjust the scroll until we get there
+    // find the appropriate hiernode
+    lineStartInHierarchy = (HierNode)result.getParent();
+    for (int i = 1; i < breakLevels; i++) {
+      lineStartInHierarchy = (HierNode)lineStartInHierarchy.getParent();
+    }
+
+    this.scrollFraction = 1.0 - (lineStartInHierarchy.getNodeNumber() / (double) data.getNodeCount(renderType));
+    this.needsRender = true;
   }
 }

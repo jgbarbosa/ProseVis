@@ -1,6 +1,7 @@
 package prosevis.processing.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import prosevis.data.DataTree;
 import prosevis.data.TypeMap;
@@ -42,4 +43,6 @@ public interface ProseModelIF {
   ArrayList<String> getColorSchemeList();
 
   ColorScheme getColorScheme(String label);
+
+  void searchForTerm(String searchTerm, String label, List<String> selectedFiles);
 }
