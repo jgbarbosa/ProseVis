@@ -11,11 +11,13 @@ public class Searcher {
     if (lastResult != null) {
       lastResult.setIsSearchResult(false);
     }
-    while (lineStart.getFirstChild() != null && lineStart.getFirstChild().getFirstChild() != null) {
-      lineStart = (HierNode)lineStart.getFirstChild();
+
+    HierNode goingDown = lineStart;
+    while (goingDown.getFirstChild() != null && goingDown.getFirstChild().getFirstChild() != null) {
+      goingDown = (HierNode)goingDown.getFirstChild();
     }
 
-    ImplicitWordNode itr = (ImplicitWordNode)lineStart.getFirstChild();
+    ImplicitWordNode itr = (ImplicitWordNode)goingDown.getFirstChild();
 
     if (lineStart == lastResultLine) {
       itr = (ImplicitWordNode)lastResult.getNext();

@@ -268,8 +268,17 @@ public class ProseVisSketch extends PApplet {
           words.clearDisplayBreak();
           break;
         }
+        final int wordTopX = (int)renderedWidth + minX;
+        final int wordTopY = renderedHeight + minY + dLine;
+        final int wordDx = (int)wordWidth;
+        final int wordDy = lineHeight - dLine;
+
+        if (wordNode.isSearchResult()) {
+          fill(255, 0, 0);
+          rect(wordTopX, wordTopY, wordDx, wordDy);
+        }
         if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
-          colorBackground(colorByLabelIdx, colorView, wordNode, (int)renderedWidth + minX, renderedHeight + minY + dLine, (int)wordWidth, lineHeight - dLine);
+          colorBackground(colorByLabelIdx, colorView, wordNode, wordTopX, wordTopY, wordDx, wordDy);
         }
         lineBuffer.append(renderedText);
         lineBuffer.append(' ');
@@ -289,6 +298,7 @@ public class ProseVisSketch extends PApplet {
     if (wordNode.isPunct()) {
       return;
     }
+
     switch (colorByLabelIdx) {
     case TypeMap.kStressIdx:
     case TypeMap.kPhonemeIdx:

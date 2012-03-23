@@ -82,4 +82,8 @@ public class ImplicitWordNode extends AbstractWordNode {
     this.isSearchResult  = b;
   }
 
+  public boolean isSearchResult() {
+    return isSearchResult;
+  }
+
 }

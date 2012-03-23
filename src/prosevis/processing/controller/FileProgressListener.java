@@ -49,12 +49,12 @@ public class FileProgressListener implements WindowStateListener {
         }
         TypeMap typeMap = fpe.getResultingTypeMap();
         for (String l: TypeMap.kPossibleColorByLabels) {
-          if (typeMap.hasLabel(l.toLowerCase())) {
+          if (typeMap.hasLabel(l.toLowerCase()) && colorByModel.getIndexOf(l.toLowerCase()) < 0) {
             colorByModel.addElement(l);
           }
         }
         for (String l: TypeMap.kPossibleTextByLabels) {
-          if (typeMap.hasLabel(l.toLowerCase())) {
+          if (typeMap.hasLabel(l.toLowerCase()) && textByModel.getIndexOf(l.toLowerCase()) < 0) {
             textByModel.addElement(l);
           }
         }
