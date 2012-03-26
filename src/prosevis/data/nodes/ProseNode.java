@@ -1,20 +1,11 @@
 package prosevis.data.nodes;
 
 public abstract class ProseNode {
-  boolean levelBreak = false;
   ProseNode next = null;
   private final ProseNode parent;
 
   public ProseNode(ProseNode parent) {
     this.parent = parent;
-  }
-
-  public void addBreak() {
-    levelBreak = true;
-  }
-
-  public boolean getBreak() {
-    return levelBreak;
   }
 
   public void setNext(ProseNode next) {
@@ -28,6 +19,15 @@ public abstract class ProseNode {
   public ProseNode getParent() {
     return parent;
   }
+
+  public int getHeight() {
+    ProseNode child = getFirstChild();
+    if (child == null) {
+      return 0;
+    }
+    return child.getHeight() + 1;
+  }
+
 
   public abstract ProseNode getFirstChild();
 }

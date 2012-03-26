@@ -1,7 +1,7 @@
 package prosevis.processing.model;
 
 import prosevis.data.DataTree;
-import prosevis.data.ICon;
+import prosevis.data.DataTree.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.data.nodes.HierNode;
 import prosevis.data.nodes.WordNode;
@@ -17,16 +17,9 @@ public class DataTreeView {
   public static final double SCROLL_TOP = 1.0;
   public static final double SCROLL_BOTTOM = 0.0;
   private static final double SCROLL_MULTIPLIER = 1.0;
-  public enum RenderBy {
-    CHAPTER,
-    SECTION,
-    PARAGRAPH,
-    SENTENCE,
-    PHRASE,
-  };
-  private static RenderBy renderType = RenderBy.PHRASE;
+  private static BreakLinesBy renderType = BreakLinesBy.Phrase;
 
-  public synchronized void setRenderingBy(RenderBy type) {
+  public synchronized void setRenderingBy(BreakLinesBy type) {
     if (renderType != type) {
       needsRender = true;
       renderType = type;
@@ -68,31 +61,11 @@ public class DataTreeView {
 
   public synchronized ScrollInfo getScrollRenderInfo() {
     // 1 - scroll because top of file is 1.0 and bottom is 0.0
-    int index = -1;
-    switch (renderType) {
-    case CHAPTER:
-      index = ICon.CHAPTER_IND;
-      break;
-    case SECTION:
-      index = ICon.SECTION_IND;
-      break;
-    case PARAGRAPH:
-      index = ICon.PARAGRAPH_IND;
-      break;
-    case SENTENCE:
-      index = ICon.SENTENCE_IND;
-      break;
-    case PHRASE:
-      index = ICon.PHRASE_IND;
-      break;
-    default:
-      throw new RuntimeException("Can't search for starting line at this hierarchy level");
-    }
-    double fracLines = data.getNumNodes(index) * (1 - this.scrollFraction);
+    double fracLines = data.getNumNodes(renderType) * (1 - this.scrollFraction);
     int lineNum = (int)fracLines;
     double lineFrac = fracLines - lineNum;
-    lineNum = Math.min(lineNum, data.getNumNodes(index) - 1);
-    HierNode node = data.findNode(index, lineNum);
+    lineNum = Math.min(lineNum, data.getNumNodes(renderType) - 1);
+    HierNode node = data.findNode(renderType, lineNum);
     return new ScrollInfo(node, lineFrac);
   }
 
@@ -103,25 +76,7 @@ public class DataTreeView {
   }
 
   public synchronized double addScrollOffset(int dy) {
-    switch (renderType) {
-    case CHAPTER:
-      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.CHAPTER_IND) * this.currentFontSize );
-      break;
-    case SECTION:
-      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.SECTION_IND) * this.currentFontSize);
-      break;
-    case PARAGRAPH:
-      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.PARAGRAPH_IND) * this.currentFontSize);
-      break;
-    case SENTENCE:
-      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.SENTENCE_IND) * this.currentFontSize);
-      break;
-    case PHRASE:
-      this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(ICon.PHRASE_IND) * this.currentFontSize);
-      break;
-    default:
-      throw new RuntimeException("Can't search for starting line at this hierarchy level");
-    }
+    this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(renderType) * this.currentFontSize );
     this.scrollFraction = Math.max(0.0, Math.min(1.0, scrollFraction));
     this.needsRender = true;
     return this.scrollFraction;
@@ -156,24 +111,7 @@ public class DataTreeView {
   }
 
   public synchronized void searchForTerm(int typeIdx, int labelIdx) {
-    int breakLevels = 0;
-    switch (renderType) {
-    case CHAPTER:
-      breakLevels = 5;
-      break;
-    case SECTION:
-      breakLevels = 4;
-      break;
-    case PARAGRAPH:
-      breakLevels = 3;
-      break;
-    case SENTENCE:
-      breakLevels = 2;
-      break;
-    case PHRASE:
-      breakLevels = 1;
-      break;
-    }
+    int breakLevels = renderType.getHeight();
     ScrollInfo scrollInfo = getScrollRenderInfo();
     HierNode lineStartInHierarchy = scrollInfo.lineNode;
     if (scrollInfo.lineFrac > 0.2) {
@@ -194,7 +132,7 @@ public class DataTreeView {
       lineStartInHierarchy = (HierNode)lineStartInHierarchy.getParent();
     }
 
-    this.scrollFraction = 1.0 - (lineStartInHierarchy.getNodeNumber() / (double) data.getNodeCount(renderType));
+    this.scrollFraction = 1.0 - (lineStartInHierarchy.getNodeNumber() / (double) data.getNumNodes(renderType));
     this.needsRender = true;
   }
 }

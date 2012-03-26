@@ -23,9 +23,9 @@ public interface ProseModelIF {
 
   void updateZoom(int lastDy);
 
-  void setBreakLevel(DataTreeView.RenderBy level);
+  void setBreakLevel(DataTree.BreakLinesBy level);
 
-  DataTreeView.RenderBy getBreakLevel();
+  DataTree.BreakLinesBy getBreakLevel();
 
   // returns a labelIdx
   int getColorBy();

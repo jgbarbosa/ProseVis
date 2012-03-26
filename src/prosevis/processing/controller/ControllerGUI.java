@@ -29,10 +29,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
+import prosevis.data.DataTree.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.ColorScheme;
-import prosevis.processing.model.DataTreeView.RenderBy;
 import prosevis.processing.model.ProseModelIF;
 
 import com.jgoodies.forms.factories.FormFactory;
@@ -326,7 +326,7 @@ public class ControllerGUI {
     renderPane.add(lblLineBreaksBy, gbc_lblLineBreaksBy);
 
     JComboBox<String> breakLineByDropdown = new JComboBox<String>();
-    for (RenderBy breakType : RenderBy.values()){
+    for (BreakLinesBy breakType : BreakLinesBy.values()){
       breakLineByDropdown.addItem(breakType.toString().toLowerCase());
     }
     breakLineByDropdown.setSelectedItem(theModel.getBreakLevel().toString().toLowerCase());
@@ -336,7 +336,7 @@ public class ControllerGUI {
         @SuppressWarnings("unchecked")
         JComboBox<String> cb = (JComboBox<String>)e.getSource();
         String typeStr = (String)cb.getSelectedItem();
-        theModel.setBreakLevel(RenderBy.valueOf(typeStr.toUpperCase()));
+        theModel.setBreakLevel(BreakLinesBy.valueOf(typeStr.toUpperCase()));
       }
     });
 

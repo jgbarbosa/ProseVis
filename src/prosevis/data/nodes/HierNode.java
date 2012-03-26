@@ -2,7 +2,6 @@ package prosevis.data.nodes;
 
 import java.util.ArrayList;
 
-
 public class HierNode extends ProseNode {
 
   int phonemeCount;
@@ -12,21 +11,22 @@ public class HierNode extends ProseNode {
   double posWidth;
 
   boolean preWord;
-  ArrayList<ProseNode> children;
+  ArrayList<ProseNode> children = new ArrayList<ProseNode>();
   // 0 means the first node on this hierarchy level, 1 the second, etc
   private final int nodeNumber;
+  // this is the unique number per file representing this hierarchy group
+  private final long nodeId;
 
-  public HierNode(ProseNode parent, boolean preWord, int ordinal) {
+  public HierNode(ProseNode parent, int ordinal, long id) {
     super(parent);
-    this.preWord = preWord;
 
-    children = new ArrayList<ProseNode>();
     wordCount = 0;
     phonemeCount = 0;
     textWidth = 0.0;
     phonemeWidth = 0.0;
     posWidth = 0.0;
-    nodeNumber = ordinal - 1;
+    nodeNumber = ordinal;
+    nodeId = id;
   }
 
   public void incTextWidth(double incWidth) {
@@ -74,7 +74,7 @@ public class HierNode extends ProseNode {
   }
 
   public boolean isPreWord() {
-    return preWord;
+    return children.size() > 0 && getFirstChild() instanceof WordNode;
   }
 
   public ArrayList<ProseNode> getChildren() {
@@ -95,9 +95,9 @@ public class HierNode extends ProseNode {
     return children.size();
   }
 
-  public void findNode(int currLevel, int reqLevel, int ordinal,
+  public void findNode(int curHeight, int reqHeight, int ordinal,
       HierNodeWrapper result) {
-    if (currLevel == reqLevel) {
+    if (curHeight == reqHeight) {
       if (ordinal < this.nodeNumber) {
         result.resultType = HierNodeWrapper.ResultType.TOO_BIG;
       } else if (ordinal > this.nodeNumber) {
@@ -108,19 +108,18 @@ public class HierNode extends ProseNode {
       result.result = this;
       return;
     }
-    if (this.getMinAtLevel(currLevel, reqLevel) > ordinal) {
+    if (this.getMinAtHeight(curHeight, reqHeight) > ordinal) {
       result.resultType = HierNodeWrapper.ResultType.TOO_BIG;
       return;
     }
-    if (this.getMaxAtLevel(currLevel, reqLevel) < ordinal) {
+    if (this.getMaxAtHeight(curHeight, reqHeight) < ordinal) {
       result.resultType = HierNodeWrapper.ResultType.TOO_SMALL;
       return;
     }
-    int mid;
     for (int min = 0, max = children.size() - 1; min <= max;) {
-      mid = (min + max + 1) / 2;
+      int mid = (min + max + 1) / 2;
       HierNode child = (HierNode) children.get(mid);
-      child.findNode(currLevel + 1, reqLevel, ordinal, result);
+      child.findNode(curHeight - 1, reqHeight, ordinal, result);
       if (min == max) {
         return;
       }
@@ -139,23 +138,27 @@ public class HierNode extends ProseNode {
         "Tried to find node that doesn't exist in this tree");
   }
 
-  private int getMinAtLevel(int currLevel, int reqLevel) {
-    if (currLevel < reqLevel) {
+  private int getMinAtHeight(int curHeight, int reqHeight) {
+    if (curHeight > reqHeight) {
       return ((HierNode) children.get(0))
-          .getMinAtLevel(currLevel + 1, reqLevel);
+          .getMinAtHeight(curHeight - 1, reqHeight);
     }
     return this.nodeNumber;
   }
 
-  private int getMaxAtLevel(int currLevel, int reqLevel) {
-    if (currLevel < reqLevel) {
-      return ((HierNode) children.get(children.size() - 1)).getMaxAtLevel(
-          currLevel + 1, reqLevel);
+  private int getMaxAtHeight(int curHeight, int reqHeight) {
+    if (curHeight > reqHeight) {
+      return ((HierNode) children.get(children.size() - 1)).getMaxAtHeight(
+          curHeight - 1, reqHeight);
     }
     return this.nodeNumber;
   }
 
   public int getNodeNumber() {
     return nodeNumber;
+  }
+
+  public long getId() {
+    return nodeId;
   }
 }
