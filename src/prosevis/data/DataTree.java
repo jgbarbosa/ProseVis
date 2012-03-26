@@ -102,8 +102,6 @@ public class DataTree {
           prog.notifyProgess(bytesProcessed / (double)totalBytes);
         }
         columns = line.split("\t");
-        if (columns.length < ICon.TOTAL_COL)
-          continue;
         processInputLine(columns, typeMap, lastElements);
       } while ((line = reader.readLine()) != null);
 
