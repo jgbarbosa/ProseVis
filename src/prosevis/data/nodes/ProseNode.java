@@ -1,4 +1,4 @@
-package prosevis.data;
+package prosevis.data.nodes;
 
 public abstract class ProseNode {
   boolean levelBreak = false;

@@ -1,13 +1,13 @@
 package prosevis.processing.model;
 
-import prosevis.data.HierNode;
-import prosevis.data.ImplicitWordNode;
+import prosevis.data.nodes.HierNode;
+import prosevis.data.nodes.WordNode;
 
 public class Searcher {
-  private ImplicitWordNode lastResult;
+  private WordNode lastResult;
   private HierNode lastResultLine = null;
 
-  public ImplicitWordNode search(int breakLevels, HierNode lineStart, int labelIdx, int typeIdx) {
+  public WordNode search(int breakLevels, HierNode lineStart, int labelIdx, int typeIdx) {
     if (lastResult != null) {
       lastResult.setIsSearchResult(false);
     }
@@ -17,15 +17,15 @@ public class Searcher {
       goingDown = (HierNode)goingDown.getFirstChild();
     }
 
-    ImplicitWordNode itr = (ImplicitWordNode)goingDown.getFirstChild();
+    WordNode itr = (WordNode)goingDown.getFirstChild();
 
     if (lineStart == lastResultLine) {
-      itr = (ImplicitWordNode)lastResult.getNext();
+      itr = (WordNode)lastResult.getNext();
     }
 
     int i;
     boolean keepGoing = true;
-    for ( ; itr != null && keepGoing; itr = (ImplicitWordNode)itr.getNext()) {
+    for ( ; itr != null && keepGoing; itr = (WordNode)itr.getNext()) {
       for (i = 0; i < itr.getSyllableCount(); i++) {
         if (itr.getTypeIdxForLabelIdx(labelIdx, i) == typeIdx) {
           keepGoing = false;

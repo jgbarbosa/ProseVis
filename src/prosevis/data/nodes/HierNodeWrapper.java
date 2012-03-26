@@ -1,4 +1,5 @@
-package prosevis.data;
+package prosevis.data.nodes;
+
 
 // for searching for nodes via binary search
 public class HierNodeWrapper {

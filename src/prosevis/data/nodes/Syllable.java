@@ -1,7 +1,10 @@
-package prosevis.data;
+package prosevis.data.nodes;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import prosevis.data.DavidData;
+import prosevis.data.TypeMap;
 
 public class Syllable {
   private final Map<Integer, Integer> label2type = new HashMap<Integer, Integer>();

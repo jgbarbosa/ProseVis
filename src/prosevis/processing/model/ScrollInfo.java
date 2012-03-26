@@ -1,6 +1,6 @@
 package prosevis.processing.model;
 
-import prosevis.data.HierNode;
+import prosevis.data.nodes.HierNode;
 
 public class ScrollInfo {
   public final HierNode lineNode;

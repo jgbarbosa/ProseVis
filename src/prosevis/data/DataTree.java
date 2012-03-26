@@ -9,12 +9,15 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import prosevis.data.nodes.HierNode;
+import prosevis.data.nodes.HierNodeWrapper;
+import prosevis.data.nodes.ProseNode;
+import prosevis.data.nodes.Syllable;
+import prosevis.data.nodes.WordNode;
 import prosevis.processing.controller.IProgressNotifiable;
 import prosevis.processing.model.DataTreeView.RenderBy;
 
 public class DataTree {
-  // The first nodes at each level of the tree
-  private final ArrayList<HierNode> firstElements;
   // Current node at each hierarchical level of the tree
   private final ArrayList<HierNode> currentElements;
   // simple flag for whether this tree has already been loaded or not
@@ -30,7 +33,7 @@ public class DataTree {
   private final int[] maxWords;
   private final int[] maxPhonemes;
   private HierNode head;
-  private ImplicitWordNode currentWord;
+  private WordNode currentWord;
 
   // This is related to rendering and basically corresponds to the maximum width of
   // words/phonemes/parts of speech at each hierarchical level
@@ -39,7 +42,6 @@ public class DataTree {
   private final double[] maxPOSWidth;
 
   public DataTree() {
-    firstElements = new ArrayList<HierNode>();
     currentElements = new ArrayList<HierNode>();
     currIndices = new int[ICon.MAX_DEPTH];
     maxWords = new int[ICon.MAX_DEPTH];
@@ -164,12 +166,6 @@ public class DataTree {
     para.addChild(sent);
     sent.addChild(phra);
 
-    firstElements.add(chap);
-    firstElements.add(sect);
-    firstElements.add(para);
-    firstElements.add(sent);
-    firstElements.add(phra);
-
     currentElements.add(chap);
     currentElements.add(sect);
     currentElements.add(para);
@@ -228,7 +224,7 @@ public class DataTree {
     if (currentWord == null || !word.equals(line[TypeMap.kWordIdx])) {
 
       // Create new word
-      ImplicitWordNode newWord = buildWordNode(parent, line, s, typeMap);
+      WordNode newWord = buildWordNode(parent, line, s, typeMap);
 
       // Determine word, pos, and phoneme length
       double wordWidth = getTextWidth(line[TypeMap.kWordIdx]);
@@ -268,8 +264,8 @@ public class DataTree {
     }
   }
 
-  private ImplicitWordNode buildWordNode(ProseNode parent, String[] line, Syllable s, TypeMap typeMap) {
-    ImplicitWordNode result = new ImplicitWordNode(parent, line[TypeMap.kWordIdx], s);
+  private WordNode buildWordNode(ProseNode parent, String[] line, Syllable s, TypeMap typeMap) {
+    WordNode result = new WordNode(parent, line[TypeMap.kWordIdx], s);
     for (int idx = TypeMap.kWordIdx; idx < TypeMap.kMaxFields; idx++) {
       int typeIdx = typeMap.getOrAddTypeIdx(idx, line[idx].toLowerCase());
       result.addLabelTypePair(idx, typeIdx);

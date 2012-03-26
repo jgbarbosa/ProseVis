@@ -1,7 +1,10 @@
 package prosevis.data;
 
-public class NodeIterator<T extends AbstractWordNode> {
-  private T nextWord;
+import prosevis.data.nodes.HierNode;
+import prosevis.data.nodes.WordNode;
+
+public class NodeIterator {
+  private WordNode nextWord;
   private final HierNode parentNode;
 
   public NodeIterator(HierNode parent) {
@@ -12,7 +15,7 @@ public class NodeIterator<T extends AbstractWordNode> {
         itr = (HierNode)itr.getFirstChild();
       }
 
-      nextWord = (T)itr.getFirstChild();
+      nextWord = (WordNode)itr.getFirstChild();
 
       setDisplayBreak();
     }
@@ -24,18 +27,18 @@ public class NodeIterator<T extends AbstractWordNode> {
       itr = (HierNode)itr.getLastChild();
     }
 
-    T lastWord = (T)itr.getLastChild();
+    WordNode lastWord = (WordNode)itr.getLastChild();
     lastWord.setDisplayBreak(true);
   }
 
-  public T next() {
-    T ret = nextWord;
+  public WordNode next() {
+    WordNode ret = nextWord;
     if (nextWord != null) {
       if (nextWord.getDisplayBreak()) {
         nextWord.setDisplayBreak(false);
         nextWord = null;
       } else {
-        nextWord = (T)nextWord.getNext();
+        nextWord = (WordNode)nextWord.getNext();
       }
     }
 
@@ -49,7 +52,7 @@ public class NodeIterator<T extends AbstractWordNode> {
       itr = (HierNode)itr.getLastChild();
     }
 
-    T lastWord = (T)itr.getLastChild();
+    WordNode lastWord = (WordNode)itr.getLastChild();
     lastWord.setDisplayBreak(false);
   }
 }

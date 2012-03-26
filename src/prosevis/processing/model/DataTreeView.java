@@ -1,10 +1,10 @@
 package prosevis.processing.model;
 
 import prosevis.data.DataTree;
-import prosevis.data.HierNode;
 import prosevis.data.ICon;
-import prosevis.data.ImplicitWordNode;
 import prosevis.data.TypeMap;
+import prosevis.data.nodes.HierNode;
+import prosevis.data.nodes.WordNode;
 
 public class DataTreeView {
   private final DataTree data;
@@ -183,7 +183,7 @@ public class DataTreeView {
       return;
     }
 
-    ImplicitWordNode result = searcher.search(breakLevels, lineStartInHierarchy, labelIdx, typeIdx);
+    WordNode result = searcher.search(breakLevels, lineStartInHierarchy, labelIdx, typeIdx);
     if (result == null) {
       return;
     }

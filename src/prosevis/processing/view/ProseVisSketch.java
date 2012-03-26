@@ -7,10 +7,10 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PFont;
-import prosevis.data.HierNode;
-import prosevis.data.ImplicitWordNode;
 import prosevis.data.NodeIterator;
 import prosevis.data.TypeMap;
+import prosevis.data.nodes.HierNode;
+import prosevis.data.nodes.WordNode;
 import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.ColorView;
@@ -241,8 +241,8 @@ public class ProseVisSketch extends PApplet {
     final StringBuilder tmp = new StringBuilder();
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
-      NodeIterator<ImplicitWordNode> words = new NodeIterator<ImplicitWordNode>(lineNode);
-      ImplicitWordNode wordNode = words.next();
+      NodeIterator words = new NodeIterator(lineNode);
+      WordNode wordNode = words.next();
       if (wordNode == null) {
         // we're out of lines, not even one word in this one
         break;
@@ -294,7 +294,7 @@ public class ProseVisSketch extends PApplet {
   }
 
   private void colorBackground(int colorByLabelIdx, ColorView colorView,
-      ImplicitWordNode wordNode, int topX, int topY, int dx, int dy) {
+      WordNode wordNode, int topX, int topY, int dx, int dy) {
     if (wordNode.isPunct()) {
       return;
     }

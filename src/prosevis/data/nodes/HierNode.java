@@ -1,6 +1,7 @@
-package prosevis.data;
+package prosevis.data.nodes;
 
 import java.util.ArrayList;
+
 
 public class HierNode extends ProseNode {
 

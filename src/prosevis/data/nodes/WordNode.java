@@ -1,4 +1,4 @@
-package prosevis.data;
+package prosevis.data.nodes;
 
 import java.awt.Font;
 import java.awt.font.FontRenderContext;
@@ -7,15 +7,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ImplicitWordNode extends AbstractWordNode {
+import prosevis.data.ParsingTools;
+import prosevis.data.TypeMap;
+
+public class WordNode extends ProseNode {
 
   private final Map<Integer, Integer> labels2types = new HashMap<Integer, Integer>();
   private boolean displayBreak = false;
   private final ArrayList<Syllable> syllables = new ArrayList<Syllable>();
   private final boolean isPunctuation;
   private boolean isSearchResult = false;
-  public ImplicitWordNode(ProseNode parent, String word, Syllable s) {
-
+  public WordNode(ProseNode parent, String word, Syllable s) {
     super(parent);
     syllables.add(s);
     isPunctuation = !ParsingTools.notPunct(word);
@@ -39,12 +41,10 @@ public class ImplicitWordNode extends AbstractWordNode {
   }
 
   /* Display breaks are used by the iterator to tag line breaks */
-  @Override
   public boolean getDisplayBreak(){
       return displayBreak;
   }
 
-  @Override
   public void setDisplayBreak(boolean displayBreak){
       this.displayBreak = displayBreak;
   }
