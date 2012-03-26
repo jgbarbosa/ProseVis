@@ -140,8 +140,8 @@ public class ProseVisSketch extends PApplet {
         } else {
           scrollInertia = Math.min(0.0, scrollInertia + DScrollInertia);
         }
-
       }
+
       for (int i = 0 ; i < views.length; i++) {
         if (views[i].getAndClearNeedsRender() || colorStateChanged) {
           sliders.get(i).setValue((float)views[i].getScroll());
@@ -177,14 +177,17 @@ public class ProseVisSketch extends PApplet {
     int y = emouseY;
     if (focused && lastViews != null && lastViews.length > 0) {
       lastY = y;
+      lastDy = 0;
+      lastDy = 0;
       lastUpdate = mouseEvent.getWhen();
       if (mouseButton == LEFT) {
         if (x >= 0 && x < width && y > 0 && y < height) {
           scrollInertia = 0.0;
           inertialScrollIdx = -1;
-          int viewWidth = width / lastViews.length;
+          final int viewWidth = width / lastViews.length;
+          final int sliderWidth = max((int)(viewWidth * SLIDER_FRACTION), 10);
           for (int i = 0; i < lastViews.length; i++) {
-            if (x < (i + 1) * viewWidth && x >= i * viewWidth) {
+            if (x < (i + 1) * viewWidth - sliderWidth && x >= i * viewWidth) {
               lastViewScrollIdx = i;
               break;
             }
