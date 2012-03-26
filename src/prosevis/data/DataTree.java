@@ -18,24 +18,6 @@ import prosevis.data.nodes.WordNode;
 import prosevis.processing.controller.IProgressNotifiable;
 
 public class DataTree {
-
-  public enum BreakLinesBy {
-    Section(4),
-    Paragraph(3),
-    Sentence(2),
-    Phrase(1),
-    // these are in the alternate tree hierarchy
-    Line(1);
-
-    private int height;
-    private BreakLinesBy(int height) {
-      this.height = height;
-    }
-    public int getHeight() {
-      return height;
-    }
-  }
-
   // head of the tree formed by parsing the xml file
   private HierNode xmlHead;
   // head of the tree formed by parsing the tab separated data file

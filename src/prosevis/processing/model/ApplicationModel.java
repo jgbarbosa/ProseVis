@@ -3,8 +3,8 @@ package prosevis.processing.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import prosevis.data.BreakLinesBy;
 import prosevis.data.DataTree;
-import prosevis.data.DataTree.BreakLinesBy;
 import prosevis.data.TypeMap;
 
 public class ApplicationModel implements ProseModelIF {
@@ -13,7 +13,7 @@ public class ApplicationModel implements ProseModelIF {
   private static final int ZOOM_MIN = 7 * ZOOM_SENSITIVITY;
   private static final int ZOOM_MAX = 28 * ZOOM_SENSITIVITY;
   private final ArrayList<DataTreeView> data = new ArrayList<DataTreeView>();
-  private DataTree.BreakLinesBy lineBreaks = DataTree.BreakLinesBy.Phrase;
+  private BreakLinesBy lineBreaks = BreakLinesBy.Phrase;
   private int zoomLevel = 14 * ZOOM_SENSITIVITY;
   private int colorByLabelIdx = TypeMap.kNoLabelIdx;
   private final ColorMap colorDB = new ColorMap();

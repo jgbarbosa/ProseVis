@@ -3,6 +3,7 @@ package prosevis.processing.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import prosevis.data.BreakLinesBy;
 import prosevis.data.DataTree;
 import prosevis.data.TypeMap;
 
@@ -23,9 +24,9 @@ public interface ProseModelIF {
 
   void updateZoom(int lastDy);
 
-  void setBreakLevel(DataTree.BreakLinesBy level);
+  void setBreakLevel(BreakLinesBy level);
 
-  DataTree.BreakLinesBy getBreakLevel();
+  BreakLinesBy getBreakLevel();
 
   // returns a labelIdx
   int getColorBy();

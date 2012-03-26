@@ -1,7 +1,7 @@
 package prosevis.processing.model;
 
+import prosevis.data.BreakLinesBy;
 import prosevis.data.DataTree;
-import prosevis.data.DataTree.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.data.nodes.HierNode;
 import prosevis.data.nodes.WordNode;
