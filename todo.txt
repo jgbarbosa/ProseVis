@@ -1,0 +1,16 @@
+Stop converting all words to lower case
+Fix problem where single/double quotes rendered the same
+Stop adding space before commas/punctuation
+Highlite all in yellow during search
+  + can make coloring modal, so we turn off other coloring while in search
+Hit enter in search box should cause a search
+Fix color picking algorithm
+Add help button to color scheme screen
+Rhythm rendering?
+Color customization interface in tool?
+Process for rendering comparison data?
+Allow different line breaks/colorings per data set
+  + also add sync checkbox to change all at once
+
+Line wrapping
+Prose based line breaks
