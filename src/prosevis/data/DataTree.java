@@ -279,12 +279,17 @@ public class DataTree {
     // Trim each field
     for (int i = 0; i < line.length; i++) {
       line[i] = line[i].trim();
+      if (line[i].startsWith("\"") && line[i].endsWith("\"") && line[i].length() > 2) {
+        // sometimes for words with apostrophe's the word is surrounded in quotes
+        line[i] = line[i].substring(1, line[i].length() - 1);
+      }
     }
 
-    if ("\"\"\"\"".equals(line[TypeMap.kWordIdx])) {
+    if ("\"\"".equals(line[TypeMap.kWordIdx])) {
       // This is so painful I cannot begin to describe it
       line[TypeMap.kWordIdx] = "\"";
     }
+
     long[] idTuple = parseIdTuple(line);
     addInternalNodes(lastElements, idTuple);
 
@@ -295,9 +300,6 @@ public class DataTree {
 
   private void processSyllable(ProseNode parent, String[] line,
       TypeMap typeMap, List<HierNode> lastElements) {
-    // Clean-up for quotes around commas
-    if (line[TypeMap.kWordIdx].equals("\",\""))
-      line[TypeMap.kWordIdx] = ",";
     line[TypeMap.kWordIdx] = line[TypeMap.kWordIdx].toLowerCase();
 
     Syllable s = buildSyllable(line, typeMap);
