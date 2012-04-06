@@ -70,6 +70,32 @@ public class HierNode extends ProseNode {
   }
 
   public void addChild(ProseNode child) {
+    if (children.size() > 0) {
+      children.get(children.size() - 1).setNext(child);
+    } else {
+      // seek our predecessor in this tree
+      HierNode cur = this;
+      HierNode up = (HierNode)this.getParent();
+      int levelsUp = 0;
+      while (up != null && up.getFirstChild() == cur) {
+        cur = up;
+        up = (HierNode)up.getParent();
+        levelsUp++;
+      }
+      if (up != null) {
+        // now go all the way right on this level, under this parent
+        // then follow those nodes all the way back down
+        HierNode goRight = (HierNode)up.getFirstChild();
+        while (goRight.getNext().getParent() == up && goRight.getNext() != cur) {
+          goRight = (HierNode)goRight.getNext();
+        }
+        while (levelsUp > 0) {
+          goRight = (HierNode)goRight.getLastChild();
+          levelsUp--;
+        }
+        goRight.getLastChild().setNext(child);
+      }
+    }
     children.add(child);
   }
 
@@ -83,7 +109,11 @@ public class HierNode extends ProseNode {
 
   @Override
   public ProseNode getFirstChild() {
-    return children.get(0);
+    if (children.size() > 0) {
+      return children.get(0);
+    } else {
+      return null;
+    }
   }
 
   public ProseNode getLastChild() {

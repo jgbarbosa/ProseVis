@@ -17,8 +17,12 @@ public class WordNode extends ProseNode {
   private final ArrayList<Syllable> syllables = new ArrayList<Syllable>();
   private final boolean isPunctuation;
   private boolean isSearchResult = false;
-  public WordNode(ProseNode parent, String word, Syllable s) {
+  private HierNode xmlParent;
+  private final TreeSelector treeSelector;
+
+  public WordNode(ProseNode parent, TreeSelector treeSelector, String word, Syllable s) {
     super(parent);
+    this.treeSelector = treeSelector;
     syllables.add(s);
     isPunctuation = !ParsingTools.notPunct(word);
   }
@@ -86,4 +90,17 @@ public class WordNode extends ProseNode {
     return isSearchResult;
   }
 
+  // witness the firepower of this fully armed and operational battle station
+  public void addXmlLineParent(HierNode lineNode) {
+    this.xmlParent = lineNode;
+  }
+
+  @Override
+  public ProseNode getParent() {
+    if (treeSelector.whichTree() == TreeSelector.WhichTree.XML) {
+      return xmlParent;
+    } else {
+      return super.getParent();
+    }
+  }
 }

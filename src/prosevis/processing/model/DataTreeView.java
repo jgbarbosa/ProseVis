@@ -4,6 +4,7 @@ import prosevis.data.BreakLinesBy;
 import prosevis.data.DataTree;
 import prosevis.data.TypeMap;
 import prosevis.data.nodes.HierNode;
+import prosevis.data.nodes.TreeSelector;
 import prosevis.data.nodes.WordNode;
 
 public class DataTreeView {
@@ -24,11 +25,21 @@ public class DataTreeView {
       needsRender = true;
       renderType = type;
     }
+    if (type.equals(BreakLinesBy.Line)) {
+      data.setWhichTree(TreeSelector.WhichTree.XML);
+    } else {
+      data.setWhichTree(TreeSelector.WhichTree.TSV);
+    }
   }
 
   public DataTreeView(DataTree data, int fontSz) {
     this.data = data;
     this.scrollFraction = SCROLL_TOP;
+    if (renderType.equals(BreakLinesBy.Line)) {
+      data.setWhichTree(TreeSelector.WhichTree.XML);
+    } else {
+      data.setWhichTree(TreeSelector.WhichTree.TSV);
+    }
   }
 
   public synchronized DataTree getData() {
