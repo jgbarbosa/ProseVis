@@ -327,16 +327,16 @@ public class ControllerGUI {
 
     JComboBox<String> breakLineByDropdown = new JComboBox<String>();
     for (BreakLinesBy breakType : BreakLinesBy.values()){
-      breakLineByDropdown.addItem(breakType.toString().toLowerCase());
+      breakLineByDropdown.addItem(breakType.toString());
     }
-    breakLineByDropdown.setSelectedItem(theModel.getBreakLevel().toString().toLowerCase());
+    breakLineByDropdown.setSelectedItem(theModel.getBreakLevel().toString());
     breakLineByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         @SuppressWarnings("unchecked")
         JComboBox<String> cb = (JComboBox<String>)e.getSource();
         String typeStr = (String)cb.getSelectedItem();
-        theModel.setBreakLevel(BreakLinesBy.valueOf(typeStr.toUpperCase()));
+        theModel.setBreakLevel(BreakLinesBy.valueOf(typeStr));
       }
     });
 

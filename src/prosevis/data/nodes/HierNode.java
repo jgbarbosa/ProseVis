@@ -68,8 +68,17 @@ public class HierNode extends ProseNode {
   public int getPhonemeCount() {
     return phonemeCount;
   }
-
   public void addChild(ProseNode child) {
+    addChild(child, false);
+  }
+
+  public void addChild(ProseNode child, boolean bypassSetNext) {
+    if (bypassSetNext) {
+      // for instance, if you're a hiernode in the XML tree, these next fields
+      // are already initialized by the TSV tree
+      children.add(child);
+      return;
+    }
     if (children.size() > 0) {
       children.get(children.size() - 1).setNext(child);
     } else {

@@ -69,7 +69,7 @@ public class DataTree {
 
   private boolean parseXML(File xmlFile, IProgressNotifiable prog,
       TypeMap typeMap) {
-    HierNode xmlHead = new HierNode(null, 0, 0);
+    xmlHead = new HierNode(null, 0, 0);
     int numLinesSoFar = 0;
     try {
       Builder parser = new Builder();
@@ -83,8 +83,9 @@ public class DataTree {
             section.getNodeNumber(), section.getId());
         xmlHead.addChild(sectionHierNode);
         // for each group underneath the sections
-        for (HierNode group = (HierNode) section.getFirstChild(); group
-            .getParent() == section; group = (HierNode) group.getNext()) {
+        for (HierNode group = (HierNode) section.getFirstChild();
+            group != null && group.getParent() == section;
+            group = (HierNode) group.getNext()) {
           // mirror the groups too
           HierNode groupHierNode = new HierNode(xmlHead.getLastChild(),
               group.getNodeNumber(), group.getId());
@@ -107,11 +108,11 @@ public class DataTree {
           WordNode prevWord = null;
 
           XmlTraverser lineItr = new XmlTraverser(groupElement);
-          String line = lineItr.getNextTextNode().getValue().trim()
+          String line = lineItr.getNextLineOfText().trim()
               .toLowerCase().replaceAll("“", "\"").replaceAll("”", "\"");
           HierNode lineHierNode = new HierNode(groupHierNode, numLinesSoFar,
               numLinesSoFar);
-          group.addChild(lineHierNode);
+          groupHierNode.addChild(lineHierNode);
           numLinesSoFar++;
           int lineIdx = 0;
           LinkedList<String> last10 = new LinkedList<String>();
@@ -128,26 +129,57 @@ public class DataTree {
               last10.pollFirst();
             }
             int idx = line.indexOf(word, lineIdx);
+            boolean matchedWord = false;
             if (idx >= 0) {
               lineIdx = idx + word.length();
+              matchedWord = true;
+            } else if (line.length() > 1) {
+              matchedWord = true;
+              // there is still some stuff left on the end of this line
+              // maybe this word matches this line but has been parsed incorrectly
+              // lets try and match it ourselves
+              for (int wordIdx = 0; wordIdx < word.length(); wordIdx++) {
+                char curChar = word.charAt(wordIdx);
+                if (!((curChar >= 'a' && curChar <= 'z') ||
+                    (curChar >= 'A' && curChar <= 'Z') ||
+                    (curChar >= '0' && curChar <= '9'))) {
+                   continue;
+                }
+                idx = line.indexOf(word.charAt(wordIdx), lineIdx);
+                if (idx >= 0) {
+                  lineIdx = idx + 1;
+                } else {
+                  matchedWord = false;
+                  break;
+                }
+              }
+            }
+            if (matchedWord) {
               curWord.addXmlLineParent(lineHierNode);
+              lineHierNode.addChild(curWord, true);
             } else {
               System.out.print(line.substring(lineIdx));
               if (line.substring(lineIdx).length() > 0)
                 System.out.println("Looking for: " + word);
-              line = lineItr.getNextTextNode().getValue().trim().toLowerCase()
+              line = lineItr.getNextLineOfText();
+              if (line == null) {
+                System.err.println("Failed to find new line while looking for word: " + word);
+                System.err.println("Last ten words: " + last10);
+                return false;
+              }
+              line = line.trim().toLowerCase()
                   .replaceAll("“", "\"").replaceAll("”", "\"");
               lineHierNode = new HierNode(groupHierNode, numLinesSoFar,
                   numLinesSoFar);
-              group.addChild(lineHierNode);
+              groupHierNode.addChild(lineHierNode);
               numLinesSoFar++;
               lineIdx = 0;
               continue;
             }
+
             prevWord = curWord;
             curWord = (WordNode) curWord.getNext();
           }
-
         }
       }
 
