@@ -198,4 +198,37 @@ public class ApplicationModel implements ProseModelIF {
       }
     }
   }
+
+  @Override
+  public synchronized void moveFilesToTop(List<String> selectedFiles) {
+    ArrayList<DataTreeView> movedFiles = new ArrayList<DataTreeView>();
+    for (String path: selectedFiles) {
+      // find the DataTree corresponding to this path
+      int idx = 0;
+      for (idx = 0; idx < data.size(); idx++) {
+        if (data.get(idx).getData().getPath().equals(path)) {
+          break;
+        }
+      }
+      if (idx >= data.size()) {
+        continue;
+      }
+     movedFiles.add(data.remove(idx));
+    }
+    data.addAll(0, movedFiles);
+  }
+
+  @Override
+  public synchronized void removeData(List<String> selectedFiles) {
+    for (String path: selectedFiles) {
+      // find the DataTree corresponding to this path
+      int idx = 0;
+      for (idx = 0; idx < data.size(); idx++) {
+        if (data.get(idx).getData().getPath().equals(path)) {
+          data.remove(idx);
+          break;
+        }
+      }
+    }
+  }
 }

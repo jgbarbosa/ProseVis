@@ -82,17 +82,17 @@ public class ControllerGUI {
 
     final DefaultComboBoxModel<String> fileListModel = new DefaultComboBoxModel<String>();
     final DefaultComboBoxModel<String> searchListModel = new DefaultComboBoxModel<String>();
-    final List<DefaultComboBoxModel<String>> models = new ArrayList<DefaultComboBoxModel<String>>();
-    models.add(fileListModel);
-    models.add(searchListModel);
-    JList<String> dataFileList = new JList<String>();
-    dataFileList.setModel(fileListModel);
+    final List<DefaultComboBoxModel<String>> fileListModels = new ArrayList<DefaultComboBoxModel<String>>();
+    fileListModels.add(fileListModel);
+    fileListModels.add(searchListModel);
+    final JList<String> dataFilesList = new JList<String>();
+    dataFilesList.setModel(fileListModel);
     JLabel lblProgress = new JLabel("");
     final JButton btnAddFile = new JButton("Add File");
 
     frame = new JFrame();
     FileProgressListener fplistener =
-        new FileProgressListener(theModel, models, lblProgress, btnAddFile, colorByModel, textByModel);
+        new FileProgressListener(theModel, fileListModels, lblProgress, btnAddFile, colorByModel, textByModel);
     frame.addWindowStateListener(fplistener);
     frame.setBounds(100, 100, 693, 558);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -132,7 +132,14 @@ public class ControllerGUI {
     btnRemoveFiles.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.out.println("Not implemented: remove file");
+        List<String> selectedFiles = dataFilesList.getSelectedValuesList();
+        theModel.removeData(selectedFiles);
+        for (DefaultComboBoxModel<String> list: fileListModels) {
+          list.removeAllElements();
+          for (String s: theModel.getFileList()) {
+            list.addElement(s);
+          }
+        }
       }
     });
 
@@ -141,9 +148,11 @@ public class ControllerGUI {
       @Override
       public void actionPerformed(ActionEvent e) {
         theModel.removeAllData();
-        fileListModel.removeAllElements();
-        for (String s : theModel.getFileList()) {
-          fileListModel.addElement(s);
+        for (DefaultComboBoxModel<String> list: fileListModels) {
+          list.removeAllElements();
+          for (String s: theModel.getFileList()) {
+            list.addElement(s);
+          }
         }
       }
     });
@@ -152,7 +161,14 @@ public class ControllerGUI {
     btnMoveToTop.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        System.out.println("Not implemented: move to top");
+        List<String> selectedFiles = dataFilesList.getSelectedValuesList();
+        theModel.moveFilesToTop(selectedFiles);
+        for (DefaultComboBoxModel<String> list: fileListModels) {
+          list.removeAllElements();
+          for (String s: theModel.getFileList()) {
+            list.addElement(s);
+          }
+        }
       }
     });
 
@@ -191,7 +207,7 @@ public class ControllerGUI {
     JScrollPane dataPaneFilePanel = new JScrollPane();
     dataPane.add(dataPaneFilePanel, "4, 2, fill, fill");
 
-    dataPaneFilePanel.setViewportView(dataFileList);
+    dataPaneFilePanel.setViewportView(dataFilesList);
 
     JLabel lblFiles = new JLabel("Files");
     dataPaneFilePanel.setColumnHeaderView(lblFiles);
