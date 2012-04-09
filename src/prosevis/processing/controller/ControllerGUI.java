@@ -8,6 +8,8 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,7 @@ import prosevis.data.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.ColorScheme;
+import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ProseModelIF;
 
 import com.jgoodies.forms.factories.FormFactory;
@@ -41,9 +44,16 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 
-public class ControllerGUI {
+public class ControllerGUI implements WindowStateListener {
+  static final String kXmlTag = " (with XML)";
   private final ProseModelIF theModel;
   private JFrame frame;
+  private JLabel lblProgress;
+  private JButton btnAddFile;
+  private DefaultComboBoxModel<String> colorByModel;
+  private DefaultComboBoxModel<String> textByModel;
+  private DefaultComboBoxModel<String> fileListModel;
+  private DefaultComboBoxModel<String> searchListModel;
 
   /**
    * Launch the application.
@@ -74,26 +84,21 @@ public class ControllerGUI {
    * Initialize the contents of the frame.
    */
   private void initialize() {
-    DefaultComboBoxModel<String> colorByModel = new DefaultComboBoxModel<String>();
+    colorByModel = new DefaultComboBoxModel<String>();
     colorByModel.addElement(TypeMap.kNoLabelLabel);
-    DefaultComboBoxModel<String> textByModel = new DefaultComboBoxModel<String>();
+    textByModel = new DefaultComboBoxModel<String>();
     textByModel.addElement(TypeMap.kNoLabelLabel);
     textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
 
-    final DefaultComboBoxModel<String> fileListModel = new DefaultComboBoxModel<String>();
-    final DefaultComboBoxModel<String> searchListModel = new DefaultComboBoxModel<String>();
-    final List<DefaultComboBoxModel<String>> fileListModels = new ArrayList<DefaultComboBoxModel<String>>();
-    fileListModels.add(fileListModel);
-    fileListModels.add(searchListModel);
+    fileListModel = new DefaultComboBoxModel<String>();
+    searchListModel = new DefaultComboBoxModel<String>();
     final JList<String> dataFilesList = new JList<String>();
     dataFilesList.setModel(fileListModel);
-    JLabel lblProgress = new JLabel("");
-    final JButton btnAddFile = new JButton("Add File");
+    lblProgress = new JLabel("");
+    btnAddFile = new JButton("Add File");
 
     frame = new JFrame();
-    FileProgressListener fplistener =
-        new FileProgressListener(theModel, fileListModels, lblProgress, btnAddFile, colorByModel, textByModel);
-    frame.addWindowStateListener(fplistener);
+    frame.addWindowStateListener(this);
     frame.setBounds(100, 100, 693, 558);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -118,7 +123,7 @@ public class ControllerGUI {
 
     JLabel lblActions = new JLabel("Actions");
 
-    btnAddFile.addActionListener(new ActionListener() {
+    btnAddFile.addActionListener(new FileListActionListener() {
       @Override
       public void actionPerformed(ActionEvent arg0) {
         TypeMap typeMap = theModel.getTypeMapCopy();
@@ -129,46 +134,33 @@ public class ControllerGUI {
     });
 
     JButton btnRemoveFiles = new JButton("Remove Files");
-    btnRemoveFiles.addActionListener(new ActionListener() {
+    btnRemoveFiles.addActionListener(new FileListActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        List<String> selectedFiles = dataFilesList.getSelectedValuesList();
+        List<String> selectedFiles =
+            stripXMLMetaData(dataFilesList.getSelectedValuesList());
         theModel.removeData(selectedFiles);
-        for (DefaultComboBoxModel<String> list: fileListModels) {
-          list.removeAllElements();
-          for (String s: theModel.getFileList()) {
-            list.addElement(s);
-          }
-        }
+        updateFileLists();
       }
     });
 
     JButton btnClearFiles = new JButton("Clear Files");
-    btnClearFiles.addActionListener(new ActionListener() {
+    btnClearFiles.addActionListener(new FileListActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         theModel.removeAllData();
-        for (DefaultComboBoxModel<String> list: fileListModels) {
-          list.removeAllElements();
-          for (String s: theModel.getFileList()) {
-            list.addElement(s);
-          }
-        }
+        updateFileLists();
       }
     });
 
     JButton btnMoveToTop = new JButton("Move To Top");
-    btnMoveToTop.addActionListener(new ActionListener() {
+    btnMoveToTop.addActionListener(new FileListActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        List<String> selectedFiles = dataFilesList.getSelectedValuesList();
+        List<String> selectedFiles =
+            stripXMLMetaData(dataFilesList.getSelectedValuesList());
         theModel.moveFilesToTop(selectedFiles);
-        for (DefaultComboBoxModel<String> list: fileListModels) {
-          list.removeAllElements();
-          for (String s: theModel.getFileList()) {
-            list.addElement(s);
-          }
-        }
+        updateFileLists();
       }
     });
 
@@ -543,8 +535,82 @@ public class ControllerGUI {
 
   }
 
-  public void go() {
+   public void go() {
     this.frame.setVisible(true);
+  }
+
+  @Override
+  public void windowStateChanged(WindowEvent e) {
+    if (e instanceof FileProgressEvent) {
+      FileProgressEvent fpe = (FileProgressEvent)e;
+
+      switch (fpe.getStatus()) {
+      case PROGRESS:
+        lblProgress.setText(String.format("Progress: (%2.2f%%)", fpe.getProgress() * 100.0));
+        break;
+      case FINISHED_SUCC:
+        theModel.addData(fpe.getResult(), fpe.getResultingTypeMap());
+        updateFileLists();
+        TypeMap typeMap = fpe.getResultingTypeMap();
+        for (String l: TypeMap.kPossibleColorByLabels) {
+          if (typeMap.hasLabel(l.toLowerCase()) && colorByModel.getIndexOf(l.toLowerCase()) < 0) {
+            colorByModel.addElement(l);
+          }
+        }
+        for (String l: TypeMap.kPossibleTextByLabels) {
+          if (typeMap.hasLabel(l.toLowerCase()) && textByModel.getIndexOf(l.toLowerCase()) < 0) {
+            textByModel.addElement(l);
+          }
+        }
+
+        System.err.println("Finished parsing " + fpe.getResult().getName());
+        lblProgress.setText("");
+        btnAddFile.setEnabled(true);
+        break;
+      default:
+        lblProgress.setText("");
+        btnAddFile.setEnabled(true);
+        break;
+      }
+    }
+  }
+
+  protected void updateFileLists() {
+    updateNaviFileList();
+    updateDataFileList();
+  }
+
+
+  private void updateNaviFileList() {
+    searchListModel.removeAllElements();
+    for (DataTreeView s: theModel.getRenderingData()) {
+      String line = s.getData().getPath();
+      searchListModel.addElement(line);
+    }
+  }
+
+  private void updateDataFileList() {
+    fileListModel.removeAllElements();
+    for (DataTreeView s: theModel.getRenderingData()) {
+      String line = s.getData().getPath();
+      if (s.getData().hasXML()) {
+        line += ControllerGUI.kXmlTag;
+      }
+      fileListModel.addElement(line);
+    }
   }
 }
 
+abstract class FileListActionListener implements ActionListener {
+  protected List<String> stripXMLMetaData(List<String> rawInput) {
+    List<String> strippedPaths = new ArrayList<String>(rawInput.size());
+    for (String in: rawInput) {
+      if (in.endsWith(ControllerGUI.kXmlTag)) {
+        strippedPaths.add(in.substring(0, in.lastIndexOf(ControllerGUI.kXmlTag)));
+      } else {
+        strippedPaths.add(in);
+      }
+    }
+    return strippedPaths;
+  }
+}

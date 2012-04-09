@@ -446,6 +446,9 @@ public class DataTree {
   }
 
   public int getNumNodes(BreakLinesBy level) {
+    if (xmlHead == null && level == BreakLinesBy.Line) {
+      level = BreakLinesBy.Phrase;
+    }
     HierNode requestedHierachy = (level == BreakLinesBy.Line) ? xmlHead : head;
     int curHeight = requestedHierachy.getHeight();
     int desiredHeight = level.getHeight();
@@ -459,6 +462,9 @@ public class DataTree {
   // Find the ordinal'th node on the level hierarchy level
   // for example, find the 263rd paragraph (of the entire document)
   public HierNode findNode(BreakLinesBy level, int ordinal) {
+    if (xmlHead == null && level == BreakLinesBy.Line) {
+      level = BreakLinesBy.Phrase;
+    }
     HierNode requestedHierachy = (level == BreakLinesBy.Line) ? xmlHead : head;
     int currHeight = requestedHierachy.getHeight();
     HierNodeWrapper wrapper = new HierNodeWrapper();
@@ -472,5 +478,9 @@ public class DataTree {
 
   public void setWhichTree(WhichTree v) {
     this.treeSelector.setWhichTree(v);
+  }
+
+  public boolean hasXML() {
+    return xmlHead != null;
   }
 }

@@ -20,6 +20,10 @@ public interface ProseModelIF {
 
   void removeAllData();
 
+  void moveFilesToTop(List<String> selectedFiles);
+
+  void removeData(List<String> selectedFiles);
+
   DataTreeView[] getRenderingData();
 
   void updateZoom(int lastDy);
@@ -47,7 +51,4 @@ public interface ProseModelIF {
 
   void searchForTerm(String searchTerm, String label, List<String> selectedFiles);
 
-  void moveFilesToTop(List<String> selectedFiles);
-
-  void removeData(List<String> selectedFiles);
 }
