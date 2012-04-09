@@ -62,8 +62,47 @@ public class DataTree {
 
     if (haveXML) {
       parseXML(xmlFile, prog, typeMap);
+      if (!validateTree(xmlHead)) {
+        xmlHead = null;
+      }
     }
 
+    return true;
+  }
+
+  // we'll assert that
+  // parent.getChild(i).getNext() == parent.getChild(i + 1)
+  // every node has children, unless that node is a word node
+  private boolean validateTree(HierNode root) {
+    if (root.numChildren() < 1) {
+      System.err.println("Found a HierNode with no children.");
+      return false;
+    }
+    for (int i = 0; i < root.numChildren(); i++) {
+      ProseNode curNode = root.getChildren().get(i);
+      ProseNode nextNode = (i  + 1 >= root.numChildren())?null:root.getChildren().get(i + 1);
+      if (nextNode != null && curNode.getNext() != nextNode) {
+        System.err.println("A next pointer didn't line up the way we thought it should");
+        return false;
+      }
+      if (nextNode != null && nextNode instanceof HierNode != curNode instanceof HierNode) {
+        System.err.println("Found a hiernode with two different kinds of children?");
+        return false;
+      }
+      if (!(curNode instanceof HierNode)) {
+        continue;
+      }
+      HierNode cur = (HierNode)curNode;
+      HierNode next = (HierNode)nextNode;
+      if (!validateTree(cur)) { return false; }
+      if (next != null) {
+        if (!validateTree(next)) { return false; }
+        if (cur.getLastChild().getNext() != next.getFirstChild()) {
+          System.err.println("Found that next pointers don't line up across children");
+          return false;
+        }
+      }
+    }
     return true;
   }
 
@@ -112,7 +151,6 @@ public class DataTree {
               .toLowerCase().replaceAll("“", "\"").replaceAll("”", "\"");
           HierNode lineHierNode = new HierNode(groupHierNode, numLinesSoFar,
               numLinesSoFar);
-          groupHierNode.addChild(lineHierNode);
           numLinesSoFar++;
           int lineIdx = 0;
           LinkedList<String> last10 = new LinkedList<String>();
@@ -133,7 +171,7 @@ public class DataTree {
             if (idx >= 0) {
               lineIdx = idx + word.length();
               matchedWord = true;
-            } else if (line.length() > 1) {
+            } else if (line.length() - lineIdx > 1) {
               matchedWord = true;
               // there is still some stuff left on the end of this line
               // maybe this word matches this line but has been parsed incorrectly
@@ -158,27 +196,36 @@ public class DataTree {
               curWord.addXmlLineParent(lineHierNode);
               lineHierNode.addChild(curWord, true);
             } else {
-              System.out.print(line.substring(lineIdx));
-              if (line.substring(lineIdx).length() > 0)
-                System.out.println("Looking for: " + word);
+              String lastLine = line;
               line = lineItr.getNextLineOfText();
-              if (line == null) {
+              if (line != null) {
+                line = line.trim().toLowerCase()
+                    .replaceAll("“", "\"").replaceAll("”", "\"");
+                if (lineHierNode.numChildren() > 0) {
+                  groupHierNode.addChild(lineHierNode);
+                }
+                lineHierNode = new HierNode(groupHierNode, numLinesSoFar,
+                    numLinesSoFar);
+                numLinesSoFar++;
+                lineIdx = 0;
+                continue;
+              } else {
                 System.err.println("Failed to find new line while looking for word: " + word);
-                System.err.println("Last ten words: " + last10);
-                return false;
+                System.err.println("Remaining part of the line: " + lastLine.substring(lineIdx));
+                System.err.println("Last ten words in this line group: " + last10);
+                curWord.addXmlLineParent(lineHierNode);
+                lineHierNode.addChild(curWord, true);
+                prevWord = curWord;
+                curWord = (WordNode) curWord.getNext();
               }
-              line = line.trim().toLowerCase()
-                  .replaceAll("“", "\"").replaceAll("”", "\"");
-              lineHierNode = new HierNode(groupHierNode, numLinesSoFar,
-                  numLinesSoFar);
-              groupHierNode.addChild(lineHierNode);
-              numLinesSoFar++;
-              lineIdx = 0;
-              continue;
             }
 
             prevWord = curWord;
             curWord = (WordNode) curWord.getNext();
+          }
+          if (lineHierNode.numChildren() > 0) {
+            groupHierNode.addChild(lineHierNode);
+            lineHierNode = null;
           }
         }
       }
