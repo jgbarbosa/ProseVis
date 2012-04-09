@@ -147,8 +147,7 @@ public class DataTree {
           WordNode prevWord = null;
 
           XmlTraverser lineItr = new XmlTraverser(groupElement);
-          String line = lineItr.getNextLineOfText().trim()
-              .toLowerCase().replaceAll("“", "\"").replaceAll("”", "\"");
+          String line = lineItr.getNextLineOfText().trim().replaceAll("“", "\"").replaceAll("”", "\"");
           HierNode lineHierNode = new HierNode(groupHierNode, numLinesSoFar,
               numLinesSoFar);
           numLinesSoFar++;
@@ -199,8 +198,7 @@ public class DataTree {
               String lastLine = line;
               line = lineItr.getNextLineOfText();
               if (line != null) {
-                line = line.trim().toLowerCase()
-                    .replaceAll("“", "\"").replaceAll("”", "\"");
+                line = line.trim().replaceAll("“", "\"").replaceAll("”", "\"");
                 if (lineHierNode.numChildren() > 0) {
                   groupHierNode.addChild(lineHierNode);
                 }
@@ -372,15 +370,6 @@ public class DataTree {
     long[] idTuple = parseIdTuple(line);
     addInternalNodes(lastElements, idTuple);
 
-    // Process the line once structural changes are complete
-    processSyllable(lastElements.get(lastElements.size() - 1), line, typeMap,
-        lastElements);
-  }
-
-  private void processSyllable(ProseNode parent, String[] line,
-      TypeMap typeMap, List<HierNode> lastElements) {
-    line[TypeMap.kWordIdx] = line[TypeMap.kWordIdx].toLowerCase();
-
     Syllable s = buildSyllable(line, typeMap);
 
     // TODO(wiley) Aha! This adds syllables to duplicate words following each
@@ -391,6 +380,7 @@ public class DataTree {
       // this syllable starts a new word
 
       // Create new word
+      ProseNode parent = lastElements.get(lastElements.size() - 1);
       WordNode newWord = buildWordNode(parent, line, s, typeMap);
 
       currentWord = newWord;
@@ -406,8 +396,8 @@ public class DataTree {
       TypeMap typeMap) {
     WordNode result = new WordNode(parent, this.treeSelector,
         line[TypeMap.kWordIdx], s);
-    for (int idx = TypeMap.kWordIdx; idx < TypeMap.kMaxFields; idx++) {
-      int typeIdx = typeMap.getOrAddTypeIdx(idx, line[idx].toLowerCase());
+    for (int idx = TypeMap.kWordIdx ; idx < TypeMap.kMaxFields; idx++) {
+      int typeIdx = typeMap.getOrAddTypeIdx(idx, line[idx]);
       result.addLabelTypePair(idx, typeIdx);
     }
 
