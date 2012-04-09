@@ -51,7 +51,7 @@ public class DataTreeView {
   }
 
   public synchronized void setScroll(double scroll) {
-    this.scrollFraction = scroll;
+    this.scrollFraction = Math.max(0.0, Math.min(1.0, scroll));
     this.needsRender = true;
   }
 
