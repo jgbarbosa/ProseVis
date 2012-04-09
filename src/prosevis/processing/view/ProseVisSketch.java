@@ -253,7 +253,7 @@ public class ProseVisSketch extends PApplet {
       renderedWidth = 0;
       while (wordNode != null) {
         if (renderTextByLabelIdx == TypeMap.kNoLabelIdx) {
-          renderedText = "        ";
+          renderedText = "      ";
         } else if (renderTextByLabelIdx == TypeMap.kPhonemeIdx) {
           final int phonemeCount = wordNode.getSyllableCount();
           tmp.setLength(0);
@@ -283,9 +283,12 @@ public class ProseVisSketch extends PApplet {
         if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
           colorBackground(colorByLabelIdx, colorView, wordNode, wordTopX, wordTopY, wordDx, wordDy);
         }
+        if (lineBuffer.length() > 0 && !wordNode.isPunct()) {
+          lineBuffer.append(' ');
+          renderedWidth += spaceWidth;
+        }
         lineBuffer.append(renderedText);
-        lineBuffer.append(' ');
-        renderedWidth += wordWidth + spaceWidth;
+        renderedWidth += wordWidth;
         wordNode = words.next();
       }
       fill(0);
