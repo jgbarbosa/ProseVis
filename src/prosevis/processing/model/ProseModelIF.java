@@ -50,5 +50,4 @@ public interface ProseModelIF {
   ColorScheme getColorScheme(String label);
 
   void searchForTerm(String searchTerm, String label, List<String> selectedFiles);
-
 }

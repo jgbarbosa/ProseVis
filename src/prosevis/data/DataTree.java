@@ -22,6 +22,7 @@ import prosevis.data.nodes.Syllable;
 import prosevis.data.nodes.TreeSelector;
 import prosevis.data.nodes.TreeSelector.WhichTree;
 import prosevis.data.nodes.WordNode;
+import prosevis.processing.controller.FileLoader;
 import prosevis.processing.controller.IProgressNotifiable;
 
 public class DataTree {
@@ -49,23 +50,37 @@ public class DataTree {
     }
     loaded = true;
 
+    if (!parseTSV(file, prog, typeMap)) {
+      return false;
+    }
+
+
     String xmlFileName = file.getName();
     xmlFileName = xmlFileName.substring(0, xmlFileName.lastIndexOf('.'));
     xmlFileName += ".xml";
     String xmlPath = file.getParent() + File.separator + xmlFileName;
     File xmlFile = new File(xmlPath);
-    boolean haveXML = xmlFile.exists() && xmlFile.isFile();
 
-    if (!parseTSV(file, prog, typeMap)) {
-      return false;
-    }
-
-    if (haveXML) {
+    do {
+      boolean haveXML = xmlFile != null && xmlFile.exists() && xmlFile.isFile();
+      if (!haveXML) {
+        int code = JOptionPane.showConfirmDialog(null,
+            "Couldn't find an obvious XML file for " + shortName + ". Would you like to attach XML?");
+        if (code == JOptionPane.CANCEL_OPTION) {
+          return false;
+        } else if (code == JOptionPane.YES_OPTION) {
+          xmlFile = FileLoader.loadXmlFile();
+          continue;
+        } else {
+          break;
+        }
+      }
       parseXML(xmlFile, prog, typeMap);
       if (!validateTree(xmlHead)) {
         xmlHead = null;
       }
-    }
+      xmlFile = null;
+    } while (xmlHead == null);
 
     return true;
   }

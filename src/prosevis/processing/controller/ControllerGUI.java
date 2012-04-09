@@ -576,20 +576,12 @@ public class ControllerGUI implements WindowStateListener {
   }
 
   protected void updateFileLists() {
-    updateNaviFileList();
-    updateDataFileList();
-  }
-
-
-  private void updateNaviFileList() {
     searchListModel.removeAllElements();
     for (DataTreeView s: theModel.getRenderingData()) {
       String line = s.getData().getPath();
       searchListModel.addElement(line);
     }
-  }
 
-  private void updateDataFileList() {
     fileListModel.removeAllElements();
     for (DataTreeView s: theModel.getRenderingData()) {
       String line = s.getData().getPath();

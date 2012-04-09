@@ -101,4 +101,7 @@ public class FileLoader implements Runnable, IProgressNotifiable {
   public void notifyProgess(double d) {
     parentComponent.dispatchEvent(new FileProgressEvent(Frame.getWindows()[0], d));
   }
+  public static File loadXmlFile() {
+    return loadFile(ForWhat.DataTree);
+  }
 }
