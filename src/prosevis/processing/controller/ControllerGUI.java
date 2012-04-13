@@ -36,7 +36,6 @@ import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.ColorScheme;
 import prosevis.processing.model.DataTreeView;
-import prosevis.processing.model.ProseModelIF;
 
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
@@ -46,7 +45,7 @@ import com.jgoodies.forms.layout.RowSpec;
 
 public class ControllerGUI implements WindowStateListener {
   static final String kXmlTag = " (with XML)";
-  private final ProseModelIF theModel;
+  private final ApplicationModel theModel;
   private JFrame frame;
   private JLabel lblProgress;
   private JButton btnAddFile;
@@ -63,7 +62,8 @@ public class ControllerGUI implements WindowStateListener {
       @Override
       public void run() {
         try {
-          ControllerGUI window = new ControllerGUI(new ApplicationModel());
+          ControllerGUI window = new ControllerGUI(
+              new ApplicationModel(1440, 900));
           window.frame.setVisible(true);
         } catch (Exception e) {
           e.printStackTrace();
@@ -74,8 +74,9 @@ public class ControllerGUI implements WindowStateListener {
 
   /**
    * Create the application.
+   * @param wC
    */
-  public ControllerGUI(ProseModelIF model) {
+  public ControllerGUI(ApplicationModel model) {
     theModel = model;
     initialize();
   }
@@ -577,15 +578,16 @@ public class ControllerGUI implements WindowStateListener {
 
   protected void updateFileLists() {
     searchListModel.removeAllElements();
-    for (DataTreeView s: theModel.getRenderingData()) {
+    DataTreeView[] views = theModel.getRenderingData().views;
+    for (DataTreeView s: views) {
       String line = s.getData().getPath();
       searchListModel.addElement(line);
     }
 
     fileListModel.removeAllElements();
-    for (DataTreeView s: theModel.getRenderingData()) {
+    for (DataTreeView s: views) {
       String line = s.getData().getPath();
-      if (s.getData().hasXML()) {
+      if (s.canRenderByProseLines()) {
         line += ControllerGUI.kXmlTag;
       }
       fileListModel.addElement(line);

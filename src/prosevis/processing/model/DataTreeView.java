@@ -1,48 +1,46 @@
 package prosevis.processing.model;
 
 import prosevis.data.BreakLinesBy;
-import prosevis.data.DataTree;
+import prosevis.data.DocWord;
+import prosevis.data.Document;
 import prosevis.data.TypeMap;
-import prosevis.data.nodes.HierNode;
-import prosevis.data.nodes.TreeSelector;
-import prosevis.data.nodes.WordNode;
+import prosevis.processing.view.GeometryModel;
+import prosevis.processing.view.WidthCalculator;
 
 public class DataTreeView {
-  private final DataTree data;
+  private final Document data;
   private double scrollFraction;
   private boolean needsRender = true;
   private int currentFontSize = 14;
   private int colorByLabelIdx = TypeMap.kNoLabelIdx;
   private int textByLabelIdx = TypeMap.kWordIdx;
   private final Searcher searcher = new Searcher();
-  public static final double SCROLL_TOP = 1.0;
-  public static final double SCROLL_BOTTOM = 0.0;
-  private static final double SCROLL_MULTIPLIER = 1.0;
+  private ScrollInfo lastScrollInfo;
+  private final LineWrapper lineWrapper;
+  public static final double kScrollTop = 1.0;
+  public static final double kScrollBottom = 0.0;
+  private static final double kScrollMultiplier = 1.0;
   private static BreakLinesBy renderType = BreakLinesBy.Phrase;
+
+  public DataTreeView(Document data, int fontSz, GeometryModel geoModel, WidthCalculator wc) {
+    this.data = data;
+    this.scrollFraction = kScrollTop;
+    this.currentFontSize = fontSz;
+    lineWrapper = new LineWrapper(data.getFirstWord(), geoModel, wc);
+    lineWrapper.setFontSize(currentFontSize);
+    // init lastScrollInfo
+    getScrollInfo();
+  }
+
 
   public synchronized void setRenderingBy(BreakLinesBy type) {
     if (renderType != type) {
       needsRender = true;
       renderType = type;
     }
-    if (type.equals(BreakLinesBy.Line)) {
-      data.setWhichTree(TreeSelector.WhichTree.XML);
-    } else {
-      data.setWhichTree(TreeSelector.WhichTree.TSV);
-    }
   }
 
-  public DataTreeView(DataTree data, int fontSz) {
-    this.data = data;
-    this.scrollFraction = SCROLL_TOP;
-    if (renderType.equals(BreakLinesBy.Line)) {
-      data.setWhichTree(TreeSelector.WhichTree.XML);
-    } else {
-      data.setWhichTree(TreeSelector.WhichTree.TSV);
-    }
-  }
-
-  public synchronized DataTree getData() {
+  public synchronized Document getData() {
     return this.data;
   }
 
@@ -55,7 +53,8 @@ public class DataTreeView {
     this.needsRender = true;
   }
 
-  public static boolean sameFiles(DataTreeView[] views, DataTreeView[] lastViews) {
+  public static boolean sameFiles(
+      DataTreeView[] views, DataTreeView[] lastViews) {
     if (views == null || lastViews == null) {
       return false;
     }
@@ -70,14 +69,9 @@ public class DataTreeView {
     return true;
   }
 
-  public synchronized ScrollInfo getScrollRenderInfo() {
-    // 1 - scroll because top of file is 1.0 and bottom is 0.0
-    double fracLines = data.getNumNodes(renderType) * (1 - this.scrollFraction);
-    int lineNum = (int)fracLines;
-    double lineFrac = fracLines - lineNum;
-    lineNum = Math.min(lineNum, data.getNumNodes(renderType) - 1);
-    HierNode node = data.findNode(renderType, lineNum);
-    return new ScrollInfo(node, lineFrac);
+  public synchronized ScrollInfo getScrollInfo() {
+    lastScrollInfo = lineWrapper.getScrollInfo(renderType, 1.0  - scrollFraction);
+    return lastScrollInfo;
   }
 
   public synchronized boolean getAndClearNeedsRender() {
@@ -87,7 +81,9 @@ public class DataTreeView {
   }
 
   public synchronized double addScrollOffset(int dy) {
-    this.scrollFraction += (SCROLL_MULTIPLIER * dy) / (data.getNumNodes(renderType) * this.currentFontSize );
+    this.scrollFraction +=
+        (kScrollMultiplier * dy) /
+        (lineWrapper.getNumLines(renderType) * currentFontSize);
     this.scrollFraction = Math.max(0.0, Math.min(1.0, scrollFraction));
     this.needsRender = true;
     return this.scrollFraction;
@@ -98,6 +94,7 @@ public class DataTreeView {
       this.needsRender = true;
     }
     this.currentFontSize = newSize;
+    this.lineWrapper.setFontSize(newSize);
   }
 
   public synchronized int getFontSize() {
@@ -122,28 +119,27 @@ public class DataTreeView {
   }
 
   public synchronized void searchForTerm(int typeIdx, int labelIdx) {
-    int breakLevels = renderType.getHeight();
-    ScrollInfo scrollInfo = getScrollRenderInfo();
-    HierNode lineStartInHierarchy = scrollInfo.lineNode;
-    if (scrollInfo.lineFrac > 0.2) {
-      lineStartInHierarchy = (HierNode)lineStartInHierarchy.getNext();
-    }
-    if (lineStartInHierarchy == null) {
+    DocWord lineStart = lastScrollInfo.lines.get(lastScrollInfo.lineIdx);
+    if (lineStart == null) {
       return;
     }
 
-    WordNode result = searcher.search(breakLevels, lineStartInHierarchy, labelIdx, typeIdx);
+    DocWord result = searcher.search(
+        data.getFirstWord(), lineStart, labelIdx, typeIdx);
     if (result == null) {
       return;
     }
-    // now we know a word with the desired property, adjust the scroll until we get there
-    // find the appropriate hiernode
-    lineStartInHierarchy = (HierNode)result.getParent();
-    for (int i = 1; i < breakLevels; i++) {
-      lineStartInHierarchy = (HierNode)lineStartInHierarchy.getParent();
-    }
 
-    this.scrollFraction = 1.0 - (lineStartInHierarchy.getNodeNumber() / (double) data.getNumNodes(renderType));
+    // now we know a word with the desired property, adjust the scroll
+    final int lineNum = result.getLineIdx(renderType);
+
+    this.scrollFraction = 1.0 -
+        (lineNum / (double) lineWrapper.getNumLines(renderType));
     this.needsRender = true;
+  }
+
+
+  public synchronized boolean canRenderByProseLines() {
+    return data.hasXml();
   }
 }

@@ -3,7 +3,7 @@ package prosevis.processing.controller;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 
-import prosevis.data.DataTree;
+import prosevis.data.Document;
 import prosevis.data.TypeMap;
 
 public class FileProgressEvent extends WindowEvent {
@@ -17,10 +17,10 @@ public class FileProgressEvent extends WindowEvent {
 
   private final ProgressType status;
   private final double progress;
-  private final DataTree result;
+  private final Document result;
   private final TypeMap resultingTypeMap;
 
-  public FileProgressEvent(Window src, DataTree tree, TypeMap map) {
+  public FileProgressEvent(Window src, Document tree, TypeMap map) {
     super(src, WindowEvent.WINDOW_STATE_CHANGED);
     this.status = (tree != null) ? ProgressType.FINISHED_SUCC : ProgressType.FINISHED_FAIL;
     this.progress = 1.0;
@@ -40,7 +40,7 @@ public class FileProgressEvent extends WindowEvent {
     return this.status;
   }
 
-  public DataTree getResult() {
+  public Document getResult() {
     return result;
   }
 

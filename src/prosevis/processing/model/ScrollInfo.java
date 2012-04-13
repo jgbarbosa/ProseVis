@@ -1,14 +1,23 @@
 package prosevis.processing.model;
 
-import prosevis.data.nodes.HierNode;
+import java.util.List;
+
+import prosevis.data.BreakLinesBy;
+import prosevis.data.DocWord;
 
 public class ScrollInfo {
-  public final HierNode lineNode;
+  public final List<DocWord> lines;
+  public final List<Boolean> firstLines;
   // [0, 1.0] of a line height to adjust the window start by
   public final double lineFrac;
+  public final int lineIdx;
+  public final BreakLinesBy breakLinesBy;
 
-  public ScrollInfo(HierNode node, double frac) {
-    lineNode = node;
-    lineFrac = frac;
+  public ScrollInfo(List<DocWord> lines, List<Boolean> firsts, int lineNum, double lineFrac, BreakLinesBy renderType) {
+    this.lines = lines;
+    this.firstLines = firsts;
+    this.lineIdx = lineNum;
+    this.lineFrac = lineFrac;
+    this.breakLinesBy = renderType;
   }
 }

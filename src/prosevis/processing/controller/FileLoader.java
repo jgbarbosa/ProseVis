@@ -10,7 +10,7 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
-import prosevis.data.DataTree;
+import prosevis.data.Document;
 import prosevis.data.TypeMap;
 
 public class FileLoader implements Runnable, IProgressNotifiable {
@@ -21,7 +21,7 @@ public class FileLoader implements Runnable, IProgressNotifiable {
   public FileLoader(JFrame parent, TypeMap typeMap) {
     parentComponent = parent;
     this.typeMap = typeMap;
- }
+  }
 
   private enum ForWhat {
     DataTree,
@@ -83,11 +83,11 @@ public class FileLoader implements Runnable, IProgressNotifiable {
     return null;
   }
 
-  private DataTree loadDataTree() {
+  private Document loadDataTree() {
     File file = loadFile(ForWhat.DataTree);
-    DataTree tree = new DataTree();
-    if (file != null && tree.load(file, this, typeMap)) {
-      return tree;
+    Document doc = new Document();
+    if (file != null && doc.load(file, this, typeMap)) {
+      return doc;
     }
     return null;
   }

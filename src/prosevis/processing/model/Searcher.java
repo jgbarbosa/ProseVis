@@ -1,57 +1,47 @@
 package prosevis.processing.model;
 
-import prosevis.data.nodes.HierNode;
-import prosevis.data.nodes.WordNode;
+import prosevis.data.DocWord;
+import prosevis.data.TypeMap;
 
 public class Searcher {
-  private WordNode lastResult;
-  private HierNode lastResultLine = null;
+  private DocWord lastResult;
+  private final int lastLabelIdx = TypeMap.kNoLabelIdx;
+  private final int lastTypeIdx = TypeMap.kNoLabelIdx;
 
-  public WordNode search(int breakLevels, HierNode lineStart, int labelIdx, int typeIdx) {
-    if (lastResult != null) {
-      lastResult.setIsSearchResult(false);
+  public DocWord search(DocWord firstWord, DocWord lineStart, int labelIdx, int typeIdx) {
+    boolean areAfterCurrentLine = false;
+    if (lastLabelIdx == labelIdx && lastTypeIdx == typeIdx) {
+      // we're doing the same search again, so just go forward from the current
+      // first word, and look for a match
+      // if we see our last result first thing, skip that one
+      for (DocWord cur = lineStart; cur != null; cur = cur.next()) {
+        if (cur.isSearchResult() && cur != lastResult) {
+          lastResult = cur;
+          return lastResult;
+        }
+      }
+      return null;
     }
 
-    HierNode goingDown = lineStart;
-    while (goingDown.getFirstChild() != null && goingDown.getFirstChild().getFirstChild() != null) {
-      goingDown = (HierNode)goingDown.getFirstChild();
-    }
-
-    WordNode itr = (WordNode)goingDown.getFirstChild();
-
-    if (lineStart == lastResultLine) {
-      itr = (WordNode)lastResult.getNext();
-    }
-
-    int i;
-    boolean keepGoing = true;
-    for ( ; itr != null && keepGoing; itr = (WordNode)itr.getNext()) {
-      for (i = 0; i < itr.getSyllableCount(); i++) {
-        if (itr.getTypeIdxForLabelIdx(labelIdx, i) == typeIdx) {
-          keepGoing = false;
+    // new search!
+    // highlite everything, starting from the beginning, return the first word
+    // after we cross the line we currently have visible
+    DocWord result = null;
+    for (DocWord cur = firstWord; cur != null; cur = cur.next()) {
+      if (cur == lineStart) {
+        areAfterCurrentLine = true;
+      }
+      for (int i = 0; i < cur.getSyllableCount(); i++) {
+        cur.setIsSearchResult(false);
+        if (cur.getTypeIdxForLabelIdx(labelIdx, i) == typeIdx) {
+          cur.setIsSearchResult(true);
           break;
         }
       }
-      if (!keepGoing) {
-        break;
+      if (areAfterCurrentLine && cur.isSearchResult()) {
+        result = cur;
       }
     }
-
-    lastResult = itr;
-    if (itr != null) {
-      // notate that this word is our search result
-      itr.setIsSearchResult(true);
-      // find the hiernode corresponding to the line, remember it
-      // if we search again and find that they haven't moved the display, then
-      // we'll skip this result
-      lastResultLine = (HierNode)itr.getParent();
-      for (int j = 1; j < breakLevels; j++) {
-        lastResultLine = (HierNode)lastResultLine.getParent();
-      }
-    } else {
-      lastResultLine = null;
-    }
-
-    return lastResult;
+    return result;
   }
 }

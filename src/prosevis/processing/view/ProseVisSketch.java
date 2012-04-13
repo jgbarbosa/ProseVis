@@ -7,15 +7,12 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PFont;
-import prosevis.data.NodeIterator;
+import prosevis.data.DocWord;
 import prosevis.data.TypeMap;
-import prosevis.data.nodes.HierNode;
-import prosevis.data.nodes.WordNode;
 import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.ColorView;
 import prosevis.processing.model.DataTreeView;
-import prosevis.processing.model.ProseModelIF;
 import prosevis.processing.model.ScrollInfo;
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
@@ -23,13 +20,23 @@ import controlP5.Slider;
 
 public class ProseVisSketch extends PApplet {
   private static final long serialVersionUID = 1L;
-  private static final int VIEW_WIDTH = 1440;
-  private static final int VIEW_HEIGHT = 800;
-  private static final double SLIDER_FRACTION = 0.01;
   private static final double DScrollInertia = 0.3;
+  private enum WhichResolution {
+    Laptop(1440, 900),
+    Lasso(5000, 2000);
+
+    public final int y;
+    public final int x;
+
+    private WhichResolution(int x, int y) {
+      this.x = x;
+      this.y = y;
+    }
+  }
+  private static WhichResolution whichResolution = WhichResolution.Laptop;
 
   private ControlP5 controlP5;
-  private final ProseModelIF theModel;
+  private final ApplicationModel theModel;
   private final ArrayList<Slider> sliders;
   private DataTreeView[] lastViews;
   private final HashMap<Integer, PFont> fonts;
@@ -41,9 +48,11 @@ public class ProseVisSketch extends PApplet {
   private int inertialScrollIdx;
   private long lastDt;
   private int lastDy;
+  private int lastSliderWidth;
+  private int lastViewWidth;
 
   public ProseVisSketch() {
-    theModel = new ApplicationModel();
+    theModel = new ApplicationModel(whichResolution.x, whichResolution.y);
     sliders = new ArrayList<Slider>();
     lastViews = null;
     fonts = new HashMap<Integer, PFont>();
@@ -58,13 +67,20 @@ public class ProseVisSketch extends PApplet {
   @Override
   public void setup() {
     // size call must be first, Processing is possibly the worst library ever written
-    size(VIEW_WIDTH, VIEW_HEIGHT, OPENGL);
-    // can't do this in the constructor
+    size(theModel.getScreenX(), theModel.getScreenY(), OPENGL);
+    // can't do this in the constructor, again, worst library ever
     controlP5 = new ControlP5(this);
+
     background(255, 255, 255);
     frameRate(25);
     fill(0, 0, 0);
     setFont(14);
+    // Fun fact, ApplicationModel will refuse to add documents until this baby
+    // gets called from here.  However, if you try and make this call before
+    // setFont, there is an internal NullPointerException from, you guessed it,
+    // Processing.
+    WidthCalculator.setWidthCalculator(new WidthCalculator(
+        this, ApplicationModel.kMinFontSz, ApplicationModel.kMaxFontSz));
 
     EventQueue.invokeLater(new Runnable() {
       @Override
@@ -77,7 +93,8 @@ public class ProseVisSketch extends PApplet {
         }
       }
     });
-    }
+
+  }
 
   private void setFont(int size) {
     if (curFontSize != size) {
@@ -95,14 +112,13 @@ public class ProseVisSketch extends PApplet {
 
   @Override
   public void draw() {
-    DataTreeView[] views = theModel.getRenderingData();
-    ColorView colorView = theModel.getColorView();
+    RenderingInformation renderInfo = theModel.getRenderingData();
+    DataTreeView[] views = renderInfo.views;
+    ColorView colorView = renderInfo.colorView;
     boolean colorStateChanged = colorView.firstRenderSinceUpdate();
-    final int viewHeight = VIEW_HEIGHT;
-    final int viewWidth = (views.length < 1)
-        ? VIEW_WIDTH
-        : VIEW_WIDTH / views.length;
-    final int sliderWidth = max((int)(viewWidth * SLIDER_FRACTION), 10);
+    final int sliderWidth = lastSliderWidth = renderInfo.sliderWidth;
+    final int viewWidth = lastViewWidth = renderInfo.viewWidth;
+    final int viewHeight = renderInfo.viewHeight;
 
     if (!DataTreeView.sameFiles(views, lastViews)) {
       lastViewScrollIdx = -1;
@@ -115,7 +131,8 @@ public class ProseVisSketch extends PApplet {
       sliders.clear();
       for (int i = 0; i < views.length; i++) {
         // add a slider for this slice of the screen
-        controlP5.addSlider("slider" + sliders.size(), 0.0f, 1.0f, (float)views[sliders.size()].getScroll(),
+        controlP5.addSlider("slider" + sliders.size(), 0.0f, 1.0f,
+            (float)views[sliders.size()].getScroll(),
             (i + 1) * viewWidth - sliderWidth,
             0,
             sliderWidth, viewHeight);
@@ -131,7 +148,10 @@ public class ProseVisSketch extends PApplet {
     } else {
       long now = System.currentTimeMillis();
       long dT = now - lastUpdate;
-      if (this.scrollInertia != 0.0 && this.inertialScrollIdx >= 0 && inertialScrollIdx < views.length && dT > 0) {
+      if (this.scrollInertia != 0.0 &&
+          this.inertialScrollIdx >= 0 &&
+          inertialScrollIdx < views.length &&
+          dT > 0) {
         lastUpdate = now;
         double scroll = views[inertialScrollIdx].addScrollOffset((int)(scrollInertia * dT));
         sliders.get(inertialScrollIdx).setValue((float)scroll);
@@ -184,8 +204,8 @@ public class ProseVisSketch extends PApplet {
         if (x >= 0 && x < width && y > 0 && y < height) {
           scrollInertia = 0.0;
           inertialScrollIdx = -1;
-          final int viewWidth = width / lastViews.length;
-          final int sliderWidth = max((int)(viewWidth * SLIDER_FRACTION), 10);
+          final int viewWidth = lastViewWidth;
+          final int sliderWidth = lastSliderWidth;
           for (int i = 0; i < lastViews.length; i++) {
             if (x < (i + 1) * viewWidth - sliderWidth && x >= i * viewWidth) {
               lastViewScrollIdx = i;
@@ -225,8 +245,8 @@ public class ProseVisSketch extends PApplet {
     fill(255);
     rect(minX, minY, viewWidth, viewHeight);
     fill(0);
-    ScrollInfo scrollInfo = dataTreeView.getScrollRenderInfo();
-    HierNode lineNode = scrollInfo.lineNode;
+    ScrollInfo scrollInfo = dataTreeView.getScrollInfo();
+    int lineIdx = scrollInfo.lineIdx;
     int renderedHeight = 0;
     final int lineHeight = dataTreeView.getFontSize(); // hope this works in general
     setFont(lineHeight);
@@ -244,33 +264,44 @@ public class ProseVisSketch extends PApplet {
     final StringBuilder tmp = new StringBuilder();
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
-      NodeIterator words = new NodeIterator(lineNode);
-      WordNode wordNode = words.next();
-      if (wordNode == null) {
+      if (lineIdx >= scrollInfo.lines.size()) {
         // we're out of lines, not even one word in this one
         break;
       }
+      DocWord wordNode = scrollInfo.lines.get(lineIdx);
       renderedWidth = 0;
-      while (wordNode != null) {
+      if (scrollInfo.firstLines.get(lineIdx)) {
+        renderedWidth += textWidth("     ");
+        lineBuffer.append("     ");
+      }
+      while (wordNode != null && wordNode.getLineIdx(scrollInfo.breakLinesBy) == lineIdx) {
         if (renderTextByLabelIdx == TypeMap.kNoLabelIdx) {
-          renderedText = "      ";
+          renderedText = "     ";
         } else if (renderTextByLabelIdx == TypeMap.kPhonemeIdx) {
           final int phonemeCount = wordNode.getSyllableCount();
           tmp.setLength(0);
           for (int i = 0; i < phonemeCount; i++) {
-            tmp.append(colorView.getType(renderTextByLabelIdx, wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx, i)));
+            tmp.append(colorView.getType(
+                renderTextByLabelIdx,
+                wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx, i)));
             tmp.append(' ');
           }
           renderedText = tmp.toString();
         } else {
-          renderedText = colorView.getType(renderTextByLabelIdx, wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx));
+          renderedText = colorView.getType(
+              renderTextByLabelIdx,
+              wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx));
         }
         final float wordWidth = textWidth(renderedText);
-        if (wordWidth + renderedWidth > viewWidth) {
-          // garbage collect the page breaks
-          words.clearDisplayBreak();
+        if (wordWidth + renderedWidth >= viewWidth - spaceWidth) {
           break;
         }
+
+        if (lineBuffer.length() > 0 && !wordNode.isPunct()) {
+          lineBuffer.append(' ');
+          renderedWidth += spaceWidth;
+        }
+
         final int wordTopX = (int)renderedWidth + minX;
         final int wordTopY = renderedHeight + minY + dLine;
         final int wordDx = (int)wordWidth;
@@ -281,26 +312,29 @@ public class ProseVisSketch extends PApplet {
           rect(wordTopX, wordTopY, wordDx, wordDy);
         }
         if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
-          colorBackground(colorByLabelIdx, colorView, wordNode, wordTopX, wordTopY, wordDx, wordDy);
-        }
-        if (lineBuffer.length() > 0 && !wordNode.isPunct()) {
-          lineBuffer.append(' ');
-          renderedWidth += spaceWidth;
+          colorBackground(
+              colorByLabelIdx,
+              colorView,
+              wordNode,
+              wordTopX,
+              wordTopY,
+              wordDx,
+              wordDy);
         }
         lineBuffer.append(renderedText);
         renderedWidth += wordWidth;
-        wordNode = words.next();
+        wordNode = wordNode.next();
       }
       fill(0);
       text(lineBuffer.toString(), minX,  renderedHeight + lineHeight + minY);
       lineBuffer.setLength(0);
-      lineNode = (HierNode)lineNode.getNext();
+      lineIdx++;
       renderedHeight += lineHeight;
     }
   }
 
   private void colorBackground(int colorByLabelIdx, ColorView colorView,
-      WordNode wordNode, int topX, int topY, int dx, int dy) {
+      DocWord wordNode, int topX, int topY, int dx, int dy) {
     if (wordNode.isPunct()) {
       return;
     }
@@ -348,7 +382,19 @@ public class ProseVisSketch extends PApplet {
    * @param args
    */
   public static void main(String[] args) {
-  //  PApplet.main(new String[] { "--present", "prosevis.processing.view.ProseVisSketch" });
-    PApplet.main(new String[] {"prosevis.processing.view.ProseVisSketch"});
+    if (args.length >= 3 && "lasso".equals(args[2])) {
+      ProseVisSketch.whichResolution = WhichResolution.Lasso;
+    }
+
+    if (args.length >= 2 && "fullscreen".equals(args[1])) {
+      PApplet.main(new String[] {
+          "--present",
+          "prosevis.processing.view.ProseVisSketch"
+          });
+    } else {
+      PApplet.main(new String[] {
+          "prosevis.processing.view.ProseVisSketch"
+          });
+    }
   }
 }

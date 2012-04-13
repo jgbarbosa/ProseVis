@@ -1,18 +1,25 @@
 package prosevis.data;
 
-public enum BreakLinesBy {
-  Section(4),
-  Paragraph(3),
-  Sentence(2),
-  Phrase(1),
-  // these are in the alternate tree hierarchy
-  Line(1);
 
-  private int height;
-  private BreakLinesBy(int height) {
-    this.height = height;
+public enum BreakLinesBy {
+  Section(0),
+  Paragraph(1),
+  Sentence(2),
+  Phrase(3),
+  // these are in the alternate tree hierarchy
+  Line(4),
+  LineGroup(1);
+
+  private final int idx;
+  public final static int kNumIndices = 5;
+
+  private BreakLinesBy(int idIdx) {
+    this.idx = idIdx;
+    if (idx >= BreakLinesBy.kNumIndices) {
+      throw new RuntimeException("Idiot developers shouldn't touch this.");
+    }
   }
-  public int getHeight() {
-    return height;
+  public int getIdx() {
+    return this.idx;
   }
 }

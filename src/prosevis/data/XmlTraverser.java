@@ -52,4 +52,13 @@ public class XmlTraverser {
       current = null;
     }
   }
+
+  public String getNextCleanLineOfText() {
+    String unclean = getNextLineOfText();
+    if (unclean == null) {
+      return null;
+    }
+    return unclean.trim().replaceAll("“", "\"")
+        .replaceAll("”", "\"");
+  }
 }

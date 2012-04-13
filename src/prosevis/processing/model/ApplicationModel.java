@@ -4,27 +4,48 @@ import java.util.ArrayList;
 import java.util.List;
 
 import prosevis.data.BreakLinesBy;
-import prosevis.data.DataTree;
+import prosevis.data.Document;
 import prosevis.data.TypeMap;
+import prosevis.processing.view.GeometryModel;
+import prosevis.processing.view.RenderingInformation;
+import prosevis.processing.view.WidthCalculator;
 
-public class ApplicationModel implements ProseModelIF {
+public class ApplicationModel {
+  public static final int kMaxFontSz = 28;
+  public static final int kMinFontSz = 3;
+  private static final int kZoomSensitivity = 5;
+  private static final int kZoomMin = kMinFontSz * kZoomSensitivity;
+  private static final int kZoomMax = kMaxFontSz * kZoomSensitivity;
 
-  private static final int ZOOM_SENSITIVITY = 5;
-  private static final int ZOOM_MIN = 7 * ZOOM_SENSITIVITY;
-  private static final int ZOOM_MAX = 28 * ZOOM_SENSITIVITY;
+  private final int xResolution;
+  private final int yResolution;
   private final ArrayList<DataTreeView> data = new ArrayList<DataTreeView>();
   private BreakLinesBy lineBreaks = BreakLinesBy.Phrase;
-  private int zoomLevel = 14 * ZOOM_SENSITIVITY;
+  // zoom level is like the font size, except in units scaled by kZoomSensitivity
+  // this lets us add the raw number of pixels a user has right-click-dragged to
+  // zoomLevel and later convert that to a desired font size
+  private int zoomLevel = 14 * kZoomSensitivity;
   private int colorByLabelIdx = TypeMap.kNoLabelIdx;
   private final ColorMap colorDB = new ColorMap();
   private int textByLabelIdx = TypeMap.kWordIdx;
   private final List<ColorScheme> colorSchemes = new ArrayList<ColorScheme>();
+  private final GeometryModel geoModel;
 
-  /* (non-Javadoc)
-   * @see prosevis.processing.ProseModelIF#addData(prosevis.data.DataTree)
-   */
-  @Override
-  public synchronized void addData(DataTree newTree, TypeMap correspondingTypeMap) {
+  public ApplicationModel(int xres, int yres) {
+    xResolution = xres;
+    yResolution = yres;
+    geoModel = new GeometryModel(xResolution, yResolution);
+  }
+
+  // modifiedTypes must be compatible with the last call to getTypeMapCopy()
+  // ie you have to take that typeMap you got, modify it, then send it along
+  // with the dataTree
+  // implicitly, this means you can only load one file at a time, for now
+  public synchronized void addData(Document newTree, TypeMap correspondingTypeMap) {
+    WidthCalculator wc = WidthCalculator.getWidthCalculator();
+    if (wc == null) {
+      return;
+    }
     String newFilePath = newTree.getPath();
     for (DataTreeView tree: data) {
       if (tree.getData().getPath().equals(newFilePath)) {
@@ -33,16 +54,13 @@ public class ApplicationModel implements ProseModelIF {
       }
     }
     colorDB.mergeTypeMap(correspondingTypeMap);
-    DataTreeView view = new DataTreeView(newTree, zoomLevel / ZOOM_SENSITIVITY);
+    DataTreeView view = new DataTreeView(newTree, zoomLevel / kZoomSensitivity, geoModel, wc);
     view.setRenderingBy(lineBreaks);
     view.setColorBy(colorByLabelIdx);
     data.add(view);
+    geoModel.setX(xResolution / data.size());
   }
 
-  /* (non-Javadoc)
-   * @see prosevis.processing.ProseModelIF#getFileList()
-   */
-  @Override
   public synchronized ArrayList<String> getFileList() {
     ArrayList<String> ret = new ArrayList<String>();
     for (DataTreeView tree: data) {
@@ -51,35 +69,30 @@ public class ApplicationModel implements ProseModelIF {
     return ret;
   }
 
-  /* (non-Javadoc)
-   * @see prosevis.processing.ProseModelIF#removeAllData()
-   */
-  @Override
   public synchronized void removeAllData() {
     this.data.clear();
   }
 
-  /* (non-Javadoc)
-   * @see prosevis.processing.ProseModelIF#getRenderingData()
-   */
-  @Override
-  public synchronized DataTreeView[] getRenderingData() {
-    return data.toArray(new DataTreeView[0]);
+  public synchronized RenderingInformation getRenderingData() {
+    return new RenderingInformation(
+        data.toArray(new DataTreeView[0]),
+        colorDB.getColorView(),
+        geoModel.getSliderSize(),
+        geoModel.getViewX(),
+        geoModel.getViewY());
   }
 
-  @Override
   public synchronized void updateZoom(int lastDy) {
     if (lastDy == 0) {
       return;
     }
-    zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomLevel + lastDy));
-    int newSize = zoomLevel / ZOOM_SENSITIVITY;
+    zoomLevel = Math.max(kZoomMin, Math.min(kZoomMax, zoomLevel + lastDy));
+    int newSize = zoomLevel / kZoomSensitivity;
     for (DataTreeView view : data) {
       view.setSize(newSize);
     }
   }
 
-  @Override
   public synchronized void setBreakLevel(BreakLinesBy level) {
     for (DataTreeView view : data) {
       view.setRenderingBy(level);
@@ -87,17 +100,14 @@ public class ApplicationModel implements ProseModelIF {
     lineBreaks = level;
   }
 
-  @Override
   public synchronized BreakLinesBy getBreakLevel() {
     return lineBreaks;
   }
 
-  @Override
   public synchronized int getColorBy() {
     return colorByLabelIdx;
   }
 
-  @Override
   public synchronized void setColorBy(String label) {
     int labelIdx = colorDB.getLabelIdx(label);
     for (DataTreeView view : data) {
@@ -106,17 +116,10 @@ public class ApplicationModel implements ProseModelIF {
     colorByLabelIdx = labelIdx;
   }
 
-  @Override
   public synchronized TypeMap getTypeMapCopy() {
     return colorDB.getTypeMapCopy();
   }
 
-  @Override
-  public synchronized ColorView getColorView() {
-    return colorDB.getColorView();
-  }
-
-  @Override
   public synchronized void setTextBy(String label) {
     int labelIdx = colorDB.getLabelIdx(label);
     for (DataTreeView view : data) {
@@ -125,7 +128,6 @@ public class ApplicationModel implements ProseModelIF {
     textByLabelIdx  = labelIdx;
   }
 
-  @Override
   public synchronized void addColorScheme(ColorScheme colorScheme) {
     if (!colorDB.addCustomColorScheme(colorScheme.getLabel(), colorScheme.getMapping())) {
       return;
@@ -151,12 +153,10 @@ public class ApplicationModel implements ProseModelIF {
     colorDB.dropColorsForLabel(label, replaceWithRandomColors);
   }
 
-  @Override
   public synchronized void removeColorScheme(String label) {
     removeColorScheme(label, true);
   }
 
-  @Override
   public synchronized ArrayList<String> getColorSchemeList() {
     ArrayList<String> labels = new ArrayList<String>();
 
@@ -167,7 +167,6 @@ public class ApplicationModel implements ProseModelIF {
     return labels;
   }
 
-  @Override
   public synchronized ColorScheme getColorScheme(String label) {
     for (ColorScheme colorScheme: colorSchemes) {
       if (label.equals(colorScheme.getLabel())) {
@@ -177,7 +176,6 @@ public class ApplicationModel implements ProseModelIF {
     return null;
   }
 
-  @Override
   public synchronized void searchForTerm(String searchTerm, String label, List<String> selectedFiles) {
     Integer labelIdx = colorDB.getLabelIdx(label);
     if (labelIdx == null) {
@@ -199,7 +197,6 @@ public class ApplicationModel implements ProseModelIF {
     }
   }
 
-  @Override
   public synchronized void moveFilesToTop(List<String> selectedFiles) {
     ArrayList<DataTreeView> movedFiles = new ArrayList<DataTreeView>();
     for (String path: selectedFiles) {
@@ -218,7 +215,6 @@ public class ApplicationModel implements ProseModelIF {
     data.addAll(0, movedFiles);
   }
 
-  @Override
   public synchronized void removeData(List<String> selectedFiles) {
     for (String path: selectedFiles) {
       // find the DataTree corresponding to this path
@@ -230,5 +226,13 @@ public class ApplicationModel implements ProseModelIF {
         }
       }
     }
+  }
+
+  public int getScreenY() {
+    return this.yResolution;
+  }
+
+  public int getScreenX() {
+    return this.xResolution;
   }
 }
