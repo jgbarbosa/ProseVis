@@ -99,4 +99,8 @@ public class DocWord {
     }
     return true;
   }
+
+  public void setProseLine(int line) {
+    this.ids[BreakLinesBy.Line.getIdx()] = line;
+  }
 }

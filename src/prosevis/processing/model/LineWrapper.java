@@ -73,7 +73,7 @@ public class LineWrapper {
     final int tabWidth = wc.getTabWidth(lastFontSz);
     final int spaceWidth = wc.width(" ", lastFontSz);
     // java actually disallows me from doing this correctly, since generics
-    // don't exist at runtime
+    // don't exist at runtime and the compiler writers are pedantic about it
     @SuppressWarnings("unchecked")
     final ArrayList<DocWord> lines[] =
         new ArrayList[BreakLinesBy.kNumIndices];

@@ -154,7 +154,7 @@ public class Document {
           }
         }
         if (matchedWord) {
-          w.setLineNum(BreakLinesBy.Line.getIdx(), numLinesSoFar);
+          w.setProseLine(numLinesSoFar);
           w = w.next();
         } else {
           if (line.length() - lineIdx > 2) {
