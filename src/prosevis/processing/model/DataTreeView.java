@@ -119,13 +119,17 @@ public class DataTreeView {
   }
 
   public synchronized void searchForTerm(int typeIdx, int labelIdx) {
-    DocWord lineStart = lastScrollInfo.lines.get(lastScrollInfo.lineIdx);
+    int lineIdx = lastScrollInfo.lineIdx;
+    if (lastScrollInfo.lineFrac > 0.5) {
+      lineIdx++;
+    }
+    DocWord lineStart = lastScrollInfo.lines.get(lineIdx);
     if (lineStart == null) {
       return;
     }
 
     DocWord result = searcher.search(
-        data.getFirstWord(), lineStart, labelIdx, typeIdx);
+        data.getFirstWord(), lineStart, labelIdx, typeIdx, renderType);
     if (result == null) {
       return;
     }
