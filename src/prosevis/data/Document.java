@@ -121,7 +121,7 @@ public class Document {
       XmlSearcher searcher = new XmlSearcher(doc);
       XmlTraverser lineItr = new XmlTraverser(searcher.findElement(
           "" + head.getId(BreakLinesBy.LineGroup.getIdx())));
-      String line = lineItr.getNextCleanLineOfText();
+      StringBuilder line = new StringBuilder(lineItr.getNextCleanLineOfText());
       int lineIdx = 0;
 
       for (DocWord w = head; w != null; ) {
@@ -129,6 +129,7 @@ public class Document {
             w.getTypeIdxForLabelIdx(TypeMap.kWordIdx));
         int idx = line.indexOf(word, lineIdx);
         boolean matchedWord = false;
+        boolean matchedSomePart = false;
         if (idx >= 0) {
           lineIdx = idx + word.length();
           matchedWord = true;
@@ -144,31 +145,36 @@ public class Document {
                 (curChar >= '0' && curChar <= '9'))) {
                continue;
             }
-            idx = line.indexOf(word.charAt(wordIdx), lineIdx);
+            idx = line.indexOf("" + word.charAt(wordIdx), lineIdx);
             if (idx >= 0) {
               lineIdx = idx + 1;
+              matchedSomePart = true;
             } else {
               matchedWord = false;
               break;
             }
           }
         }
-        if (matchedWord) {
+        if (matchedWord || (line.length() - lineIdx >= word.length() && matchedSomePart)) {
+          if (!matchedWord && (line.length() - lineIdx >= word.length() && matchedSomePart)) {
+            System.err.println("Warning: While matching XML to text, " +
+                "failed to match fragment: '" + line.substring(lineIdx) + "'" +
+                " to word: '" + word + "'");
+          }
           w.setProseLine(numLinesSoFar);
           w = w.next();
         } else {
-          if (line.length() - lineIdx > 2) {
-            System.err.println("Warning: While matching XML to text, " +
-                "failed to match fragment: '" + line.substring(lineIdx) + "'");
-          }
-          line = lineItr.getNextCleanLineOfText();
-          lineIdx = 0;
-          numLinesSoFar++;
-          if (line == null) {
+          line.delete(0, lineIdx);
+          String nextLine = lineItr.getNextCleanLineOfText();
+          if (nextLine == null) {
             lineItr = new XmlTraverser(searcher.findElement(
                 "" + w.getId(BreakLinesBy.LineGroup.getIdx())));
-            line = lineItr.getNextCleanLineOfText();
+            nextLine = lineItr.getNextCleanLineOfText();
           }
+          line.append(nextLine);
+          lineIdx = 0;
+          numLinesSoFar++;
+
         }
       }
 
