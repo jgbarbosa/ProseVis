@@ -16,7 +16,7 @@ public class LineWrapper {
       new EnumMap<BreakLinesBy, List<DocWord>>(BreakLinesBy.class);
   private final Map<BreakLinesBy, List<Boolean>> firstLines =
       new EnumMap<BreakLinesBy, List<Boolean>>(BreakLinesBy.class);
-  private final int lastViewWidth;
+  private int lastViewWidth;
   private int lastFontSz;
   private final DocWord head;
   private final GeometryModel geom;
@@ -139,6 +139,7 @@ public class LineWrapper {
       lineBreaks.put(k, lines[k.getIdx()]);
       firstLines.put(k, firsts[k.getIdx()]);
     }
+    lastViewWidth = viewWidth;
   }
 
   public ScrollInfo getScrollInfo(BreakLinesBy renderType, double scrollFraction) {

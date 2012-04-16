@@ -92,9 +92,9 @@ public class DataTreeView {
   public synchronized void setSize(int newSize) {
     if (currentFontSize != newSize) {
       this.needsRender = true;
+      this.currentFontSize = newSize;
+      this.lineWrapper.setFontSize(newSize);
     }
-    this.currentFontSize = newSize;
-    this.lineWrapper.setFontSize(newSize);
   }
 
   public synchronized int getFontSize() {

@@ -81,6 +81,7 @@ public class ProseVisSketch extends PApplet {
     // Processing.
     WidthCalculator.setWidthCalculator(new WidthCalculator(
         this, ApplicationModel.kMinFontSz, ApplicationModel.kMaxFontSz));
+    setFont(14);
 
     EventQueue.invokeLater(new Runnable() {
       @Override
@@ -96,7 +97,7 @@ public class ProseVisSketch extends PApplet {
 
   }
 
-  private void setFont(int size) {
+  void setFont(int size) {
     if (curFontSize != size) {
       if (!fonts.containsKey(size)) {
         fonts.put(size, createFont("Monospaced.plain", size));

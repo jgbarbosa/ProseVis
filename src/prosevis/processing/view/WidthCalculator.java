@@ -15,6 +15,7 @@ public class WidthCalculator {
     this.minSz = minSz;
     this.charWidths = new int[maxSz - minSz + 1];
     for (int i = minSz; i <= maxSz; i++) {
+      sketch.setFont(i);
       charWidths[i - minSz] = (int)(sketch.textWidth('W') + 0.5f);
     }
   }
