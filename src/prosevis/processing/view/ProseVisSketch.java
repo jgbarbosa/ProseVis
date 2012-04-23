@@ -270,11 +270,13 @@ public class ProseVisSketch extends PApplet {
         break;
       }
       DocWord wordNode = scrollInfo.lines.get(lineIdx);
-      renderedWidth = 0;
-      if (scrollInfo.firstLines.get(lineIdx)) {
-        renderedWidth += textWidth("     ");
-        lineBuffer.append("     ");
+      if (wordNode == null) {
+        // we've hit a blank line
+        lineIdx++;
+        renderedHeight += lineHeight;
+        continue;
       }
+      renderedWidth = 0;
       while (wordNode != null && wordNode.getLineIdx(scrollInfo.breakLinesBy) == lineIdx) {
         if (renderTextByLabelIdx == TypeMap.kNoLabelIdx) {
           renderedText = "     ";

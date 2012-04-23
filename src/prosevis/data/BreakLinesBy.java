@@ -22,4 +22,8 @@ public enum BreakLinesBy {
   public int getIdx() {
     return this.idx;
   }
+
+  public static boolean usesLengthBasedLineBreaks(int i) {
+    return i == Section.idx || i == Paragraph.idx;
+  }
 }

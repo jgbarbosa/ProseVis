@@ -14,8 +14,6 @@ import prosevis.processing.view.WidthCalculator;
 public class LineWrapper {
   private final Map<BreakLinesBy, List<DocWord>> lineBreaks =
       new EnumMap<BreakLinesBy, List<DocWord>>(BreakLinesBy.class);
-  private final Map<BreakLinesBy, List<Boolean>> firstLines =
-      new EnumMap<BreakLinesBy, List<Boolean>>(BreakLinesBy.class);
   private int lastViewWidth;
   private int lastFontSz;
   private final DocWord head;
@@ -33,7 +31,6 @@ public class LineWrapper {
   public void setFontSize(int sz) {
     if (sz != lastFontSz) {
       lineBreaks.clear();
-      firstLines.clear();
       lastFontSz = sz;
     }
   }
@@ -77,25 +74,20 @@ public class LineWrapper {
     @SuppressWarnings("unchecked")
     final ArrayList<DocWord> lines[] =
         new ArrayList[BreakLinesBy.kNumIndices];
-    @SuppressWarnings("unchecked")
-    final ArrayList<Boolean> firsts[] =
-        new ArrayList[BreakLinesBy.kNumIndices];
     for (int i = 0; i < BreakLinesBy.kNumIndices; i++) {
       curIds[i] = -1;
       widths[i] = 0;
       lines[i] = new ArrayList<DocWord>();
-      firsts[i] = new ArrayList<Boolean>();
     }
 
     lineBreaks.clear();
-    firstLines.clear();
+
     DocWord lastWord = head;
     DocWord curWord = lastWord.next();
     StringBuilder token = new StringBuilder();
     token.append(lastWord.word());
     wordsInToken.add(lastWord);
     boolean tokenHasWord = !lastWord.isPunct();
-
     while (curWord != null) {
       // build up a token, which may be several words (ie. "Hello,)
       if (wordsInToken.size() == 0 ||
@@ -110,18 +102,20 @@ public class LineWrapper {
       }
 
       final int tokenWidth = wc.width(token, lastFontSz);
+
       for (int i = 0; i < BreakLinesBy.kNumIndices; i++) {
         if (curIds[i] != lastWord.getId(i) ||
-            1 + tokenWidth + widths[i] >= maxWidth) {
+            (1 + tokenWidth + widths[i] >= maxWidth - spaceWidth &&
+            BreakLinesBy.usesLengthBasedLineBreaks(i))) {
           // previous line has ended, and this token starts a new line
-          if (curIds[i] != lastWord.getId(i)) {
-            firsts[i].add(true);
-            widths[i] = tabWidth + tokenWidth;
-            curIds[i] = wordsInToken.get(0).getId(i);
-          } else {
-            firsts[i].add(false);
-            widths[i] = tokenWidth;
+          if (curIds[i] != lastWord.getId(i) &&
+              BreakLinesBy.usesLengthBasedLineBreaks(i) && lines[i].size() > 0) {
+            // add a blank line if we're looking at divisions that are widely
+            // spaced enough to benefit from the additional whitespace
+            lines[i].add(null);
           }
+          curIds[i] = wordsInToken.get(0).getId(i);
+          widths[i] = tokenWidth;
           lines[i].add(wordsInToken.get(0));
         } else {
           widths[i] += spaceWidth + tokenWidth;
@@ -137,7 +131,6 @@ public class LineWrapper {
     }
     for (BreakLinesBy k: BreakLinesBy.values()) {
       lineBreaks.put(k, lines[k.getIdx()]);
-      firstLines.put(k, firsts[k.getIdx()]);
     }
     lastViewWidth = viewWidth;
   }
@@ -149,13 +142,11 @@ public class LineWrapper {
     }
     List<DocWord> lines =
         Collections.unmodifiableList (lineBreaks.get(renderType));
-    List<Boolean> firsts =
-        Collections.unmodifiableList (firstLines.get(renderType));
     final int numLines = lines.size();
     final double fracLines = numLines * scrollFraction;
     final int lineNum = Math.min((int)fracLines, numLines - 1);
     final double lineFrac = fracLines - lineNum;
-    return new ScrollInfo(lines, firsts, lineNum, lineFrac, renderType);
+    return new ScrollInfo(lines, lineNum, lineFrac, renderType);
   }
 
 }
