@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PFont;
-import prosevis.data.DocWord;
+import prosevis.data.Word;
 import prosevis.data.TypeMap;
 import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
@@ -269,7 +269,7 @@ public class ProseVisSketch extends PApplet {
         // we're out of lines, not even one word in this one
         break;
       }
-      DocWord wordNode = scrollInfo.lines.get(lineIdx);
+      Word wordNode = scrollInfo.lines.get(lineIdx);
       if (wordNode == null) {
         // we've hit a blank line
         lineIdx++;
@@ -337,7 +337,7 @@ public class ProseVisSketch extends PApplet {
   }
 
   private void colorBackground(int colorByLabelIdx, ColorView colorView,
-      DocWord wordNode, int topX, int topY, int dx, int dy) {
+      Word wordNode, int topX, int topY, int dx, int dy) {
     if (wordNode.isPunct()) {
       return;
     }

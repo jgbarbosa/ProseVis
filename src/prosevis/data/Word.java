@@ -5,18 +5,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class DocWord {
+public class Word {
   private final Map<Integer, Integer> labels2types = new HashMap<Integer, Integer>();
   private final ArrayList<Syllable> syllables = new ArrayList<Syllable>();
   private final boolean isPunctuation;
   private boolean isSearchResult = false;
-  private DocWord next = null;
+  private Word next = null;
   private final String word;
   private final long[] ids = new long[BreakLinesBy.kNumIndices];
   private final int[] lineNumbers = new int[BreakLinesBy.kNumIndices];
   private final boolean isOpeningQuote;
 
-  public DocWord(String word, Syllable s, long[] idTuple, boolean isOpeningQuote) {
+  public Word(String word, Syllable s, long[] idTuple, boolean isOpeningQuote) {
     syllables.add(s);
     isPunctuation = !ParsingTools.notPunct(word);
     this.word = word;
@@ -26,11 +26,11 @@ public class DocWord {
     this.isOpeningQuote = isOpeningQuote;
   }
 
-  public void setNext(DocWord next) {
+  public void setNext(Word next) {
     this.next = next;
   }
 
-  public DocWord next() {
+  public Word next() {
     return this.next;
   }
 
@@ -91,7 +91,7 @@ public class DocWord {
     return isOpeningQuote;
   }
 
-  public boolean idsMatch(DocWord lastWord) {
+  public boolean idsMatch(Word lastWord) {
     for (int i = 0; i < ids.length; i++) {
       if (ids[i] != lastWord.ids[i]) {
         return false;

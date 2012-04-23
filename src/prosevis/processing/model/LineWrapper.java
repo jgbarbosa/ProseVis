@@ -7,20 +7,20 @@ import java.util.List;
 import java.util.Map;
 
 import prosevis.data.BreakLinesBy;
-import prosevis.data.DocWord;
+import prosevis.data.Word;
 import prosevis.processing.view.GeometryModel;
 import prosevis.processing.view.WidthCalculator;
 
 public class LineWrapper {
-  private final Map<BreakLinesBy, List<DocWord>> lineBreaks =
-      new EnumMap<BreakLinesBy, List<DocWord>>(BreakLinesBy.class);
+  private final Map<BreakLinesBy, List<Word>> lineBreaks =
+      new EnumMap<BreakLinesBy, List<Word>>(BreakLinesBy.class);
   private int lastViewWidth;
   private int lastFontSz;
-  private final DocWord head;
+  private final Word head;
   private final GeometryModel geom;
   private final WidthCalculator wc;
 
-  public LineWrapper(DocWord data, GeometryModel geoModel, WidthCalculator wc) {
+  public LineWrapper(Word data, GeometryModel geoModel, WidthCalculator wc) {
     this.geom = geoModel;
     this.wc = wc;
     lastFontSz = -1;
@@ -45,7 +45,7 @@ public class LineWrapper {
   }
 
 
-  public List<DocWord> getLines(BreakLinesBy renderType) {
+  public List<Word> getLines(BreakLinesBy renderType) {
     final int viewWidth = geom.getViewTextX();
     if (!isValidFor(renderType, viewWidth)) {
       calculateLineBreaks(renderType, viewWidth, wc);
@@ -65,25 +65,25 @@ public class LineWrapper {
       BreakLinesBy renderType, int viewWidth, WidthCalculator wc) {
     final long[] curIds = new long[BreakLinesBy.kNumIndices];
     final int[] widths = new int[BreakLinesBy.kNumIndices];
-    ArrayList<DocWord> wordsInToken = new ArrayList<DocWord>();
+    ArrayList<Word> wordsInToken = new ArrayList<Word>();
     final int maxWidth = geom.getViewTextX();
     final int tabWidth = wc.getTabWidth(lastFontSz);
     final int spaceWidth = wc.width(" ", lastFontSz);
     // java actually disallows me from doing this correctly, since generics
     // don't exist at runtime and the compiler writers are pedantic about it
     @SuppressWarnings("unchecked")
-    final ArrayList<DocWord> lines[] =
+    final ArrayList<Word> lines[] =
         new ArrayList[BreakLinesBy.kNumIndices];
     for (int i = 0; i < BreakLinesBy.kNumIndices; i++) {
       curIds[i] = -1;
       widths[i] = 0;
-      lines[i] = new ArrayList<DocWord>();
+      lines[i] = new ArrayList<Word>();
     }
 
     lineBreaks.clear();
 
-    DocWord lastWord = head;
-    DocWord curWord = lastWord.next();
+    Word lastWord = head;
+    Word curWord = lastWord.next();
     StringBuilder token = new StringBuilder();
     token.append(lastWord.word());
     wordsInToken.add(lastWord);
@@ -121,7 +121,7 @@ public class LineWrapper {
           widths[i] += spaceWidth + tokenWidth;
         }
 
-        for (DocWord w: wordsInToken) {
+        for (Word w: wordsInToken) {
           w.setLineNum(i, lines[i].size() - 1);
         }
       }
@@ -140,7 +140,7 @@ public class LineWrapper {
     if (!isValidFor(renderType, viewWidth)) {
       calculateLineBreaks(renderType, viewWidth, wc);
     }
-    List<DocWord> lines =
+    List<Word> lines =
         Collections.unmodifiableList (lineBreaks.get(renderType));
     final int numLines = lines.size();
     final double fracLines = numLines * scrollFraction;

@@ -14,7 +14,7 @@ import prosevis.processing.controller.FileLoader;
 import prosevis.processing.controller.IProgressNotifiable;
 
 public class Document {
-  private DocWord head;
+  private Word head;
 
   // simple flag for whether this tree has already been loaded or not
   private boolean loaded = false;
@@ -86,7 +86,7 @@ public class Document {
         typeMap.addLabel(columns[i], i);
       }
 
-      DocWord lastWord = null;
+      Word lastWord = null;
       while ((line = reader.readLine()) != null) {
         // this may be slightly off on Windows (\r\n)
         bytesProcessed += line.length() + 1;
@@ -124,7 +124,7 @@ public class Document {
       StringBuilder line = new StringBuilder(lineItr.getNextCleanLineOfText());
       int lineIdx = 0;
 
-      for (DocWord w = head; w != null; ) {
+      for (Word w = head; w != null; ) {
         String word = typeMap.getTypeForIdx(TypeMap.kWordIdx,
             w.getTypeIdxForLabelIdx(TypeMap.kWordIdx));
         int idx = line.indexOf(word, lineIdx);
@@ -203,7 +203,7 @@ public class Document {
     return idTuple;
   }
 
-  private DocWord processInputLine(String[] line, TypeMap typeMap, DocWord lastWord) {
+  private Word processInputLine(String[] line, TypeMap typeMap, Word lastWord) {
     // Trim each field
     for (int i = 0; i < line.length; i++) {
       line[i] = line[i].trim();
@@ -224,7 +224,7 @@ public class Document {
     // other, like "that that"
     if (lastWord == null || !lastWord.word().equals(line[TypeMap.kWordIdx])) {
       // Create new word
-      DocWord newWord = buildWordNode(line, s, typeMap);
+      Word newWord = buildWordNode(line, s, typeMap);
 
       if (lastWord != null) {
         lastWord.setNext(newWord);
@@ -238,12 +238,12 @@ public class Document {
     return lastWord;
   }
 
-  private DocWord buildWordNode(String[] line, Syllable s, TypeMap typeMap) {
+  private Word buildWordNode(String[] line, Syllable s, TypeMap typeMap) {
     long[] idTuple = parseIdTuple(line);
     boolean isOpeningQuote = line[TypeMap.kWordIdx].equals("\"") &&
         line[TypeMap.kPOSLabelIdx].equals("``");
 
-    DocWord result = new DocWord(
+    Word result = new Word(
         line[TypeMap.kWordIdx], s, idTuple, isOpeningQuote);
 
     for (int idx = TypeMap.kWordIdx ; idx < TypeMap.kMaxFields; idx++) {
@@ -296,7 +296,7 @@ public class Document {
     return this.shortName;
   }
 
-  public DocWord getFirstWord() {
+  public Word getFirstWord() {
     return head;
   }
 

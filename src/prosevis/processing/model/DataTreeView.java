@@ -1,7 +1,7 @@
 package prosevis.processing.model;
 
 import prosevis.data.BreakLinesBy;
-import prosevis.data.DocWord;
+import prosevis.data.Word;
 import prosevis.data.Document;
 import prosevis.data.TypeMap;
 import prosevis.processing.view.GeometryModel;
@@ -123,12 +123,12 @@ public class DataTreeView {
     if (lastScrollInfo.lineFrac > 0.5) {
       lineIdx++;
     }
-    DocWord lineStart = lastScrollInfo.lines.get(lineIdx);
+    Word lineStart = lastScrollInfo.lines.get(lineIdx);
     if (lineStart == null) {
       return;
     }
 
-    DocWord result = searcher.search(
+    Word result = searcher.search(
         data.getFirstWord(), lineStart, labelIdx, typeIdx, renderType);
     if (result == null) {
       return;

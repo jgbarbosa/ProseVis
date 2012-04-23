@@ -1,15 +1,15 @@
 package prosevis.processing.model;
 
 import prosevis.data.BreakLinesBy;
-import prosevis.data.DocWord;
+import prosevis.data.Word;
 import prosevis.data.TypeMap;
 
 public class Searcher {
-  private DocWord lastResult;
+  private Word lastResult;
   private int lastLabelIdx = TypeMap.kNoLabelIdx;
   private int lastTypeIdx = TypeMap.kNoLabelIdx;
 
-  public DocWord search(DocWord firstWord, DocWord lineStart, int labelIdx, int typeIdx, BreakLinesBy renderType) {
+  public Word search(Word firstWord, Word lineStart, int labelIdx, int typeIdx, BreakLinesBy renderType) {
     if (lastLabelIdx == labelIdx && lastTypeIdx == typeIdx && lastResult != null) {
       // we're doing the same search again, so just go forward from the current
       // first word, and look for a match
@@ -18,7 +18,7 @@ public class Searcher {
       if (lineStart.getLineIdx(renderType) == lastResult.getLineIdx(renderType)) {
         waitForLast = true;
       }
-      for (DocWord cur = lineStart; cur != null; cur = cur.next()) {
+      for (Word cur = lineStart; cur != null; cur = cur.next()) {
         if (waitForLast) {
           if (cur == lastResult) {
             waitForLast = false;
@@ -38,9 +38,9 @@ public class Searcher {
     // after we cross the line we currently have visible
     lastLabelIdx = labelIdx;
     lastTypeIdx = typeIdx;
-    DocWord result = null;
+    Word result = null;
     boolean areAfterCurrentLine = false;
-    for (DocWord cur = firstWord; cur != null; cur = cur.next()) {
+    for (Word cur = firstWord; cur != null; cur = cur.next()) {
       if (cur == lineStart) {
         areAfterCurrentLine = true;
       }
