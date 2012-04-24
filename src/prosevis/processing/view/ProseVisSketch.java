@@ -269,6 +269,9 @@ public class ProseVisSketch extends PApplet {
         // we're out of lines, not even one word in this one
         break;
       }
+      if (lineIdx == -1) {
+        System.out.println("About to get hosed");
+      }
       Word wordNode = scrollInfo.lines.get(lineIdx);
       if (wordNode == null) {
         // we've hit a blank line

@@ -1,9 +1,9 @@
 package prosevis.processing.model;
 
 import prosevis.data.BreakLinesBy;
-import prosevis.data.Word;
 import prosevis.data.Document;
 import prosevis.data.TypeMap;
+import prosevis.data.Word;
 import prosevis.processing.view.GeometryModel;
 import prosevis.processing.view.WidthCalculator;
 
@@ -20,7 +20,7 @@ public class DataTreeView {
   public static final double kScrollTop = 1.0;
   public static final double kScrollBottom = 0.0;
   private static final double kScrollMultiplier = 1.0;
-  private static BreakLinesBy renderType = BreakLinesBy.Phrase;
+  private BreakLinesBy renderType = BreakLinesBy.Phrase;
 
   public DataTreeView(Document data, int fontSz, GeometryModel geoModel, WidthCalculator wc) {
     this.data = data;
@@ -34,6 +34,13 @@ public class DataTreeView {
 
 
   public synchronized void setRenderingBy(BreakLinesBy type) {
+    if (!data.hasXml()) {
+      if (type == BreakLinesBy.Line) {
+        type = BreakLinesBy.Phrase;
+      } else if (type == BreakLinesBy.LineGroup) {
+        type = BreakLinesBy.Paragraph;
+      }
+    }
     if (renderType != type) {
       needsRender = true;
       renderType = type;

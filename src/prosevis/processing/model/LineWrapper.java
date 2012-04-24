@@ -38,36 +38,24 @@ public class LineWrapper {
   public int getNumLines(BreakLinesBy renderType) {
     final int viewWidth = geom.getViewTextX();
     if (!isValidFor(renderType, viewWidth)) {
-      calculateLineBreaks(renderType, viewWidth, wc);
+      calculateLineBreaks(viewWidth, wc);
     }
 
     return lineBreaks.get(renderType).size();
   }
 
-
-  public List<Word> getLines(BreakLinesBy renderType) {
-    final int viewWidth = geom.getViewTextX();
-    if (!isValidFor(renderType, viewWidth)) {
-      calculateLineBreaks(renderType, viewWidth, wc);
-    }
-    return Collections.unmodifiableList (lineBreaks.get(renderType));
-  }
-
-  private boolean isValidFor(
-      BreakLinesBy renderType, int viewWidth) {
+  private boolean isValidFor(BreakLinesBy renderType, int viewWidth) {
     if (lastViewWidth == viewWidth && lineBreaks.containsKey(renderType)) {
       return true;
     }
     return false;
   }
 
-  private void calculateLineBreaks(
-      BreakLinesBy renderType, int viewWidth, WidthCalculator wc) {
+  private void calculateLineBreaks(int viewWidth, WidthCalculator wc) {
     final long[] curIds = new long[BreakLinesBy.kNumIndices];
     final int[] widths = new int[BreakLinesBy.kNumIndices];
     ArrayList<Word> wordsInToken = new ArrayList<Word>();
-    final int maxWidth = geom.getViewTextX();
-    final int tabWidth = wc.getTabWidth(lastFontSz);
+    final int maxWidth = viewWidth;
     final int spaceWidth = wc.width(" ", lastFontSz);
     // java actually disallows me from doing this correctly, since generics
     // don't exist at runtime and the compiler writers are pedantic about it
@@ -81,8 +69,10 @@ public class LineWrapper {
     }
 
     lineBreaks.clear();
+
     String lastSpeaker = null;
     String lastScene = null;
+    String lastStage = null;
     Word lastWord = head;
     Word curWord = lastWord.next();
     StringBuilder token = new StringBuilder();
@@ -116,11 +106,17 @@ public class LineWrapper {
             lines[i].add(null);
           }
           if (i == BreakLinesBy.Line.getIdx()) {
-            if (lastWord.getShakespeareScene() != null &&
-                  !lastWord.getShakespeareScene().equals(lastScene)) {
-              lines[i].add(new Word(lastWord.getShakespeareScene()));
+            if (lastWord.getShakespeareAct() != null &&
+                  !lastWord.getShakespeareAct().equals(lastScene)) {
+              lines[i].add(new Word(lastWord.getShakespeareAct()));
               lines[i].get(lines[i].size() - 1).setLineNum(i, lines[i].size() - 1);
-              lastScene = lastWord.getShakespeareScene();
+              lastScene = lastWord.getShakespeareAct();
+            }
+            if (lastWord.getShakespeareStage() != null &&
+                !lastWord.getShakespeareStage().equals(lastStage)) {
+              lines[i].add(new Word(lastWord.getShakespeareStage()));
+              lines[i].get(lines[i].size() - 1).setLineNum(i, lines[i].size() - 1);
+              lastStage = lastWord.getShakespeareStage();
             }
             if (lastWord.getShakespeareSpeaker() != null &&
                 !lastWord.getShakespeareSpeaker().equals(lastSpeaker)) {
@@ -153,7 +149,7 @@ public class LineWrapper {
   public ScrollInfo getScrollInfo(BreakLinesBy renderType, double scrollFraction) {
     final int viewWidth = geom.getViewTextX();
     if (!isValidFor(renderType, viewWidth)) {
-      calculateLineBreaks(renderType, viewWidth, wc);
+      calculateLineBreaks(viewWidth, wc);
     }
     List<Word> lines =
         Collections.unmodifiableList (lineBreaks.get(renderType));

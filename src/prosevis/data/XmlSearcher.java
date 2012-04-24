@@ -67,8 +67,7 @@ public class XmlSearcher {
         return e.getChildElements().get(i);
       }
     }
-    throw new RuntimeException("Couldn't find child");
-//    return null;
+    return null;
   }
 
   public String findTextInChildLike(String seasrId, String childTag) {
@@ -80,6 +79,6 @@ public class XmlSearcher {
         return n.getValue().trim();
       }
     }
-    throw new RuntimeException("Couldn't find child text");
+    return null;
   }
 }

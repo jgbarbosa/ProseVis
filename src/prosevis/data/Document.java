@@ -123,10 +123,12 @@ public class Document {
       XmlSearcher sectionSearcher = new XmlSearcher(doc, XmlSearcher.kSEASRNamespace, "sid");
       XmlTraverser lineItr = new XmlTraverser(searcher.findElement(
           "" + head.getId(BreakLinesBy.LineGroup.getIdx())));
-      String lastScene = sectionSearcher.findTextInChildLike(
+      String lastAct = sectionSearcher.findTextInChildLike(
           "" + head.getId(BreakLinesBy.Section.getIdx()), "head");
       String lastSpeaker = searcher.findTextInChildLike(
           "" + head.getId(BreakLinesBy.LineGroup.getIdx()), "speaker");
+      String lastStage = sectionSearcher.findTextInChildLike(
+          "" + head.getId(BreakLinesBy.Section.getIdx()), "stage");
       StringBuilder line = new StringBuilder(lineItr.getNextCleanLineOfText());
       int lineIdx = 0;
 
@@ -167,7 +169,7 @@ public class Document {
                 "failed to match fragment: '" + line.substring(lineIdx) + "'" +
                 " to word: '" + word + "'");
           }
-          w.setShakespeareInfo(lastScene, lastSpeaker);
+          w.setShakespeareInfo(lastAct, lastStage, lastSpeaker);
           w.setProseLine(numLinesSoFar);
           w = w.next();
         } else {
@@ -176,8 +178,10 @@ public class Document {
           if (nextLine == null) {
             lineItr = new XmlTraverser(searcher.findElement(
                 "" + w.getId(BreakLinesBy.LineGroup.getIdx())));
-            lastScene = sectionSearcher.findTextInChildLike(
+            lastAct = sectionSearcher.findTextInChildLike(
                 "" + w.getId(BreakLinesBy.Section.getIdx()), "head");
+            lastStage = sectionSearcher.findTextInChildLike(
+                "" + w.getId(BreakLinesBy.Section.getIdx()), "stage");
             lastSpeaker = searcher.findTextInChildLike(
                 "" + w.getId(BreakLinesBy.LineGroup.getIdx()), "speaker");
             nextLine = lineItr.getNextCleanLineOfText();

@@ -16,8 +16,9 @@ public class Word {
   private final int[] lineNumbers = new int[BreakLinesBy.kNumIndices];
   private final boolean isOpeningQuote;
   private final boolean isMetaWord;
-  private String scene;
+  private String act;
   private String speaker;
+  private String stage;
 
   // in the most eggregious violation of object orientation of all time, a meta
   // word is like a normal word, except that everything about it is
@@ -128,16 +129,21 @@ public class Word {
 
   // this massive hack is purely for Shakespeare displaying purposes
   // wiley 2012-04-23
-  public void setShakespeareInfo(String lastScene, String lastSpeaker) {
-    this.scene = lastScene;
+  public void setShakespeareInfo(String lastAct, String lastStage, String lastSpeaker) {
+    this.act = lastAct;
+    this.stage = lastStage;
     this.speaker = lastSpeaker;
   }
 
-  public String getShakespeareScene() {
-    return scene;
+  public String getShakespeareAct() {
+    return act;
   }
 
   public String getShakespeareSpeaker() {
     return speaker;
+  }
+
+  public String getShakespeareStage() {
+    return stage;
   }
 }
