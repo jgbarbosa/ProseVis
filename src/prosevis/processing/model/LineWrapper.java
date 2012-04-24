@@ -81,7 +81,8 @@ public class LineWrapper {
     }
 
     lineBreaks.clear();
-
+    String lastSpeaker = null;
+    String lastScene = null;
     Word lastWord = head;
     Word curWord = lastWord.next();
     StringBuilder token = new StringBuilder();
@@ -113,6 +114,20 @@ public class LineWrapper {
             // add a blank line if we're looking at divisions that are widely
             // spaced enough to benefit from the additional whitespace
             lines[i].add(null);
+          }
+          if (i == BreakLinesBy.Line.getIdx()) {
+            if (lastWord.getShakespeareScene() != null &&
+                  !lastWord.getShakespeareScene().equals(lastScene)) {
+              lines[i].add(new Word(lastWord.getShakespeareScene()));
+              lines[i].get(lines[i].size() - 1).setLineNum(i, lines[i].size() - 1);
+              lastScene = lastWord.getShakespeareScene();
+            }
+            if (lastWord.getShakespeareSpeaker() != null &&
+                !lastWord.getShakespeareSpeaker().equals(lastSpeaker)) {
+              lines[i].add(new Word(lastWord.getShakespeareSpeaker()));
+              lines[i].get(lines[i].size() - 1).setLineNum(i, lines[i].size() - 1);
+              lastSpeaker = lastWord.getShakespeareSpeaker();
+            }
           }
           curIds[i] = wordsInToken.get(0).getId(i);
           widths[i] = tokenWidth;

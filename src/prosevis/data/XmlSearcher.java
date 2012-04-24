@@ -7,8 +7,12 @@ import java.util.Map;
 import nu.xom.Attribute;
 import nu.xom.Document;
 import nu.xom.Element;
+import nu.xom.Node;
+import nu.xom.Text;
 
 public class XmlSearcher {
+  public static String kSEASRNamespace =
+      "http://www.seasr.org/ns/services/openmary/tei/1.0";
   private final String namespace;
   private final String attribute;
   private final LinkedList<Element> remaining;
@@ -23,7 +27,7 @@ public class XmlSearcher {
   }
 
   public XmlSearcher(Document doc) {
-    this(doc, "http://www.seasr.org/ns/services/openmary/tei/1.0", "id");
+    this(doc, kSEASRNamespace, "id");
   }
 
   // Just use BFS to traverse our document, searching for the right stuff
@@ -52,5 +56,30 @@ public class XmlSearcher {
 
     throw new RuntimeException("Searched the entire document looking for " + value +
         " but couldn't find it, you must be crazy.");
+  }
+
+  public Element findChildLike(String seasrId, String childTag) {
+    Element e = findElement(seasrId);
+    // now, look for the first immediate child with the given tag
+    final int childCount = e.getChildElements().size();
+    for (int i = 0; i < childCount; i++) {
+      if (e.getChildElements().get(i).getLocalName().equals(childTag)) {
+        return e.getChildElements().get(i);
+      }
+    }
+    throw new RuntimeException("Couldn't find child");
+//    return null;
+  }
+
+  public String findTextInChildLike(String seasrId, String childTag) {
+    Element child = findChildLike(seasrId, childTag);
+    if (child == null) { return null; }
+    for (int i = 0; i < child.getChildCount(); i++) {
+      Node n = child.getChild(i);
+      if (n instanceof Text) {
+        return n.getValue().trim();
+      }
+    }
+    throw new RuntimeException("Couldn't find child text");
   }
 }

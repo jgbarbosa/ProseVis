@@ -15,6 +15,19 @@ public class Word {
   private final long[] ids = new long[BreakLinesBy.kNumIndices];
   private final int[] lineNumbers = new int[BreakLinesBy.kNumIndices];
   private final boolean isOpeningQuote;
+  private final boolean isMetaWord;
+  private String scene;
+  private String speaker;
+
+  // in the most eggregious violation of object orientation of all time, a meta
+  // word is like a normal word, except that everything about it is
+  // uninitialized except for the bare minimum of fields
+  public Word(String word) {
+    this.isMetaWord = true;
+    this.word = word;
+    this.isPunctuation = false;
+    this.isOpeningQuote = false;
+  }
 
   public Word(String word, Syllable s, long[] idTuple, boolean isOpeningQuote) {
     syllables.add(s);
@@ -24,6 +37,7 @@ public class Word {
       this.ids[i] = idTuple[i];
     }
     this.isOpeningQuote = isOpeningQuote;
+    this.isMetaWord = false;
   }
 
   public void setNext(Word next) {
@@ -102,5 +116,28 @@ public class Word {
 
   public void setProseLine(int line) {
     this.ids[BreakLinesBy.Line.getIdx()] = line;
+  }
+
+  public String getWord() {
+    return this.word;
+  }
+
+  public boolean isMetaNode() {
+    return isMetaWord;
+  }
+
+  // this massive hack is purely for Shakespeare displaying purposes
+  // wiley 2012-04-23
+  public void setShakespeareInfo(String lastScene, String lastSpeaker) {
+    this.scene = lastScene;
+    this.speaker = lastSpeaker;
+  }
+
+  public String getShakespeareScene() {
+    return scene;
+  }
+
+  public String getShakespeareSpeaker() {
+    return speaker;
   }
 }

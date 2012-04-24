@@ -22,11 +22,11 @@ public class TypeMap {
   public static final int kPhonemeIdx = 8;
   public static final int kStressIdx = 9;
   public static final int kToneIdx = 10;
-  public static String kNoLabelLabel = "none";
-  public static String kPhonemeAllLabel = "sound";
-  public static String kPhonemeStartLabel = "sound-initial";
-  public static String kPhonemeVowelLabel = "sound-vowel";
-  public static String kPhonemeFinalLabel = "sound-final";
+  public static final String kNoLabelLabel = "none";
+  public static final String kPhonemeAllLabel = "sound";
+  public static final String kPhonemeStartLabel = "sound-initial";
+  public static final String kPhonemeVowelLabel = "sound-vowel";
+  public static final String kPhonemeFinalLabel = "sound-final";
 
   // not reall immutable, but nothing lasts forever
   public static final String[] kPossibleColorByLabels = {"none", "stress", "pos", "tone", "accent", "soundex", "word", kPhonemeAllLabel, kPhonemeStartLabel, kPhonemeVowelLabel, kPhonemeFinalLabel};

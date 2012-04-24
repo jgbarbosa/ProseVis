@@ -7,8 +7,8 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PFont;
-import prosevis.data.Word;
 import prosevis.data.TypeMap;
+import prosevis.data.Word;
 import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.ColorView;
@@ -278,7 +278,9 @@ public class ProseVisSketch extends PApplet {
       }
       renderedWidth = 0;
       while (wordNode != null && wordNode.getLineIdx(scrollInfo.breakLinesBy) == lineIdx) {
-        if (renderTextByLabelIdx == TypeMap.kNoLabelIdx) {
+        if (wordNode.isMetaNode()) {
+          renderedText = wordNode.getWord();
+        } else if (renderTextByLabelIdx == TypeMap.kNoLabelIdx) {
           renderedText = "     ";
         } else if (renderTextByLabelIdx == TypeMap.kPhonemeIdx) {
           final int phonemeCount = wordNode.getSyllableCount();
@@ -314,7 +316,10 @@ public class ProseVisSketch extends PApplet {
           fill(255, 0, 0);
           rect(wordTopX, wordTopY, wordDx, wordDy);
         }
-        if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
+        if (wordNode.isMetaNode()) {
+          fill(240, 240, 189);
+          rect(wordTopX, wordTopY, wordDx, wordDy);
+        } else if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
           colorBackground(
               colorByLabelIdx,
               colorView,
