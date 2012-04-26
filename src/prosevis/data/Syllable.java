@@ -6,21 +6,15 @@ import java.util.Map;
 
 public class Syllable {
   private final Map<Integer, Integer> label2type = new HashMap<Integer, Integer>();
-  DavidData dData;
+  private final ComparisonData comparisons;
 
-  public Syllable(int[] sAttributes) {
-    this(sAttributes, null);
-  }
-
-  public Syllable(int[] sAttributes, float[] prob) {
+  public Syllable(int[] sAttributes, ComparisonData cData) {
     this.label2type.put(TypeMap.kStressIdx, sAttributes[0]);
     this.label2type.put(TypeMap.kPhonemeIdx, sAttributes[1]);
     this.label2type.put(TypeMap.kPhonemeC1Idx, sAttributes[2]);
     this.label2type.put(TypeMap.kPhonemeVIdx, sAttributes[3]);
     this.label2type.put(TypeMap.kPhonemeC2Idx, sAttributes[4]);
-
-    /* Initialize David's Data */
-    dData = new DavidData(prob);
+    this.comparisons = cData;
   }
 
   public int getPhoneme() {
@@ -43,19 +37,20 @@ public class Syllable {
     return -1;
   }
 
-  public void displayDavidData() {
-    dData.display();
-  }
-
-  public float getRelProb(boolean[] actFiles) {
-    return dData.getRelProb(actFiles);
-  }
-
-  public int getMaxProbIdx(boolean[] actFiles) {
-    return dData.getMaxProbIdx(actFiles);
-  }
-
   public int getTypeIdxForLabelIdx(int labelIdx) {
+    if (labelIdx == TypeMap.kColorByComparisonIdx) {
+      if (comparisons == null) {
+        return TypeMap.kNoTypeIdx;
+      }
+      return comparisons.getMaxIdx();
+    }
     return label2type.get(labelIdx);
+  }
+
+  public float getComparisonValue(int idx) {
+    if (comparisons == null) {
+      return 0.0f;
+    }
+    return comparisons.getValue(idx);
   }
 }

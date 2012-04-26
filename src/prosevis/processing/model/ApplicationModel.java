@@ -1,11 +1,13 @@
 package prosevis.processing.model;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
 import prosevis.data.BreakLinesBy;
 import prosevis.data.Document;
 import prosevis.data.TypeMap;
+import prosevis.processing.controller.ComparisonState;
 import prosevis.processing.view.GeometryModel;
 import prosevis.processing.view.RenderingInformation;
 import prosevis.processing.view.WidthCalculator;
@@ -30,6 +32,7 @@ public class ApplicationModel {
   private int textByLabelIdx = TypeMap.kWordIdx;
   private final List<ColorScheme> colorSchemes = new ArrayList<ColorScheme>();
   private final GeometryModel geoModel;
+  private ComparisonState[] comparisonState = null;
 
   public ApplicationModel(int xres, int yres) {
     xResolution = xres;
@@ -59,6 +62,15 @@ public class ApplicationModel {
     view.setColorBy(colorByLabelIdx);
     data.add(view);
     geoModel.setX(xResolution / data.size());
+
+    if (colorDB.hasComparisonData() && comparisonState == null) {
+      String [] headers = colorDB.getComparisonHeaders();
+      comparisonState = new ComparisonState[headers.length];
+      for (int i = 0; i < headers.length; i++) {
+        comparisonState[i] = new ComparisonState(headers[i], Color.WHITE);
+      }
+      refreshComparisonColors();
+    }
   }
 
   public synchronized ArrayList<String> getFileList() {
@@ -71,6 +83,8 @@ public class ApplicationModel {
 
   public synchronized void removeAllData() {
     this.data.clear();
+    this.colorDB.clearComparisonData();
+    this.comparisonState = null;
   }
 
   public synchronized RenderingInformation getRenderingData() {
@@ -109,7 +123,12 @@ public class ApplicationModel {
   }
 
   public synchronized void setColorBy(String label) {
-    int labelIdx = colorDB.getLabelIdx(label);
+    int labelIdx;
+    if (label.equals(TypeMap.kColorByComparison)) {
+      labelIdx = TypeMap.kColorByComparisonIdx;
+    } else {
+      labelIdx = colorDB.getLabelIdx(label);
+    }
     for (DataTreeView view : data) {
       view.setColorBy(labelIdx);
     }
@@ -134,6 +153,7 @@ public class ApplicationModel {
     }
     removeColorScheme(colorScheme.getLabel(), false);
     colorSchemes.add(colorScheme);
+    refreshComparisonColors();
   }
 
   private void removeColorScheme(String label, boolean replaceWithRandomColors) {
@@ -151,6 +171,7 @@ public class ApplicationModel {
       return;
     }
     colorDB.dropColorsForLabel(label, replaceWithRandomColors);
+    refreshComparisonColors();
   }
 
   public synchronized void removeColorScheme(String label) {
@@ -226,13 +247,48 @@ public class ApplicationModel {
         }
       }
     }
+
+    if (data.isEmpty()) {
+      this.colorDB.clearComparisonData();
+      this.comparisonState = null;
+    }
   }
 
-  public int getScreenY() {
+  public synchronized int getScreenY() {
     return this.yResolution;
   }
 
-  public int getScreenX() {
+  public synchronized int getScreenX() {
     return this.xResolution;
+  }
+
+  public synchronized ComparisonState[] getComparisonState() {
+    return comparisonState;
+  }
+
+  public synchronized boolean hasComparisonData() {
+    return comparisonState != null;
+  }
+
+  public synchronized void setComparisonEnabled(boolean selected, String text) {
+    if (this.comparisonState == null) {
+      return;
+    }
+    for (ComparisonState c: comparisonState) {
+      if (c.getName().equals(text)) {
+        c.setEnabled(selected);
+        return;
+      }
+    }
+  }
+
+  private void refreshComparisonColors() {
+    if (comparisonState == null) {
+      return;
+    }
+    for (int i = 0; i < comparisonState.length; i++) {
+      ComparisonState s = comparisonState[i];
+      s.setColor(colorDB.getColorView().getColor(TypeMap.kColorByComparisonIdx, i));
+    }
   }
 }

@@ -19,6 +19,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,6 +32,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
+import net.miginfocom.swing.MigLayout;
 import prosevis.data.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
@@ -53,6 +55,9 @@ public class ControllerGUI implements WindowStateListener {
   private DefaultComboBoxModel<String> textByModel;
   private DefaultComboBoxModel<String> fileListModel;
   private DefaultComboBoxModel<String> searchListModel;
+  private final List<JCheckBox> comparisonsEnabled = new ArrayList<JCheckBox>();
+  private JLabel lblNoComparisonData;
+  private JPanel comparisonContent;
 
   /**
    * Launch the application.
@@ -533,6 +538,59 @@ public class ControllerGUI implements WindowStateListener {
     );
     colorTopButtons.setLayout(gl_colorTopButtons);
 
+    JPanel comparisonPane = new JPanel();
+    controllerTabGroup.addTab("Comparisons", null, comparisonPane, null);
+    comparisonPane.setLayout(new FormLayout(new ColumnSpec[] {
+        FormFactory.RELATED_GAP_COLSPEC,
+        ColumnSpec.decode("left:min"),
+        FormFactory.RELATED_GAP_COLSPEC,
+        ColumnSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_COLSPEC,},
+      new RowSpec[] {
+        FormFactory.RELATED_GAP_ROWSPEC,
+        RowSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_ROWSPEC,}));
+
+    JPanel comparisonPaneLeftPanel = new JPanel();
+    comparisonPane.add(comparisonPaneLeftPanel, "2, 2, left, fill");
+
+    JLabel lblSmoothingWindow = new JLabel("Smoothing window:");
+
+    JComboBox<Integer> smoothingWindowCombo = new JComboBox<Integer>();
+    for (int i = 0; i < 10; i++) {
+      smoothingWindowCombo.addItem(i);
+    }
+    smoothingWindowCombo.setSelectedIndex(5);
+    GroupLayout gl_comparisonPaneLeftPanel = new GroupLayout(comparisonPaneLeftPanel);
+    gl_comparisonPaneLeftPanel.setHorizontalGroup(
+      gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.TRAILING)
+        .addGroup(Alignment.LEADING, gl_comparisonPaneLeftPanel.createSequentialGroup()
+          .addContainerGap()
+          .addComponent(lblSmoothingWindow)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+    gl_comparisonPaneLeftPanel.setVerticalGroup(
+      gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
+          .addContainerGap()
+          .addGroup(gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.BASELINE)
+            .addComponent(lblSmoothingWindow)
+            .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+          .addContainerGap(449, Short.MAX_VALUE))
+    );
+    comparisonPaneLeftPanel.setLayout(gl_comparisonPaneLeftPanel);
+
+    JScrollPane comparisonPaneRightPanel = new JScrollPane();
+    comparisonPane.add(comparisonPaneRightPanel, "4, 2, fill, fill");
+
+    comparisonContent = new JPanel();
+    comparisonPaneRightPanel.setViewportView(comparisonContent);
+    comparisonContent.setLayout(new MigLayout("", "[grow]", ""));
+
+    lblNoComparisonData = new JLabel("No comparison data loaded.");
+    comparisonContent.add(lblNoComparisonData, "cell 0 0");
 
   }
 
@@ -557,6 +615,9 @@ public class ControllerGUI implements WindowStateListener {
           if (typeMap.hasLabel(l.toLowerCase()) && colorByModel.getIndexOf(l.toLowerCase()) < 0) {
             colorByModel.addElement(l);
           }
+        }
+        if (typeMap.hasComparisonDataHeaders()) {
+          colorByModel.addElement(TypeMap.kColorByComparison);
         }
         for (String l: TypeMap.kPossibleTextByLabels) {
           if (typeMap.hasLabel(l.toLowerCase()) && textByModel.getIndexOf(l.toLowerCase()) < 0) {
@@ -591,6 +652,48 @@ public class ControllerGUI implements WindowStateListener {
         line += ControllerGUI.kXmlTag;
       }
       fileListModel.addElement(line);
+    }
+
+    refreshComparisonDataCheckboxes();
+  }
+
+  private void refreshComparisonDataCheckboxes() {
+    if (!theModel.hasComparisonData()) {
+      // remove checkboxes from Comparison panel
+      comparisonContent.removeAll();
+      // enable no comparison data label
+      comparisonContent.add(lblNoComparisonData, "cell 0 0");
+      lblNoComparisonData.setVisible(true);
+      return;
+    }
+    ComparisonState [] state = theModel.getComparisonState();
+    boolean haveChanged = state.length != this.comparisonsEnabled.size();
+    for (int i = 0; !haveChanged && i < state.length; i++) {
+      if (!state[i].getName().equals(comparisonsEnabled.get(i).getText())) {
+        haveChanged = true;
+        break;
+      }
+      comparisonsEnabled.get(i).setSelected(state[i].getEnabled());
+    }
+    if (!haveChanged) {
+      return;
+    }
+    // on change, remove all the buttons, add them all again, refresh the values
+    lblNoComparisonData.setVisible(false);
+    comparisonContent.removeAll();
+    comparisonsEnabled.clear();
+    for (int i = 0; i < state.length; i++) {
+      JCheckBox box = new JCheckBox(state[i].getName());
+      box.setBackground(state[i].getColor());
+      box.setSelected(state[i].getEnabled());
+      box.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+          JCheckBox box = (JCheckBox)arg0.getSource();
+          theModel.setComparisonEnabled(box.isSelected(), box.getText());
+        }
+      });
+      comparisonContent.add(box, "cell 0 " + i);
     }
   }
 }

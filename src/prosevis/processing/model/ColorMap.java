@@ -1,6 +1,7 @@
 package prosevis.processing.model;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,10 @@ public class ColorMap {
         customSchemes.put(labelIdx, null);
       }
     }
+    if (typeMap.hasComparisonDataHeaders() &&
+        !customSchemes.containsKey(TypeMap.kColorByComparisonIdx)) {
+      customSchemes.put(TypeMap.kColorByComparisonIdx, null);
+    }
     for (int labelIdx: customSchemes.keySet()) {
       if (customSchemes.get(labelIdx) != null) {
         continue;
@@ -46,7 +51,15 @@ public class ColorMap {
         colorLookup.put(labelIdx, new HashMap<Integer, Color>());
       }
       Map<Integer, Color> colors = colorLookup.get(labelIdx);
-      Collection<Integer> types = typeMap.getTypeIdxsForLabel(labelIdx);
+      Collection<Integer> types = null;
+      if (labelIdx == TypeMap.kColorByComparisonIdx) {
+        types = new ArrayList<Integer>(typeMap.getComparisonDataHeaders().length);
+        for (int i = 0; i < typeMap.getComparisonDataHeaders().length; i++) {
+          types.add(i);
+        }
+      } else {
+        types = typeMap.getTypeIdxsForLabel(labelIdx);
+      }
       if (types.size() != colors.size()) {
         colors.clear();
         for (Integer typeIdx: types) {
@@ -97,12 +110,29 @@ public class ColorMap {
       return false;
     }
     Map<Integer, Color> types2colors = new HashMap<Integer, Color>();
-    for (String typeLabel: colors.keySet()) {
-      int typeIdx = -1;
-      if (!typeLabel.equals(ColorScheme.kDefaultLabel)) {
-        typeIdx = typeMap.getOrAddTypeIdx(labelIdx, typeLabel);
+    if (labelIdx == TypeMap.kColorByComparisonIdx) {
+      if (typeMap.getComparisonDataHeaders() == null) {
+        return false;
       }
-      types2colors.put(typeIdx, colors.get(typeLabel));
+      String[] headers = typeMap.getComparisonDataHeaders();
+      if (colors.size() != headers.length + 1) {
+        // + 1 for the default color
+        return false;
+      }
+      for (int i = 0; i < headers.length; i++) {
+        if (!colors.containsKey(headers[i])) {
+          return false;
+        }
+        types2colors.put(i, colors.get(headers[i]));
+      }
+    } else {
+      for (String typeLabel: colors.keySet()) {
+        int typeIdx = -1;
+        if (!typeLabel.equals(ColorScheme.kDefaultLabel)) {
+          typeIdx = typeMap.getOrAddTypeIdx(labelIdx, typeLabel);
+        }
+        types2colors.put(typeIdx, colors.get(typeLabel));
+      }
     }
     customSchemes.put(labelIdx, types2colors);
     cacheValid = false;
@@ -111,5 +141,17 @@ public class ColorMap {
 
   public int maybeGetTypeIdx(int labelIdx, String type) {
     return typeMap.maybeGetTypeIdx(labelIdx, type);
+  }
+
+  public String[] getComparisonHeaders() {
+    return typeMap.getComparisonDataHeaders();
+  }
+
+  public boolean hasComparisonData() {
+    return typeMap.hasComparisonDataHeaders();
+  }
+
+  public void clearComparisonData() {
+    this.typeMap.clearComparisonData();
   }
 }

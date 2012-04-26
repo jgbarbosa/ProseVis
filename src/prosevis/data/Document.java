@@ -78,12 +78,43 @@ public class Document {
       String[] columns = line.split("\t");
 
       // create a fresh color map, we'll merge it with existing maps later
-      for (int i = TypeMap.kWordIdx; i < columns.length; i++) {
+      if (columns.length < TypeMap.kMaxFields - 1) {
+        System.err.println("Can't load document without all 12 basic columns");
+        return false;
+      }
+
+      for (int i = TypeMap.kWordIdx; i < TypeMap.kMaxFields; i++) {
         if ("part_of_speech".equals(columns[i])) {
           // hack, I think part_of_speech is rather long
           columns[i] = "pos";
         }
         typeMap.addLabel(columns[i], i);
+      }
+
+      int loadComparisonData = columns.length - TypeMap.kMaxFields;
+      // we'll load comparison data if we're the first document with data, or we
+      // have a compatible data format to earlier documents
+      if (loadComparisonData > 0 && typeMap.hasComparisonDataHeaders()) {
+        String [] headers = typeMap.getComparisonDataHeaders();
+        if (loadComparisonData != headers.length) {
+          System.err.println("Refusing to load incompatible comparison data format");
+          loadComparisonData = 0;
+        } else {
+          for (int i = 0; i < headers.length; i++) {
+            if (!headers[i].equals(columns[i + TypeMap.kMaxFields])) {
+              System.err.println("Refusing to load comparison data " +
+                  "because headers don't match");
+              loadComparisonData = 0;
+            }
+          }
+        }
+      }
+      if (loadComparisonData > 0 && !typeMap.hasComparisonDataHeaders()) {
+        String[] newHeaders = new String[loadComparisonData];
+        for (int i = 0; i < loadComparisonData; i++) {
+          newHeaders[i] = columns[i + TypeMap.kMaxFields];
+        }
+        typeMap.addComparisonDataHeaders(newHeaders);
       }
 
       Word lastWord = null;
@@ -94,7 +125,7 @@ public class Document {
           prog.notifyProgess(bytesProcessed / (double) totalBytes);
         }
         columns = line.split("\t");
-        lastWord = processInputLine(columns, typeMap, lastWord);
+        lastWord = processInputLine(columns, typeMap, lastWord, loadComparisonData);
         if (head == null) {
           head = lastWord;
         }
@@ -218,7 +249,11 @@ public class Document {
     return idTuple;
   }
 
-  private Word processInputLine(String[] line, TypeMap typeMap, Word lastWord) {
+  private Word processInputLine(
+      String[] line,
+      TypeMap typeMap,
+      Word lastWord,
+      int loadComparisonData) {
     // Trim each field
     for (int i = 0; i < line.length; i++) {
       line[i] = line[i].trim();
@@ -233,7 +268,7 @@ public class Document {
       line[TypeMap.kWordIdx] = "\"";
     }
 
-    Syllable s = buildSyllable(line, typeMap);
+    Syllable s = buildSyllable(line, typeMap, loadComparisonData);
 
     // TODO(wiley) Aha! This adds syllables to duplicate words following each
     // other, like "that that"
@@ -280,7 +315,8 @@ public class Document {
   }
 
   // Update lists that are specific to the syllable
-  public Syllable buildSyllable(String[] line, TypeMap typeMap) {
+  public Syllable buildSyllable(
+      String[] line, TypeMap typeMap, int loadComparisonData) {
     // Parse phoneme into three components
     String[] sylComp = ParsingTools.parsePhoneme(line[TypeMap.kPhonemeIdx]);
 
@@ -300,7 +336,22 @@ public class Document {
     attr[3] = typeMap.getOrAddTypeIdx(TypeMap.kPhonemeVIdx, sylComp[1]);
     attr[4] = typeMap.getOrAddTypeIdx(TypeMap.kPhonemeC2Idx, sylComp[2]);
 
-    return new Syllable(attr);
+    if (loadComparisonData < 1 ||
+        line.length - TypeMap.kMaxFields < loadComparisonData) {
+      return new Syllable(attr, null);
+    }
+
+    ComparisonData data = new ComparisonData(loadComparisonData);
+    for (int i = 0; i < loadComparisonData; i++) {
+      try {
+        data.rawComparisons[i] = data.smoothedComparisons[i] =
+            Float.parseFloat(line[i + TypeMap.kMaxFields]);
+      } catch (NumberFormatException e) {
+        data.rawComparisons[i] = data.smoothedComparisons[i] = 0.0f;
+      }
+    }
+
+    return new Syllable(attr, data);
   }
 
   public String getPath() {

@@ -146,4 +146,8 @@ public class Word {
   public String getShakespeareStage() {
     return stage;
   }
+
+  public float getComparisonValue(int syllableIdx, int syllableTypeIdx) {
+    return this.syllables.get(syllableIdx).getComparisonValue(syllableTypeIdx);
+  }
 }

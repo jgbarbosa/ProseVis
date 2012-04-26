@@ -356,13 +356,22 @@ public class ProseVisSketch extends PApplet {
     case TypeMap.kPhonemeC1Idx:
     case TypeMap.kPhonemeVIdx:
     case TypeMap.kPhonemeC2Idx:
+    case TypeMap.kColorByComparisonIdx:
       final int phonemeCount = wordNode.getSyllableCount();
       final double ddx = dx / (double) phonemeCount;
       double nextX = topX + ddx;
       int lastX = topX;
       for (int i = 0; i < phonemeCount; i++) {
-        Color c = colorView.getColor(
-            colorByLabelIdx, wordNode.getTypeIdxForLabelIdx(colorByLabelIdx, i));
+        final int syllableTypeIdx =
+            wordNode.getTypeIdxForLabelIdx(colorByLabelIdx, i);
+        Color c = colorView.getColor(colorByLabelIdx, syllableTypeIdx);
+        if (colorByLabelIdx == TypeMap.kColorByComparisonIdx &&
+            syllableTypeIdx != TypeMap.kNoTypeIdx) {
+//          final float[] hsb = new float[3];
+//          Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), hsb);
+//          final float similarity = wordNode.getComparisonValue(i, syllableTypeIdx);
+//          c = Color.getHSBColor(hsb[0], hsb[1] * similarity, hsb[2] * similarity);
+        }
         fill(c.getRed(), c.getGreen(), c.getBlue());
         rect(lastX, topY, (int)(nextX - lastX), dy);
         lastX = (int)nextX;

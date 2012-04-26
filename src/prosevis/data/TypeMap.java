@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class TypeMap {
+  // this hack is very different from the other indices
+  // we catch it by special case and do something very different at render time
+  public static final int kColorByComparisonIdx = -5;
   // second consonant of the phoneme
   public static final int kPhonemeC2Idx = -4;
   // vowel of the phoneme
@@ -27,12 +30,14 @@ public class TypeMap {
   public static final String kPhonemeStartLabel = "sound-initial";
   public static final String kPhonemeVowelLabel = "sound-vowel";
   public static final String kPhonemeFinalLabel = "sound-final";
+  public static final String kColorByComparison = "comparison";
 
   // not reall immutable, but nothing lasts forever
-  public static final String[] kPossibleColorByLabels = {"none", "stress", "pos", "tone", "accent", "soundex", "word", kPhonemeAllLabel, kPhonemeStartLabel, kPhonemeVowelLabel, kPhonemeFinalLabel};
+  public static final String[] kPossibleColorByLabels = {"none", "stress", "pos", "tone", "accent", "soundex", "word", kPhonemeAllLabel, kPhonemeStartLabel, kPhonemeVowelLabel, kPhonemeFinalLabel, kColorByComparison};
   public static final String[] kPossibleTextByLabels = {"none", "pos", "sound", "word"};
-  public static final int[] kSyllableTypes = {kPhonemeC2Idx, kPhonemeVIdx, kPhonemeC1Idx, kPhonemeIdx, kStressIdx};
+  public static final int[] kSyllableTypes = {kPhonemeC2Idx, kPhonemeVIdx, kPhonemeC1Idx, kPhonemeIdx, kStressIdx, kColorByComparisonIdx};
   public static final int kMaxFields = 12;
+  public static final int kNoTypeIdx = -1;
 
   // maps from labels to labelIdx's
   private final Map<String, Integer> label2labelIdx = new HashMap<String, Integer>();
@@ -40,6 +45,8 @@ public class TypeMap {
   private final Map<Integer, Map<String, Integer>> type2typeIdx = new HashMap<Integer, Map<String, Integer>>();
   // maps from labelIdx to Map<TypeIdx, Type>
   private final Map<Integer, Map<Integer, String>> typeIdx2type = new HashMap<Integer, Map<Integer, String>>();
+  private String[] comparisonDataHeaders = null;
+
   public TypeMap() {
     addLabel("soundex", kSoundexIdx);
     addLabel(kNoLabelLabel, kNoLabelIdx);
@@ -62,6 +69,8 @@ public class TypeMap {
       tidx2t.putAll(entry.getValue());
       this.typeIdx2type.put(entry.getKey(), tidx2t);
     }
+
+    this.comparisonDataHeaders = other.comparisonDataHeaders;
   }
 
   public void addLabel(String label, int labelIdx) {
@@ -145,10 +154,18 @@ public class TypeMap {
         }
       }
     }
+
+    if (comparisonDataHeaders == null) {
+      this.comparisonDataHeaders = other.comparisonDataHeaders;
+      changed = changed || other.comparisonDataHeaders != null;
+    }
     return changed;
   }
 
   public Integer getLabelIdx(String label) {
+    if (label.equals(TypeMap.kColorByComparison)) {
+      return TypeMap.kColorByComparisonIdx;
+    }
     return label2labelIdx.get(label);
   }
 
@@ -162,5 +179,27 @@ public class TypeMap {
 
   public Collection<Integer> getTypeIdxsForLabel(int labelIdx) {
     return this.typeIdx2type.get(labelIdx).keySet();
+  }
+
+  public boolean hasComparisonDataHeaders() {
+    return comparisonDataHeaders != null;
+  }
+
+  public String [] getComparisonDataHeaders() {
+    return comparisonDataHeaders;
+  }
+
+  public void addComparisonDataHeaders(String [] newHeaders) {
+    if (comparisonDataHeaders != null) {
+      return;
+    }
+    this.comparisonDataHeaders = new String[newHeaders.length];
+    for (int i = 0; i < newHeaders.length; i++) {
+      comparisonDataHeaders[i] = newHeaders[i];
+    }
+  }
+
+  public void clearComparisonData() {
+    this.comparisonDataHeaders = null;
   }
 }
