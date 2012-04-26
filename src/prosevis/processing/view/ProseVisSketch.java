@@ -116,6 +116,7 @@ public class ProseVisSketch extends PApplet {
     RenderingInformation renderInfo = theModel.getRenderingData();
     DataTreeView[] views = renderInfo.views;
     ColorView colorView = renderInfo.colorView;
+    boolean [] enabledComparisons = renderInfo.enabled;
     boolean colorStateChanged = colorView.firstRenderSinceUpdate();
     final int sliderWidth = lastSliderWidth = renderInfo.sliderWidth;
     final int viewWidth = lastViewWidth = renderInfo.viewWidth;
@@ -144,7 +145,7 @@ public class ProseVisSketch extends PApplet {
 
         // because they don't implement listeners, we'll need to keep a reference for ourselves
         sliders.add(slider);
-        renderView(views[i], colorView, i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
+        renderView(views[i], colorView, i * viewWidth, 0, viewWidth - sliderWidth, viewHeight, enabledComparisons);
       }
     } else {
       long now = System.currentTimeMillis();
@@ -166,7 +167,7 @@ public class ProseVisSketch extends PApplet {
       for (int i = 0 ; i < views.length; i++) {
         if (views[i].getAndClearNeedsRender() || colorStateChanged) {
           sliders.get(i).setValue((float)views[i].getScroll());
-          renderView(views[i], colorView, i * viewWidth, 0, viewWidth - sliderWidth, viewHeight);
+          renderView(views[i], colorView, i * viewWidth, 0, viewWidth - sliderWidth, viewHeight, enabledComparisons);
         }
       }
     }
@@ -242,7 +243,7 @@ public class ProseVisSketch extends PApplet {
   }
 
   private void renderView(DataTreeView dataTreeView, ColorView colorView, int minX, int minY,
-      int viewWidth, int viewHeight) {
+      int viewWidth, int viewHeight, boolean[] enabledComparisons) {
     fill(255);
     rect(minX, minY, viewWidth, viewHeight);
     fill(0);
@@ -291,7 +292,7 @@ public class ProseVisSketch extends PApplet {
           for (int i = 0; i < phonemeCount; i++) {
             tmp.append(colorView.getType(
                 renderTextByLabelIdx,
-                wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx, i)));
+                wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx, i, enabledComparisons)));
             tmp.append(' ');
           }
           renderedText = tmp.toString();
@@ -330,7 +331,8 @@ public class ProseVisSketch extends PApplet {
               wordTopX,
               wordTopY,
               wordDx,
-              wordDy);
+              wordDy,
+              enabledComparisons);
         }
         lineBuffer.append(renderedText);
         renderedWidth += wordWidth;
@@ -345,7 +347,8 @@ public class ProseVisSketch extends PApplet {
   }
 
   private void colorBackground(int colorByLabelIdx, ColorView colorView,
-      Word wordNode, int topX, int topY, int dx, int dy) {
+      Word wordNode, int topX, int topY, int dx, int dy,
+      boolean[] enabledComparisons) {
     if (wordNode.isPunct()) {
       return;
     }
@@ -363,7 +366,7 @@ public class ProseVisSketch extends PApplet {
       int lastX = topX;
       for (int i = 0; i < phonemeCount; i++) {
         final int syllableTypeIdx =
-            wordNode.getTypeIdxForLabelIdx(colorByLabelIdx, i);
+            wordNode.getTypeIdxForLabelIdx(colorByLabelIdx, i, enabledComparisons);
         Color c = colorView.getColor(colorByLabelIdx, syllableTypeIdx);
         if (colorByLabelIdx == TypeMap.kColorByComparisonIdx &&
             syllableTypeIdx != TypeMap.kNoTypeIdx) {

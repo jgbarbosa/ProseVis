@@ -88,12 +88,20 @@ public class ApplicationModel {
   }
 
   public synchronized RenderingInformation getRenderingData() {
+    boolean [] enabled = null;
+    if (comparisonState != null) {
+      enabled = new boolean[comparisonState.length];
+      for (int i = 0; i < enabled.length; i++) {
+        enabled[i] = comparisonState[i].getEnabled();
+      }
+    }
     return new RenderingInformation(
         data.toArray(new DataTreeView[0]),
         colorDB.getColorView(),
         geoModel.getSliderSize(),
         geoModel.getViewX(),
-        geoModel.getViewY());
+        geoModel.getViewY(),
+        enabled);
   }
 
   public synchronized void updateZoom(int lastDy) {
@@ -176,6 +184,7 @@ public class ApplicationModel {
 
   public synchronized void removeColorScheme(String label) {
     removeColorScheme(label, true);
+    refreshComparisonColors();
   }
 
   public synchronized ArrayList<String> getColorSchemeList() {

@@ -25,7 +25,7 @@ public class ColorView {
     if (map.containsKey(typeIdx)) {
       return map.get(typeIdx);
     }
-    return map.get(-1);
+    return map.get(TypeMap.kNoTypeIdx);
   }
 
   public boolean firstRenderSinceUpdate() {

@@ -62,6 +62,9 @@ public class ColorMap {
       }
       if (types.size() != colors.size()) {
         colors.clear();
+        if (labelIdx == TypeMap.kColorByComparisonIdx) {
+          colors.put(TypeMap.kNoTypeIdx, Color.white);
+        }
         for (Integer typeIdx: types) {
           colors.put(typeIdx, Color.getHSBColor((float)Math.random(), 0.7f, 0.9f));
         }
@@ -125,9 +128,10 @@ public class ColorMap {
         }
         types2colors.put(i, colors.get(headers[i]));
       }
+      types2colors.put(TypeMap.kNoTypeIdx, colors.get(ColorScheme.kDefaultLabel));
     } else {
       for (String typeLabel: colors.keySet()) {
-        int typeIdx = -1;
+        int typeIdx = TypeMap.kNoTypeIdx;
         if (!typeLabel.equals(ColorScheme.kDefaultLabel)) {
           typeIdx = typeMap.getOrAddTypeIdx(labelIdx, typeLabel);
         }

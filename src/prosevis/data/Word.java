@@ -57,10 +57,10 @@ public class Word {
     return labels2types.get(labelIdx);
   }
 
-  public int getTypeIdxForLabelIdx(int labelIdx, int syllableIdx) {
+  public int getTypeIdxForLabelIdx(int labelIdx, int syllableIdx, boolean[] enabledComparisons) {
     for (int labelType : TypeMap.kSyllableTypes) {
       if (labelType == labelIdx) {
-        return syllables.get(syllableIdx).getTypeIdxForLabelIdx(labelIdx);
+        return syllables.get(syllableIdx).getTypeIdxForLabelIdx(labelIdx, enabledComparisons);
       }
     }
     return getTypeIdxForLabelIdx(labelIdx);

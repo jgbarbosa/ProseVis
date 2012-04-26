@@ -10,13 +10,15 @@ public class RenderingInformation {
   public final int sliderWidth;
   public final int viewWidth;
   public final int viewHeight;
+  public final boolean[] enabled;
 
   public RenderingInformation(DataTreeView[] views, ColorView colorView,
-      int sliderSize, int viewWidth, int viewHeight) {
+      int sliderSize, int viewWidth, int viewHeight, boolean[] enabled) {
     this.views = views;
     this.colorView = colorView;
     this.sliderWidth = sliderSize;
     this.viewWidth = viewWidth;
     this.viewHeight = viewHeight;
+    this.enabled = enabled;
   }
 }

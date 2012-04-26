@@ -474,6 +474,7 @@ public class ControllerGUI implements WindowStateListener {
           for (String s: theModel.getColorSchemeList()) {
             colorTopSchemasListModel.addElement(s);
           }
+          refreshComparisonDataCheckboxes();
         } catch (InstantiationException e1) {
           JOptionPane.showMessageDialog(frame, e1.getMessage());
         }
@@ -673,6 +674,7 @@ public class ControllerGUI implements WindowStateListener {
         haveChanged = true;
         break;
       }
+      comparisonsEnabled.get(i).setBackground(state[i].getColor());
       comparisonsEnabled.get(i).setSelected(state[i].getEnabled());
     }
     if (!haveChanged) {

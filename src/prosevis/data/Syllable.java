@@ -37,12 +37,12 @@ public class Syllable {
     return -1;
   }
 
-  public int getTypeIdxForLabelIdx(int labelIdx) {
+  public int getTypeIdxForLabelIdx(int labelIdx, boolean[] enabledComparisons) {
     if (labelIdx == TypeMap.kColorByComparisonIdx) {
       if (comparisons == null) {
         return TypeMap.kNoTypeIdx;
       }
-      return comparisons.getMaxIdx();
+      return comparisons.getMaxIdx(enabledComparisons);
     }
     return label2type.get(labelIdx);
   }

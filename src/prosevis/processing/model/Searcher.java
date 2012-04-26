@@ -1,8 +1,8 @@
 package prosevis.processing.model;
 
 import prosevis.data.BreakLinesBy;
-import prosevis.data.Word;
 import prosevis.data.TypeMap;
+import prosevis.data.Word;
 
 public class Searcher {
   private Word lastResult;
@@ -46,7 +46,8 @@ public class Searcher {
       }
       for (int i = 0; i < cur.getSyllableCount(); i++) {
         cur.setIsSearchResult(false);
-        if (cur.getTypeIdxForLabelIdx(labelIdx, i) == typeIdx) {
+        // we disallow looking at comparison data so we can pass null :(
+        if (cur.getTypeIdxForLabelIdx(labelIdx, i, null) == typeIdx) {
           cur.setIsSearchResult(true);
           break;
         }
