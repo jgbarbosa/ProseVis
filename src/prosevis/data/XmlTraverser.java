@@ -58,7 +58,7 @@ public class XmlTraverser {
     if (unclean == null) {
       return null;
     }
-    return unclean.trim().replaceAll("“", "\"")
-        .replaceAll("”", "\"");
+    return unclean.trim().replaceAll("Â“", "\"")
+        .replaceAll("Â”", "\"");
   }
 }

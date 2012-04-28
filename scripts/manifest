@@ -1,0 +1,3 @@
+Main-Class: prosevis.EntryPoint
+Class-Path: controlP5.jar core.jar forms-1.3.0.jar gluegen-rt.jar jogl.jar miglayout-4.0.jar opengl.jar xom-1.2.7.jar
+
