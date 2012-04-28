@@ -10,6 +10,10 @@ if [ "$1" = "mac" ]; then
   TARGET=$TARGET_MAC
 fi
 
+if [ "$1" = "win32" ]; then
+  TARGET=$TARGET_WINDOWS32
+fi
+
 CLASS_DIR=bin
 OUTPUT_DIR=executables
 
@@ -55,5 +59,5 @@ cp lib/processingopengl/$TARGET/* $OUTPUT_DIR
 
 echo zipping executable
 pushd $OUTPUT_DIR
-find . | zip $PROSEVIS_NAME.zip -@
+find . | zip $PROSEVIS_NAME.$TARGET.zip -@
 popd
