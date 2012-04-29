@@ -558,18 +558,27 @@ public class ControllerGUI implements WindowStateListener {
     JLabel lblSmoothingWindow = new JLabel("Smoothing window:");
 
     JComboBox<Integer> smoothingWindowCombo = new JComboBox<Integer>();
+    smoothingWindowCombo.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        @SuppressWarnings("unchecked")
+        JComboBox<Integer> cb = (JComboBox<Integer>)e.getSource();
+        int selected = (Integer)cb.getSelectedItem();
+        theModel.setSmoothingWindow(selected);
+      }
+    });
     for (int i = 0; i < 10; i++) {
-      smoothingWindowCombo.addItem(i);
+      smoothingWindowCombo.addItem(i * 2 + 1);
     }
-    smoothingWindowCombo.setSelectedIndex(5);
+    smoothingWindowCombo.setSelectedItem(theModel.getSmoothingWindow());
     GroupLayout gl_comparisonPaneLeftPanel = new GroupLayout(comparisonPaneLeftPanel);
     gl_comparisonPaneLeftPanel.setHorizontalGroup(
-      gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.TRAILING)
-        .addGroup(Alignment.LEADING, gl_comparisonPaneLeftPanel.createSequentialGroup()
+      gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
           .addContainerGap()
           .addComponent(lblSmoothingWindow)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+          .addPreferredGap(ComponentPlacement.RELATED)
+          .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
           .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     gl_comparisonPaneLeftPanel.setVerticalGroup(
@@ -617,7 +626,7 @@ public class ControllerGUI implements WindowStateListener {
             colorByModel.addElement(l);
           }
         }
-        if (typeMap.hasComparisonDataHeaders()) {
+        if (typeMap.hasComparisonDataHeaders() && colorByModel.getIndexOf(TypeMap.kColorByComparison) < 0) {
           colorByModel.addElement(TypeMap.kColorByComparison);
         }
         for (String l: TypeMap.kPossibleTextByLabels) {

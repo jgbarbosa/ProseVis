@@ -33,6 +33,7 @@ public class ApplicationModel {
   private final List<ColorScheme> colorSchemes = new ArrayList<ColorScheme>();
   private final GeometryModel geoModel;
   private ComparisonState[] comparisonState = null;
+  private int smoothingWindow = 1;
 
   public ApplicationModel(int xres, int yres) {
     xResolution = xres;
@@ -60,6 +61,7 @@ public class ApplicationModel {
     DataTreeView view = new DataTreeView(newTree, zoomLevel / kZoomSensitivity, geoModel, wc);
     view.setRenderingBy(lineBreaks);
     view.setColorBy(colorByLabelIdx);
+    view.setSmoothingWindow(smoothingWindow);
     data.add(view);
     geoModel.setX(xResolution / data.size());
 
@@ -299,5 +301,19 @@ public class ApplicationModel {
       ComparisonState s = comparisonState[i];
       s.setColor(colorDB.getColorView().getColor(TypeMap.kColorByComparisonIdx, i));
     }
+  }
+
+  public synchronized int getSmoothingWindow() {
+    return smoothingWindow;
+  }
+
+  public synchronized int setSmoothingWindow(int window) {
+    if (window >= 1 && smoothingWindow != window) {
+      smoothingWindow = window;
+      for (DataTreeView d: data) {
+        d.setSmoothingWindow(smoothingWindow);
+      }
+    }
+    return smoothingWindow;
   }
 }
