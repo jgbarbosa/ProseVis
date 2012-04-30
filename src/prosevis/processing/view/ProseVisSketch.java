@@ -370,10 +370,10 @@ public class ProseVisSketch extends PApplet {
         Color c = colorView.getColor(colorByLabelIdx, syllableTypeIdx);
         if (colorByLabelIdx == TypeMap.kColorByComparisonIdx &&
             syllableTypeIdx != TypeMap.kNoTypeIdx) {
-//          final float[] hsb = new float[3];
-//          Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), hsb);
-//          final float similarity = wordNode.getComparisonValue(i, syllableTypeIdx);
-//          c = Color.getHSBColor(hsb[0], hsb[1] * similarity, hsb[2] * similarity);
+          final float[] hsb = new float[3];
+          Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), hsb);
+          final float similarity = wordNode.getComparisonValue(i, syllableTypeIdx);
+          c = Color.getHSBColor(hsb[0], hsb[1] * similarity, hsb[2]);
         }
         fill(c.getRed(), c.getGreen(), c.getBlue());
         rect(lastX, topY, (int)(nextX - lastX), dy);
