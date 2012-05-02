@@ -51,10 +51,10 @@ public class ControllerGUI implements WindowStateListener {
   private JFrame frame;
   private JLabel lblProgress;
   private JButton btnAddFile;
-  private DefaultComboBoxModel<String> colorByModel;
-  private DefaultComboBoxModel<String> textByModel;
-  private DefaultComboBoxModel<String> fileListModel;
-  private DefaultComboBoxModel<String> searchListModel;
+  private DefaultComboBoxModel colorByModel;
+  private DefaultComboBoxModel textByModel;
+  private DefaultComboBoxModel fileListModel;
+  private DefaultComboBoxModel searchListModel;
   private final List<JCheckBox> comparisonsEnabled = new ArrayList<JCheckBox>();
   private JLabel lblNoComparisonData;
   private JPanel comparisonContent;
@@ -90,15 +90,15 @@ public class ControllerGUI implements WindowStateListener {
    * Initialize the contents of the frame.
    */
   private void initialize() {
-    colorByModel = new DefaultComboBoxModel<String>();
+    colorByModel = new DefaultComboBoxModel();
     colorByModel.addElement(TypeMap.kNoLabelLabel);
-    textByModel = new DefaultComboBoxModel<String>();
+    textByModel = new DefaultComboBoxModel();
     textByModel.addElement(TypeMap.kNoLabelLabel);
     textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
 
-    fileListModel = new DefaultComboBoxModel<String>();
-    searchListModel = new DefaultComboBoxModel<String>();
-    final JList<String> dataFilesList = new JList<String>();
+    fileListModel = new DefaultComboBoxModel();
+    searchListModel = new DefaultComboBoxModel();
+    final JList dataFilesList = new JList();
     dataFilesList.setModel(fileListModel);
     lblProgress = new JLabel("");
     btnAddFile = new JButton("Add File");
@@ -144,7 +144,7 @@ public class ControllerGUI implements WindowStateListener {
       @Override
       public void actionPerformed(ActionEvent e) {
         List<String> selectedFiles =
-            stripXMLMetaData(dataFilesList.getSelectedValuesList());
+            stripXMLMetaData((String[])dataFilesList.getSelectedValues());
         theModel.removeData(selectedFiles);
         updateFileLists();
       }
@@ -164,7 +164,7 @@ public class ControllerGUI implements WindowStateListener {
       @Override
       public void actionPerformed(ActionEvent e) {
         List<String> selectedFiles =
-            stripXMLMetaData(dataFilesList.getSelectedValuesList());
+            stripXMLMetaData((String []) dataFilesList.getSelectedValues());
         theModel.moveFilesToTop(selectedFiles);
         updateFileLists();
       }
@@ -217,7 +217,7 @@ public class ControllerGUI implements WindowStateListener {
     rdbtnSound.setActionCommand("sound");
     searchButtons.add(rdbtnSound);
 
-    final JComboBox<String> searchSoundOptions = new JComboBox<String>();
+    final JComboBox searchSoundOptions = new JComboBox();
     JRadioButton rdbtnSoundex = new JRadioButton("Soundex");
     rdbtnSoundex.setActionCommand("soundex");
     searchButtons.add(rdbtnSoundex);
@@ -279,7 +279,7 @@ public class ControllerGUI implements WindowStateListener {
     searchButtonsPanel.setLayout(gl_searchButtonsPanel);
 
     JScrollPane searchScrollPanel = new JScrollPane();
-    final JList<String> searchFilesList = new JList<String>();
+    final JList searchFilesList = new JList();
     searchFilesList.setModel(searchListModel);
     searchScrollPanel.setViewportView(searchFilesList);
     JLabel whichFilesLabel = new JLabel("Files");
@@ -295,7 +295,11 @@ public class ControllerGUI implements WindowStateListener {
           label += '-' + (String)searchSoundOptions.getSelectedItem();
         }
         String searchTerm = searchTermBox.getText();
-        List<String> selectedFiles = searchFilesList.getSelectedValuesList();
+        List<String> selectedFiles = new ArrayList<String>();
+        String [] selected = (String [])searchFilesList.getSelectedValues();
+        for (int i = 0; i < selected.length; i++) {
+          selectedFiles.add(selected[i]);
+        }
         theModel.searchForTerm(searchTerm, label, selectedFiles);
       }
     });
@@ -339,7 +343,7 @@ public class ControllerGUI implements WindowStateListener {
     gbc_lblLineBreaksBy.gridy = 1;
     renderPane.add(lblLineBreaksBy, gbc_lblLineBreaksBy);
 
-    JComboBox<String> breakLineByDropdown = new JComboBox<String>();
+    JComboBox breakLineByDropdown = new JComboBox();
     for (BreakLinesBy breakType : BreakLinesBy.values()){
       breakLineByDropdown.addItem(breakType.toString());
     }
@@ -348,7 +352,7 @@ public class ControllerGUI implements WindowStateListener {
       @Override
       public void actionPerformed(ActionEvent e) {
         @SuppressWarnings("unchecked")
-        JComboBox<String> cb = (JComboBox<String>)e.getSource();
+        JComboBox cb = (JComboBox)e.getSource();
         String typeStr = (String)cb.getSelectedItem();
         theModel.setBreakLevel(BreakLinesBy.valueOf(typeStr));
       }
@@ -369,13 +373,12 @@ public class ControllerGUI implements WindowStateListener {
     gbc_lblColorBy.gridy = 2;
     renderPane.add(lblColorBy, gbc_lblColorBy);
 
-    JComboBox<String> colorByDropdown = new JComboBox<String>(colorByModel);
+    JComboBox colorByDropdown = new JComboBox(colorByModel);
     colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
     colorByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        @SuppressWarnings("unchecked")
-        JComboBox<String> cb = (JComboBox<String>)e.getSource();
+        JComboBox cb = (JComboBox)e.getSource();
         String labelStr = (String)cb.getSelectedItem();
         theModel.setColorBy(labelStr);
       }
@@ -396,12 +399,11 @@ public class ControllerGUI implements WindowStateListener {
     gbc_lblText.gridy = 3;
     renderPane.add(lblText, gbc_lblText);
 
-    JComboBox<String> textByDropdown = new JComboBox<String>(textByModel);
+    JComboBox textByDropdown = new JComboBox(textByModel);
     textByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        @SuppressWarnings("unchecked")
-        JComboBox<String> cb = (JComboBox<String>)e.getSource();
+        JComboBox cb = (JComboBox)e.getSource();
         String labelStr = (String)cb.getSelectedItem();
         theModel.setTextBy(labelStr);
       }
@@ -454,8 +456,8 @@ public class ControllerGUI implements WindowStateListener {
     JLabel lblSchemas = new JLabel("Color Schemes:");
     colorTopSchemasPanel.setColumnHeaderView(lblSchemas);
 
-    final JList<String> colorTopSchemasList = new JList<String>();
-    final DefaultComboBoxModel<String> colorTopSchemasListModel = new DefaultComboBoxModel<String>();
+    final JList colorTopSchemasList = new JList();
+    final DefaultComboBoxModel colorTopSchemasListModel = new DefaultComboBoxModel();
     colorTopSchemasList.setModel(colorTopSchemasListModel);
     colorTopSchemasPanel.setViewportView(colorTopSchemasList);
     colorTop.add(colorTopSchemasPanel, "4, 2, fill, fill");
@@ -557,12 +559,12 @@ public class ControllerGUI implements WindowStateListener {
 
     JLabel lblSmoothingWindow = new JLabel("Smoothing window:");
 
-    JComboBox<Integer> smoothingWindowCombo = new JComboBox<Integer>();
+    JComboBox smoothingWindowCombo = new JComboBox();
     smoothingWindowCombo.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         @SuppressWarnings("unchecked")
-        JComboBox<Integer> cb = (JComboBox<Integer>)e.getSource();
+        JComboBox cb = (JComboBox)e.getSource();
         int selected = (Integer)cb.getSelectedItem();
         theModel.setSmoothingWindow(selected);
       }
@@ -710,8 +712,8 @@ public class ControllerGUI implements WindowStateListener {
 }
 
 abstract class FileListActionListener implements ActionListener {
-  protected List<String> stripXMLMetaData(List<String> rawInput) {
-    List<String> strippedPaths = new ArrayList<String>(rawInput.size());
+  protected List<String> stripXMLMetaData(String[] rawInput) {
+    List<String> strippedPaths = new ArrayList<String>(rawInput.length);
     for (String in: rawInput) {
       if (in.endsWith(ControllerGUI.kXmlTag)) {
         strippedPaths.add(in.substring(0, in.lastIndexOf(ControllerGUI.kXmlTag)));
