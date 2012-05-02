@@ -1,5 +1,5 @@
 #!/bin/bash
-PROSEVIS_NAME=prosevis-0.1
+PROSEVIS_NAME=prosevis
 TARGET_WINDOWS64=windows64
 TARGET_WINDOWS32=windows32
 TARGET_MAC=macosx
