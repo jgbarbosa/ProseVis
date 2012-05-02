@@ -2,6 +2,7 @@ package prosevis.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 
@@ -149,5 +150,50 @@ public class Word {
 
   public float getComparisonValue(int syllableIdx, int syllableTypeIdx) {
     return this.syllables.get(syllableIdx).getComparisonValue(syllableTypeIdx);
+  }
+
+  public static void smoothData(final int window, Word head) {
+    if (window == 1) {
+      for (Word itr = head; itr != null; itr = itr.next) {
+        for (Syllable s: itr.syllables) {
+          s.resetSmoothing();
+        }
+      }
+      return;
+    }
+
+    final int prefixSize = window / 2;
+    final int numComparisons = head.syllables.get(0).getComparisonCount();
+    if (numComparisons < 1) {
+      return;
+    }
+    Syllable curr = null;
+    LinkedList<Syllable> before = new LinkedList<Syllable>();
+    double beforeSum = 0.0;
+    ComparisonData runningSum = new ComparisonData(numComparisons);
+    LinkedList<Syllable> after = new LinkedList<Syllable>();
+    double afterSum = 0.0;
+    for (Word itr = head; itr != null; itr = itr.next) {
+      for (Syllable s: itr.syllables) {
+        if (before.size() < prefixSize) {
+          before.add(s);
+          s.addTo(runningSum);
+          continue;
+        } else if (curr == null) {
+          curr = s;
+          s.addTo(runningSum);
+          continue;
+        } else if (after.size() < prefixSize) {
+          after.add(s);
+          s.addTo(runningSum);
+          continue;
+        }
+        curr.smooth(runningSum, window);
+        before.pollFirst().subtractFrom(runningSum);
+        curr = after.pollFirst();
+        after.add(s);
+        s.addTo(runningSum);
+      }
+    }
   }
 }

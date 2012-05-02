@@ -53,4 +53,38 @@ public class Syllable {
     }
     return comparisons.getValue(idx);
   }
+
+  public int getComparisonCount() {
+    if (comparisons == null) {
+      return -1;
+    }
+    return comparisons.getCount();
+  }
+
+  public void addTo(ComparisonData runningSum) {
+    if (comparisons == null) {
+      return;
+    }
+    comparisons.addTo(runningSum);
+  }
+
+  public void subtractFrom(ComparisonData runningSum) {
+    if (comparisons == null) {
+      return;
+    }
+    comparisons.subtractFrom(runningSum);
+  }
+
+  public void smooth(ComparisonData runningSum, int window) {
+    if (comparisons == null) {
+      return;
+    }
+    comparisons.smooth(runningSum, window);
+  }
+
+  public void resetSmoothing() {
+    if (comparisons != null) {
+      comparisons.resetSmoothing();
+    }
+  }
 }

@@ -21,6 +21,7 @@ public class DataTreeView {
   public static final double kScrollBottom = 0.0;
   private static final double kScrollMultiplier = 1.0;
   private BreakLinesBy renderType = BreakLinesBy.Phrase;
+  private int smoothingWindow;
 
   public DataTreeView(Document data, int fontSz, GeometryModel geoModel, WidthCalculator wc) {
     this.data = data;
@@ -152,5 +153,19 @@ public class DataTreeView {
 
   public synchronized boolean canRenderByProseLines() {
     return data.hasXml();
+  }
+
+
+  public synchronized void setSmoothingWindow(int smoothingWindow) {
+    if (smoothingWindow % 2 == 0) {
+      // we center each window around the word in question, so each window much
+      // be an odd size
+      smoothingWindow++;
+    }
+    if (smoothingWindow != this.smoothingWindow) {
+      this.smoothingWindow = smoothingWindow;
+      Word.smoothData(this.smoothingWindow, data.getFirstWord());
+      this.needsRender = true;
+    }
   }
 }

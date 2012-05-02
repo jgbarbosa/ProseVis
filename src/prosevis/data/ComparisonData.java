@@ -33,4 +33,32 @@ public class ComparisonData {
     }
     return smoothedComparisons[idx] / absMaxV;
   }
+
+  public int getCount() {
+    return this.rawComparisons.length;
+  }
+
+  public void addTo(ComparisonData runningSum) {
+    for (int i = 0; i < rawComparisons.length; i++) {
+      runningSum.smoothedComparisons[i] += rawComparisons[i];
+    }
+  }
+
+  public void subtractFrom(ComparisonData runningSum) {
+    for (int i = 0; i < rawComparisons.length; i++) {
+      runningSum.smoothedComparisons[i] -= rawComparisons[i];
+    }
+  }
+
+  public void smooth(ComparisonData runningSum, int window) {
+    for (int i = 0; i < rawComparisons.length; i++) {
+      smoothedComparisons[i] = runningSum.smoothedComparisons[i] / window;
+    }
+  }
+
+  public void resetSmoothing() {
+    for (int i = 0; i < rawComparisons.length; i++) {
+      smoothedComparisons[i] = rawComparisons[i];
+    }
+  }
 }
