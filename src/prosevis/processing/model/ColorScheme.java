@@ -105,18 +105,19 @@ public class ColorScheme {
 
   public boolean saveToFile(String path) {
     File file = new File(path);
+    final String lineSep = System.getProperty("line.separator");
     try {
       PrintWriter writer = new PrintWriter(new FileWriter(file));
       writer.write(schemeType);
-      writer.write(System.lineSeparator());
+      writer.write(lineSep);
       writer.write(color2str(this.colorMapping.get(kDefaultLabel)));
-      writer.write(System.lineSeparator());
+      writer.write(lineSep);
       for (String key: this.colorMapping.keySet()) {
         if (key.equals(kDefaultLabel)) {
           continue;
         }
         writer.write("\"" + key + "\" = " + color2str(this.colorMapping.get(key)));
-        writer.write(System.lineSeparator());
+        writer.write(lineSep);
       }
       writer.close();
       return true;
