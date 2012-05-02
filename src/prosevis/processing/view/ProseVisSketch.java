@@ -67,7 +67,12 @@ public class ProseVisSketch extends PApplet {
   @Override
   public void setup() {
     // size call must be first, Processing is possibly the worst library ever written
-    size(theModel.getScreenX(), theModel.getScreenY(), OPENGL);
+    if (theModel.isLassoMode()) {
+      System.out.println("Entering Lasso Mode");
+      size(theModel.getScreenX(), theModel.getScreenY(), OPENGL);
+    } else {
+      size(theModel.getScreenX(), theModel.getScreenY(), JAVA2D);
+    }
     // can't do this in the constructor, again, worst library ever
     controlP5 = new ControlP5(this);
 

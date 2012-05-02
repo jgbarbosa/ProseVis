@@ -300,4 +300,8 @@ public class ApplicationModel {
       s.setColor(colorDB.getColorView().getColor(TypeMap.kColorByComparisonIdx, i));
     }
   }
+
+  public synchronized boolean isLassoMode() {
+    return this.xResolution > 1600;
+  }
 }
