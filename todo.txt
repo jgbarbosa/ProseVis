@@ -21,17 +21,14 @@ The further out the bolder the colors
 Indent a few pixels from left column
 Smoothing dropdown is too small for the text on Mac
 Use grey for background of metatext, not pale yellow
-Make search work
-  + doesn't work in 1.6
-  + Why is phoneme search not working
-Change navigation tab title to search
-Color tab name to settings
 Want middle wheel support for scrolling
 Want multitouch support
 
-Want to detect and resize to available resolutions
 Memory settings on Mac
 Lock scrolling across docs
 
 Color brewer has some good colors we can use
 
+Make search work
+  + doesn't work in 1.6
+  + Why is phoneme search not working

@@ -320,7 +320,7 @@ public class ControllerGUI implements WindowStateListener {
         RowSpec.decode("default:grow"),
         FormFactory.RELATED_GAP_ROWSPEC,}));
 
-    controllerTabGroup.addTab("Navigation", null, navigationPane, null);
+    controllerTabGroup.addTab("Search", null, navigationPane, null);
     navigationPane.add(searchButtonsPanel, "2, 2, left, top");
     navigationPane.add(searchScrollPanel, "4, 2, fill, fill");
 
@@ -417,7 +417,7 @@ public class ControllerGUI implements WindowStateListener {
     renderPane.add(textByDropdown, textByConstraints);
 
     JPanel colorPane = new JPanel();
-    controllerTabGroup.addTab("Color", null, colorPane, null);
+    controllerTabGroup.addTab("Settings", null, colorPane, null);
     colorPane.setLayout(new GridLayout(2, 1, 0, 0));
 
     JPanel colorTop = new JPanel();
@@ -579,18 +579,18 @@ public class ControllerGUI implements WindowStateListener {
         .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
           .addContainerGap()
           .addComponent(lblSmoothingWindow)
-          .addPreferredGap(ComponentPlacement.RELATED)
-          .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE)
           .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     gl_comparisonPaneLeftPanel.setVerticalGroup(
       gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
         .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
-          .addContainerGap()
+          .addGap(21)
           .addGroup(gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.BASELINE)
             .addComponent(lblSmoothingWindow)
             .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addContainerGap(449, Short.MAX_VALUE))
+          .addContainerGap(472, Short.MAX_VALUE))
     );
     comparisonPaneLeftPanel.setLayout(gl_comparisonPaneLeftPanel);
 
