@@ -23,5 +23,5 @@ Color brewer has some good colors we can use
 Add help button to color scheme screen
 
 Want to know why two items are the same color (tool tip)
-Use grey for background of metatext, not pale yellow
 Lock scrolling across docs
+Investigate XML matching errors

@@ -26,6 +26,7 @@ public class ProseVisSketch extends PApplet {
   private static final double DScrollInertia = 0.3;
   private static final int kTitleBarHeight = 16;
   private static final int kTitleBarBackground = 200;
+  private static final int kMetaTextBackgroundColor = 220;
 
   private ControlP5 controlP5;
   private final ApplicationModel theModel;
@@ -282,9 +283,6 @@ public class ProseVisSketch extends PApplet {
         // we're out of lines, not even one word in this one
         break;
       }
-      if (lineIdx == -1) {
-        System.out.println("About to get hosed");
-      }
       Word wordNode = scrollInfo.lines.get(lineIdx);
       if (wordNode == null) {
         // we've hit a blank line
@@ -333,7 +331,7 @@ public class ProseVisSketch extends PApplet {
           rect(wordTopX, wordTopY, wordDx, wordDy);
         }
         if (wordNode.isMetaNode()) {
-          fill(240, 240, 189);
+          fill(kMetaTextBackgroundColor);
           rect(wordTopX, wordTopY, wordDx, wordDy);
         } else if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
           colorBackground(colorByLabelIdx, colorView, wordNode, wordTopX,
