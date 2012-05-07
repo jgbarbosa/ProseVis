@@ -1,27 +1,32 @@
-Fix open quotations binding to the left instead of right (ie He said," hello!".)
-Fix color picking algorithm :)
-Rhythm rendering?
-Color customization interface in tool?
-Process for rendering comparison data?
-Allow different line breaks/colorings per data set
-  + also add sync checkbox to change all at once
+Bugs:
+  + Fix open quotations binding to the left instead of right (ie He said," hello!".)
+  + Investigate XML matching errors
+
+Small Features:
+  + Add help button to color scheme screen
+  + Pick pastel colors the closer in we get (don't want it to look like we're censoring the text)
+    - The further out the bolder the colors
+  + Want middle wheel support for scrolling
+  + Want multitouch support
+    - David's request
 
 
-Big usability feature:
-  Be able to quickly turn on and off a subset of items for highliting
-  Be able to pick say 7 items, highlite just those with good colors
+Big Feature Requests
+  + Rhythm rendering?
+  + Color customization interface in tool?
+    - Color brewer has some good colors we can use
+  + Allow different line breaks/colorings per data set
+    - also add sync checkbox to change all at once
+  + Big usability feature:
+    - Be able to quickly turn on and off a subset of items for highliting
+    - Be able to pick say 7 items, highlite just those with good colors
 
-Pick pastel colors the closer in we get (don't want it to look like we're censoring the text)
-The further out the bolder the colors
-Smoothing dropdown is too small for the text on Mac
-Want middle wheel support for scrolling
-Want multitouch support
+Deployment Issues
+  + Memory settings on Mac
+    - Tanya's Mac
+  + Want Linux package
 
-Memory settings on Mac
+Priority:
+  + Want to know why two items are the same color (tool tip)
+  + Lock scrolling across docs
 
-Color brewer has some good colors we can use
-Add help button to color scheme screen
-
-Want to know why two items are the same color (tool tip)
-Lock scrolling across docs
-Investigate XML matching errors
