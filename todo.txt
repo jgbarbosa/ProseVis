@@ -1,6 +1,4 @@
 Fix open quotations binding to the left instead of right (ie He said," hello!".)
-Make search modal so that it turns off other colors
-Hit enter in search box should cause a search
 Fix color picking algorithm :)
 Add help button to color scheme screen
 Rhythm rendering?
@@ -15,7 +13,6 @@ Big usability feature:
   Be able to pick say 7 items, highlite just those with good colors
 
 Want to know why two items are the same color (tool tip)
-Want to know which document is which (title bar)
 Pick pastel colors the closer in we get (don't want it to look like we're censoring the text)
 The further out the bolder the colors
 Indent a few pixels from left column
@@ -29,6 +26,4 @@ Lock scrolling across docs
 
 Color brewer has some good colors we can use
 
-Make search work
-  + doesn't work in 1.6
-  + Why is phoneme search not working
+Want to know which document is which (title bar)

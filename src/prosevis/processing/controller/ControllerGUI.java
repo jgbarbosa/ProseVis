@@ -92,6 +92,7 @@ public class ControllerGUI implements WindowStateListener {
   private void initialize() {
     colorByModel = new DefaultComboBoxModel();
     colorByModel.addElement(TypeMap.kNoLabelLabel);
+    final JComboBox colorByDropdown = new JComboBox(colorByModel);
     textByModel = new DefaultComboBoxModel();
     textByModel.addElement(TypeMap.kNoLabelLabel);
     textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
@@ -285,9 +286,7 @@ public class ControllerGUI implements WindowStateListener {
     JLabel whichFilesLabel = new JLabel("Files");
     searchScrollPanel.setColumnHeaderView(whichFilesLabel);
 
-
-
-    btnNext.addActionListener(new ActionListener() {
+    ActionListener searchActionListener = new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         String label = searchButtons.getSelection().getActionCommand();
@@ -302,8 +301,11 @@ public class ControllerGUI implements WindowStateListener {
           selectedFiles.add((String)selected[i]);
         }
         theModel.searchForTerm(searchTerm, label, selectedFiles);
+        colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
       }
-    });
+    };
+    searchTermBox.addActionListener(searchActionListener);
+    btnNext.addActionListener(searchActionListener);
     searchSoundOptions.addItem("Full");
     searchSoundOptions.addItem("Initial");
     searchSoundOptions.addItem("Vowel");
@@ -374,7 +376,6 @@ public class ControllerGUI implements WindowStateListener {
     gbc_lblColorBy.gridy = 2;
     renderPane.add(lblColorBy, gbc_lblColorBy);
 
-    JComboBox colorByDropdown = new JComboBox(colorByModel);
     colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
     colorByDropdown.addActionListener(new ActionListener() {
       @Override
