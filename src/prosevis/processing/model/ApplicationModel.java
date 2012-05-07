@@ -304,7 +304,7 @@ public class ApplicationModel {
   }
 
   public synchronized boolean isLassoMode() {
-    return this.xResolution > 1600;
+    return this.xResolution > 3000;
   }
   
   public synchronized int getSmoothingWindow() {
