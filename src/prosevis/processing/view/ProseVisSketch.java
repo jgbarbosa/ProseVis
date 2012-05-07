@@ -24,6 +24,8 @@ import controlP5.Slider;
 public class ProseVisSketch extends PApplet {
   private static final long serialVersionUID = 1L;
   private static final double DScrollInertia = 0.3;
+  private static final int kTitleBarHeight = 16;
+  private static final int kTitleBarBackground = 200;
 
   private ControlP5 controlP5;
   private final ApplicationModel theModel;
@@ -242,8 +244,17 @@ public class ProseVisSketch extends PApplet {
   private void renderView(DataTreeView dataTreeView, ColorView colorView,
       int minX, int minY, int viewWidth, int viewHeight,
       boolean[] enabledComparisons) {
+    final int yOrigin = minY;
+    final int xOrigin = minX;
+    final int maxViewWidth = viewWidth;
     fill(255);
-    rect(minX, minY, viewWidth, viewHeight);
+    rect(xOrigin, yOrigin, viewWidth, viewHeight);
+    // leave room for the title bar, drawn last
+    minY += kTitleBarHeight;
+    viewHeight -= kTitleBarHeight;
+    // indent a touch so that the text looks more natural
+    minX += 3;
+    viewWidth -= 3;
     fill(0);
     ScrollInfo scrollInfo = dataTreeView.getScrollInfo();
     int lineIdx = scrollInfo.lineIdx;
@@ -338,6 +349,15 @@ public class ProseVisSketch extends PApplet {
       lineIdx++;
       renderedHeight += lineHeight;
     }
+
+    // draw in the title bar last so that nothing overlaps with it
+    setFont(kTitleBarHeight);
+    fill(kTitleBarBackground);
+    rect(xOrigin, yOrigin, maxViewWidth, kTitleBarHeight + 2);
+    fill(0);
+    text(" " + dataTreeView.getData().getName(),
+        xOrigin,
+        yOrigin + kTitleBarHeight - 1);
   }
 
   private void colorBackground(int colorByLabelIdx, ColorView colorView,
