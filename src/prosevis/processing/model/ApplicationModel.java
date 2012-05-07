@@ -211,13 +211,10 @@ public class ApplicationModel {
   public synchronized void searchForTerm(String searchTerm, String label, List<String> selectedFiles) {
     Integer labelIdx = colorDB.getLabelIdx(label);
     if (labelIdx == null) {
+      System.err.println("Searching for non-existing label, aborting.");
       return;
     }
     int typeIdx = colorDB.maybeGetTypeIdx(labelIdx, searchTerm);
-    if (typeIdx < 0) {
-      // no such term exists in our data
-      return;
-    }
     // look up datatreeviews with matching paths, and dispatch the search to them
     for (String s: selectedFiles) {
       for (DataTreeView v: data) {
@@ -306,7 +303,7 @@ public class ApplicationModel {
   public synchronized boolean isLassoMode() {
     return this.xResolution > 3000;
   }
-  
+
   public synchronized int getSmoothingWindow() {
     return smoothingWindow;
   }
