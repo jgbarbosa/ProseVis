@@ -92,6 +92,7 @@ public class ControllerGUI implements WindowStateListener {
   private void initialize() {
     colorByModel = new DefaultComboBoxModel();
     colorByModel.addElement(TypeMap.kNoLabelLabel);
+    final JComboBox colorByDropdown = new JComboBox(colorByModel);
     textByModel = new DefaultComboBoxModel();
     textByModel.addElement(TypeMap.kNoLabelLabel);
     textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
@@ -144,7 +145,7 @@ public class ControllerGUI implements WindowStateListener {
       @Override
       public void actionPerformed(ActionEvent e) {
         List<String> selectedFiles =
-            stripXMLMetaData((String[])dataFilesList.getSelectedValues());
+            stripXMLMetaData(dataFilesList.getSelectedValues());
         theModel.removeData(selectedFiles);
         updateFileLists();
       }
@@ -164,7 +165,7 @@ public class ControllerGUI implements WindowStateListener {
       @Override
       public void actionPerformed(ActionEvent e) {
         List<String> selectedFiles =
-            stripXMLMetaData((String []) dataFilesList.getSelectedValues());
+            stripXMLMetaData(dataFilesList.getSelectedValues());
         theModel.moveFilesToTop(selectedFiles);
         updateFileLists();
       }
@@ -285,24 +286,26 @@ public class ControllerGUI implements WindowStateListener {
     JLabel whichFilesLabel = new JLabel("Files");
     searchScrollPanel.setColumnHeaderView(whichFilesLabel);
 
-
-
-    btnNext.addActionListener(new ActionListener() {
+    ActionListener searchActionListener = new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         String label = searchButtons.getSelection().getActionCommand();
         if ("sound".equals(label)) {
           label += '-' + (String)searchSoundOptions.getSelectedItem();
         }
+        label = label.toLowerCase();
         String searchTerm = searchTermBox.getText();
         List<String> selectedFiles = new ArrayList<String>();
-        String [] selected = (String [])searchFilesList.getSelectedValues();
+        Object [] selected = searchFilesList.getSelectedValues();
         for (int i = 0; i < selected.length; i++) {
-          selectedFiles.add(selected[i]);
+          selectedFiles.add((String)selected[i]);
         }
         theModel.searchForTerm(searchTerm, label, selectedFiles);
+        colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
       }
-    });
+    };
+    searchTermBox.addActionListener(searchActionListener);
+    btnNext.addActionListener(searchActionListener);
     searchSoundOptions.addItem("Full");
     searchSoundOptions.addItem("Initial");
     searchSoundOptions.addItem("Vowel");
@@ -320,7 +323,7 @@ public class ControllerGUI implements WindowStateListener {
         RowSpec.decode("default:grow"),
         FormFactory.RELATED_GAP_ROWSPEC,}));
 
-    controllerTabGroup.addTab("Navigation", null, navigationPane, null);
+    controllerTabGroup.addTab("Search", null, navigationPane, null);
     navigationPane.add(searchButtonsPanel, "2, 2, left, top");
     navigationPane.add(searchScrollPanel, "4, 2, fill, fill");
 
@@ -373,7 +376,6 @@ public class ControllerGUI implements WindowStateListener {
     gbc_lblColorBy.gridy = 2;
     renderPane.add(lblColorBy, gbc_lblColorBy);
 
-    JComboBox colorByDropdown = new JComboBox(colorByModel);
     colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
     colorByDropdown.addActionListener(new ActionListener() {
       @Override
@@ -417,7 +419,7 @@ public class ControllerGUI implements WindowStateListener {
     renderPane.add(textByDropdown, textByConstraints);
 
     JPanel colorPane = new JPanel();
-    controllerTabGroup.addTab("Color", null, colorPane, null);
+    controllerTabGroup.addTab("Settings", null, colorPane, null);
     colorPane.setLayout(new GridLayout(2, 1, 0, 0));
 
     JPanel colorTop = new JPanel();
@@ -580,8 +582,8 @@ public class ControllerGUI implements WindowStateListener {
           .addContainerGap()
           .addComponent(lblSmoothingWindow)
           .addPreferredGap(ComponentPlacement.RELATED)
-          .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
-          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+          .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE)
+          .addContainerGap(16, Short.MAX_VALUE))
     );
     gl_comparisonPaneLeftPanel.setVerticalGroup(
       gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
@@ -590,7 +592,7 @@ public class ControllerGUI implements WindowStateListener {
           .addGroup(gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.BASELINE)
             .addComponent(lblSmoothingWindow)
             .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addContainerGap(449, Short.MAX_VALUE))
+          .addContainerGap(439, Short.MAX_VALUE))
     );
     comparisonPaneLeftPanel.setLayout(gl_comparisonPaneLeftPanel);
 
@@ -712,9 +714,10 @@ public class ControllerGUI implements WindowStateListener {
 }
 
 abstract class FileListActionListener implements ActionListener {
-  protected List<String> stripXMLMetaData(String[] rawInput) {
+  protected List<String> stripXMLMetaData(Object[] rawInput) {
     List<String> strippedPaths = new ArrayList<String>(rawInput.length);
-    for (String in: rawInput) {
+    for (Object inObj: rawInput) {
+      String in = (String)inObj;
       if (in.endsWith(ControllerGUI.kXmlTag)) {
         strippedPaths.add(in.substring(0, in.lastIndexOf(ControllerGUI.kXmlTag)));
       } else {

@@ -1,16 +1,32 @@
-Stop converting all words to lower case
-Fix problem where single/double quotes rendered the same
-Stop adding space before commas/punctuation
-Highlite all in yellow during search
-  + can make coloring modal, so we turn off other coloring while in search
-Hit enter in search box should cause a search
-Fix color picking algorithm
-Add help button to color scheme screen
-Rhythm rendering?
-Color customization interface in tool?
-Process for rendering comparison data?
-Allow different line breaks/colorings per data set
-  + also add sync checkbox to change all at once
+Bugs:
+  + Fix open quotations binding to the left instead of right (ie He said," hello!".)
+  + Investigate XML matching errors
 
-Line wrapping
-Prose based line breaks
+Small Features:
+  + Add help button to color scheme screen
+  + Pick pastel colors the closer in we get (don't want it to look like we're censoring the text)
+    - The further out the bolder the colors
+  + Want middle wheel support for scrolling
+  + Want multitouch support
+    - David's request
+
+
+Big Feature Requests
+  + Rhythm rendering?
+  + Color customization interface in tool?
+    - Color brewer has some good colors we can use
+  + Allow different line breaks/colorings per data set
+    - also add sync checkbox to change all at once
+  + Big usability feature:
+    - Be able to quickly turn on and off a subset of items for highliting
+    - Be able to pick say 7 items, highlite just those with good colors
+
+Deployment Issues
+  + Memory settings on Mac
+    - Tanya's Mac
+  + Want Linux package
+
+Priority:
+  + Want to know why two items are the same color (tool tip)
+  + Lock scrolling across docs
+

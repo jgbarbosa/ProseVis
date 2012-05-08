@@ -129,11 +129,33 @@ public class DataTreeView {
   public synchronized void searchForTerm(int typeIdx, int labelIdx) {
     int lineIdx = lastScrollInfo.lineIdx;
     if (lastScrollInfo.lineFrac > 0.5) {
+      // look for the next result start from the ~most visible line
       lineIdx++;
     }
+    // we do some evil things to support XML metadata, like dump random
+    // words into scrollInfo.lines to add words that were not in the original
+    // document, and we ought to skip those words
     Word lineStart = lastScrollInfo.lines.get(lineIdx);
+    while (lineStart != null &&
+        lineStart.isMetaNode() &&
+        lastScrollInfo.lines.size() > lineIdx) {
+      lineIdx++;
+      lineStart = lastScrollInfo.lines.get(lineIdx);
+    }
     if (lineStart == null) {
-      return;
+      // sometimes we skip a line by inserting a null
+      lineIdx++;
+      if (lineIdx >= lastScrollInfo.lines.size()) {
+        // no next line to go to
+        return;
+      }
+      lineStart = lastScrollInfo.lines.get(lineIdx);
+      if (lineStart == null) {
+        // no dice, I'm not sure what happened here, but no search is going to
+        System.err.println("Couldn't figure out what line to start our " + "" +
+        		"search on, aborting");
+        return;
+      }
     }
 
     Word result = searcher.search(

@@ -134,7 +134,7 @@ public class ApplicationModel {
 
   public synchronized void setColorBy(String label) {
     int labelIdx;
-    if (label.equals(TypeMap.kColorByComparison)) {
+    if (TypeMap.kColorByComparison.equals(label)) {
       labelIdx = TypeMap.kColorByComparisonIdx;
     } else {
       labelIdx = colorDB.getLabelIdx(label);
@@ -211,22 +211,30 @@ public class ApplicationModel {
   public synchronized void searchForTerm(String searchTerm, String label, List<String> selectedFiles) {
     Integer labelIdx = colorDB.getLabelIdx(label);
     if (labelIdx == null) {
+      System.err.println("Searching for non-existing label, aborting.");
       return;
     }
     int typeIdx = colorDB.maybeGetTypeIdx(labelIdx, searchTerm);
-    if (typeIdx < 0) {
-      // no such term exists in our data
-      return;
-    }
+
     // look up datatreeviews with matching paths, and dispatch the search to them
-    for (String s: selectedFiles) {
-      for (DataTreeView v: data) {
-        if (v.getData().getPath().equals(s)) {
-          v.searchForTerm(typeIdx, labelIdx);
-          break;
+    List<DataTreeView> selectedData = new ArrayList<DataTreeView>();
+    if (selectedFiles.size() < 1) {
+      selectedData = data;
+    } else {
+      for (String s: selectedFiles) {
+        for (DataTreeView v: data) {
+          if (v.getData().getPath().equals(s)) {
+            selectedData.add(v);
+          }
         }
       }
     }
+    for (DataTreeView v: selectedData) {
+      v.searchForTerm(typeIdx, labelIdx);
+      break;
+    }
+
+    setColorBy(TypeMap.kNoLabelLabel);
   }
 
   public synchronized void moveFilesToTop(List<String> selectedFiles) {
@@ -304,9 +312,9 @@ public class ApplicationModel {
   }
 
   public synchronized boolean isLassoMode() {
-    return this.xResolution > 1600;
+    return this.xResolution > 3000;
   }
-  
+
   public synchronized int getSmoothingWindow() {
     return smoothingWindow;
   }
