@@ -8,6 +8,11 @@ BUNDLE_JAVA_ROOT=$(BUNDLE_PATH)/Contents/Resources/Java
 BUNDLE_EXEC_DST=$(BUNDLE_PATH)/Contents/MacOS/JavaApplicationStub
 BUNDLE_EXEC_SRC=/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub
 
+# zip is retarded and needs me to copy everything into a single directory before I zip
+WIN32_PATH=$(OUTPUT_DIR)/win32/
+WIN64_PATH=$(OUTPUT_DIR)/win64/
+
+
 # yeah I know this is terrible, but it is the lowest cost solution for a tiny
 # project where we use eclipse anyway
 SRC=$(shell find . | grep .java$$)
@@ -21,17 +26,15 @@ COMPILE_CP := $(JOINED_LIBS)src
 %.class : %.java
 	$(JAVAC) -classpath $(COMPILE_CP) $<
 
-all: $(OUTPUT_DIR)/prosevis.jar mac_bundle
-	@echo Finished building all
-
-$(OUTPUT_DIR):
-	mkdir $(OUTPUT_DIR)
-
 # Pipe indicates that OUTPUT_DIR is an order only dependency
 # I believe this means it ignores timestamp
 $(OUTPUT_DIR)/prosevis.jar: $(OBJ) | $(OUTPUT_DIR)
 	@echo Building prosevis.jar
-	jar cmf scripts/manifest $(OUTPUT_DIR)/prosevis.jar -C ./src prosevis
+	jar cmf resources/manifest $(OUTPUT_DIR)/prosevis.jar -C ./src prosevis
+
+$(OUTPUT_DIR):
+	mkdir $(OUTPUT_DIR)
+
 
 mac_bundle: $(OUTPUT_DIR)/prosevis.jar resources/Info.plist resources/prosevis.png $(LIBS)
 	@echo Building MacOSX bundle
@@ -39,17 +42,61 @@ mac_bundle: $(OUTPUT_DIR)/prosevis.jar resources/Info.plist resources/prosevis.p
 	mkdir -p $(BUNDLE_PATH)
 	mkdir -p $(BUNDLE_PATH)/Contents/MacOS
 	mkdir -p $(BUNDLE_JAVA_ROOT)
-	cp resources/prosevis.png executables/ProseVis.app/
+	cp resources/prosevis.png executables/ProseVis.app/Contents/Resources/
 	cp $(OUTPUT_DIR)/prosevis.jar $(BUNDLE_JAVA_ROOT)/
 	cp lib/processingopengl/macosx/*.jnilib $(BUNDLE_JAVA_ROOT)/
 	cp lib/processingopengl/*.jar $(BUNDLE_JAVA_ROOT)/
+	cp lib/*.jar $(BUNDLE_JAVA_ROOT)/
 	cp resources/Info.plist $(BUNDLE_PATH)/Contents/
 	./scripts/update_info_plist.sh $(BUNDLE_PATH)/Contents/Info.plist
 	ln -s $(BUNDLE_EXEC_SRC) $(BUNDLE_EXEC_DST)
 
 mac_package: mac_bundle
-	tar czvf $(OUTPUT_DIR)/prosevis.mac.tar.gz $(BUNDLE_PATH) public_data
-	
+	tar czvf $(OUTPUT_DIR)/prosevis.mac.tar.gz  public_data -C $(OUTPUT_DIR) ProseVis.app
+
+win32_package: $(OUTPUT_DIR)/prosevis.jar
+	rm -rf $(WIN32_PATH)
+	mkdir -p $(WIN32_PATH)
+	cp $(OUTPUT_DIR)/prosevis.jar $(WIN32_PATH)
+	cp lib/processingopengl/*.jar $(WIN32_PATH)
+	cp lib/*.jar $(WIN32_PATH)
+	cp lib/processingopengl/windows32/*.dll $(WIN32_PATH)
+	cp resources/run32.bat $(WIN32_PATH)/run.bat
+	cp -R public_data $(WIN32_PATH)/
+	pushd $(WIN32_PATH) && find . | xargs zip prosevis.win32.zip && popd
+	mv $(WIN32_PATH)/prosevis.win32.zip $(OUTPUT_DIR)
+
+win64_package: $(OUTPUT_DIR)/prosevis.jar
+	rm -rf $(WIN64_PATH)
+	mkdir -p $(WIN64_PATH)
+	cp $(OUTPUT_DIR)/prosevis.jar $(WIN64_PATH)
+	cp lib/processingopengl/*.jar $(WIN64_PATH)
+	cp lib/*.jar $(WIN64_PATH)
+	cp lib/processingopengl/windows64/*.dll $(WIN64_PATH)
+	cp resources/run64.bat $(WIN64_PATH)/run.bat
+	cp -R public_data $(WIN64_PATH)/
+	pushd $(WIN64_PATH) && find . | xargs zip prosevis.win64.zip && popd
+	mv $(WIN64_PATH)/prosevis.win64.zip $(OUTPUT_DIR)
+
+linux32_package: $(OUTPUT_DIR)/prosevis.jar
+	tar czvf $(OUTPUT_DIR)/prosevis.linux32.tar.gz \
+		-C $(OUTPUT_DIR) prosevis.jar \
+		-C ../lib $(shell ls lib | grep .jar$$) \
+		-C ../lib/processingopengl $(shell ls lib/processingopengl | grep .jar$$) \
+		-C linux32 $(shell ls lib/processingopengl/linux32/ | grep .so$$) \
+		-C ../../../ public_data \
+		-C resources run.sh
+
+linux64_package: $(OUTPUT_DIR)/prosevis.jar
+	tar czvf $(OUTPUT_DIR)/prosevis.linux64.tar.gz \
+		-C $(OUTPUT_DIR) prosevis.jar \
+		-C ../lib $(shell ls lib | grep .jar$$) \
+		-C ../lib/processingopengl $(shell ls lib/processingopengl | grep .jar$$) \
+		-C linux64 $(shell ls lib/processingopengl/linux64/ | grep .so$$) \
+		-C ../../../ public_data \
+		-C resources run.sh
+
+all_packages: mac_package win32_package win64_package linux64_package linux32_package
 
 .PHONY : clean mac_bundle
 
