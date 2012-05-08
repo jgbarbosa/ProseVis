@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar prosevis.jar
+export PATH=.:$PATH && java -Xmx1024m -jar prosevis.jar
