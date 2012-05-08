@@ -1,3 +1,4 @@
 .lastpath.txt
+*.class
 bin/
 executables/
