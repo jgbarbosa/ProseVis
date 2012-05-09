@@ -31,8 +31,16 @@
 		<key>JVMVersion</key>
 		<string>1.6+</string>
 		<key>ClassPath</key>
-      <array>
-THISISWHERETHEJARFILESGO
+			<array>
+			<string>$JAVAROOT/prosevis.jar</string>
+			<string>$JAVAROOT/xom-1.2.7.jar</string>
+			<string>$JAVAROOT/controlP5.jar</string>
+			<string>$JAVAROOT/core.jar</string>
+			<string>$JAVAROOT/forms-1.3.0.jar</string>
+			<string>$JAVAROOT/gluegen-rt.jar</string>
+			<string>$JAVAROOT/jogl.jar</string>
+			<string>$JAVAROOT/miglayout-4.0.jar</string>
+			<string>$JAVAROOT/opengl.jar</string>
 			</array>
 		<key>Properties</key>
 		<dict>
