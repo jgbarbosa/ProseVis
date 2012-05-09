@@ -688,6 +688,8 @@ public class ControllerGUI implements WindowStateListener {
         break;
       }
       comparisonsEnabled.get(i).setBackground(state[i].getColor());
+      // this opaque call is needed to get background colors showing up on mac
+      comparisonsEnabled.get(i).setOpaque(true);
       comparisonsEnabled.get(i).setSelected(state[i].getEnabled());
     }
     if (!haveChanged) {
