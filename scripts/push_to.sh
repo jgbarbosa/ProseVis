@@ -9,9 +9,10 @@ if [ ! -d $1 ]; then
   exit -1
 fi
 
-cp executables/prosevis.linux32.tar.gz \
+cp -R executables/prosevis.linux32.tar.gz \
   executables/prosevis.linux64.tar.gz \
-  executables/prosevis.mac.tar.gz \
+  executables/ProseVis.app \
   executables/prosevis.win32.zip \
   executables/prosevis.win64.zip \
+  executables/data.zip \
   $1

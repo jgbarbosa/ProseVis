@@ -36,23 +36,21 @@ $(OUTPUT_DIR):
 	mkdir $(OUTPUT_DIR)
 
 
-mac_bundle: $(OUTPUT_DIR)/prosevis.jar resources/Info.plist resources/prosevis.png $(LIBS)
+mac_package: $(OUTPUT_DIR)/prosevis.jar
 	@echo Building MacOSX bundle
 	rm -rf   $(BUNDLE_PATH)
 	mkdir -p $(BUNDLE_PATH)
 	mkdir -p $(BUNDLE_PATH)/Contents/MacOS
 	mkdir -p $(BUNDLE_JAVA_ROOT)
-	cp resources/prosevis.png executables/ProseVis.app/Contents/Resources/
+	cp resources/prosevisicon.icns executables/ProseVis.app/Contents/Resources/
 	cp $(OUTPUT_DIR)/prosevis.jar $(BUNDLE_JAVA_ROOT)/
 	cp lib/processingopengl/macosx/*.jnilib $(BUNDLE_JAVA_ROOT)/
 	cp lib/processingopengl/*.jar $(BUNDLE_JAVA_ROOT)/
 	cp lib/*.jar $(BUNDLE_JAVA_ROOT)/
+	cp resources/JavaApplicationStub $(BUNDLE_PATH)/Contents/MacOS
+	cp resources/PkgInfo $(BUNDLE_PATH)/Contents/
 	cp resources/Info.plist $(BUNDLE_PATH)/Contents/
 	./scripts/update_info_plist.sh $(BUNDLE_PATH)/Contents/Info.plist
-	ln -s $(BUNDLE_EXEC_SRC) $(BUNDLE_EXEC_DST)
-
-mac_package: mac_bundle
-	tar czvf $(OUTPUT_DIR)/prosevis.mac.tar.gz  public_data -C $(OUTPUT_DIR) ProseVis.app
 
 win32_package: $(OUTPUT_DIR)/prosevis.jar
 	rm -rf $(WIN32_PATH)
@@ -62,7 +60,7 @@ win32_package: $(OUTPUT_DIR)/prosevis.jar
 	cp lib/*.jar $(WIN32_PATH)
 	cp lib/processingopengl/windows32/*.dll $(WIN32_PATH)
 	cp resources/run32.bat $(WIN32_PATH)/run.bat
-	cp -R public_data $(WIN32_PATH)/
+	cp -R colorschemes $(WIN32_PATH)/
 	pushd $(WIN32_PATH) && find . | xargs zip prosevis.win32.zip && popd
 	mv $(WIN32_PATH)/prosevis.win32.zip $(OUTPUT_DIR)
 
@@ -74,7 +72,7 @@ win64_package: $(OUTPUT_DIR)/prosevis.jar
 	cp lib/*.jar $(WIN64_PATH)
 	cp lib/processingopengl/windows64/*.dll $(WIN64_PATH)
 	cp resources/run64.bat $(WIN64_PATH)/run.bat
-	cp -R public_data $(WIN64_PATH)/
+	cp -R colorschemes $(WIN64_PATH)/
 	pushd $(WIN64_PATH) && find . | xargs zip prosevis.win64.zip && popd
 	mv $(WIN64_PATH)/prosevis.win64.zip $(OUTPUT_DIR)
 
@@ -84,8 +82,7 @@ linux32_package: $(OUTPUT_DIR)/prosevis.jar
 		-C ../lib $(shell ls lib | grep .jar$$) \
 		-C ../lib/processingopengl $(shell ls lib/processingopengl | grep .jar$$) \
 		-C linux32 $(shell ls lib/processingopengl/linux32/ | grep .so$$) \
-		-C ../../../ public_data \
-		-C resources run.sh
+		-C ../../../resources run.sh 
 
 linux64_package: $(OUTPUT_DIR)/prosevis.jar
 	tar czvf $(OUTPUT_DIR)/prosevis.linux64.tar.gz \
@@ -93,12 +90,16 @@ linux64_package: $(OUTPUT_DIR)/prosevis.jar
 		-C ../lib $(shell ls lib | grep .jar$$) \
 		-C ../lib/processingopengl $(shell ls lib/processingopengl | grep .jar$$) \
 		-C linux64 $(shell ls lib/processingopengl/linux64/ | grep .so$$) \
-		-C ../../../ public_data \
-		-C resources run.sh
+		-C ../../../resources run.sh 
 
-all_packages: mac_package win32_package win64_package linux64_package linux32_package
+data_package:
+	zip $(OUTPUT_DIR)/data.zip colorschemes/* public_data/*
 
-.PHONY : clean mac_bundle
+
+
+all_packages: mac_package win32_package win64_package linux64_package linux32_package data_package
+
+.PHONY : clean 
 
 
 clean:
