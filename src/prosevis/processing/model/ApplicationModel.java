@@ -89,6 +89,26 @@ public class ApplicationModel {
     this.comparisonState = null;
   }
 
+  public synchronized void removeData(List<String> selectedFiles) {
+    for (String path: selectedFiles) {
+      // find the DataTree corresponding to this path
+      int idx = 0;
+      for (idx = 0; idx < data.size(); idx++) {
+        if (data.get(idx).getData().getPath().equals(path)) {
+          data.remove(idx);
+          break;
+        }
+      }
+    }
+    if (data.isEmpty()) {
+      this.colorDB.clearComparisonData();
+      this.comparisonState = null;
+    } else {
+      geoModel.setX(xResolution / data.size());
+    }
+  }
+
+
   public synchronized RenderingInformation getRenderingData() {
     boolean [] enabled = null;
     if (comparisonState != null) {
@@ -253,24 +273,6 @@ public class ApplicationModel {
      movedFiles.add(data.remove(idx));
     }
     data.addAll(0, movedFiles);
-  }
-
-  public synchronized void removeData(List<String> selectedFiles) {
-    for (String path: selectedFiles) {
-      // find the DataTree corresponding to this path
-      int idx = 0;
-      for (idx = 0; idx < data.size(); idx++) {
-        if (data.get(idx).getData().getPath().equals(path)) {
-          data.remove(idx);
-          break;
-        }
-      }
-    }
-
-    if (data.isEmpty()) {
-      this.colorDB.clearComparisonData();
-      this.comparisonState = null;
-    }
   }
 
   public synchronized int getScreenY() {

@@ -1,14 +1,22 @@
 Bugs:
   + Fix open quotations binding to the left instead of right (ie He said," hello!".)
   + Investigate XML matching errors
+  + Search still broken
+    - Not searching in all documents
+    - Searching full phoneme doesn't work?
+    - Try searching for initial I
 
 Small Features:
   + Add help button to color scheme screen
   + Pick pastel colors the closer in we get (don't want it to look like we're censoring the text)
     - The further out the bolder the colors
   + Want middle wheel support for scrolling
+    - David and Tanya want this
   + Want multitouch support
-    - David's request
+  + Checkbox to disable self similarity
+  + Indent the k + 1th lines when line wrapping for  all k
+  + Include metadata in LineGroup
+
 
 
 Big Feature Requests
@@ -21,12 +29,14 @@ Big Feature Requests
     - Be able to quickly turn on and off a subset of items for highliting
     - Be able to pick say 7 items, highlite just those with good colors
 
-Deployment Issues
-  + Memory settings on Mac
-    - Tanya's Mac
-  + Want Linux package
+Odd Mac Issues:
+  + Background color for comparisons not confirmed to work
+  + Fonts broken on mac
 
 Priority:
   + Want to know why two items are the same color (tool tip)
   + Lock scrolling across docs
+
+
+
 
