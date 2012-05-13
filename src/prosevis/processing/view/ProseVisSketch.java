@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -27,6 +29,7 @@ public class ProseVisSketch extends PApplet {
   private static final int kTitleBarHeight = 16;
   private static final int kTitleBarBackground = 200;
   private static final int kMetaTextBackgroundColor = 220;
+  protected static final int kScrollWheelSensitivity = 10;
 
   private ControlP5 controlP5;
   private final ApplicationModel theModel;
@@ -94,7 +97,23 @@ public class ProseVisSketch extends PApplet {
         }
       }
     });
-
+    
+    addMouseWheelListener(new MouseWheelListener() { 
+      public void mouseWheelMoved(MouseWheelEvent mwe) {
+        final int x = mwe.getX();
+        final int viewWidth = lastViewWidth;
+        int viewIdx = -1;
+        for (int i = 0; i < lastViews.length; i++) {
+          if (x < (i + 1) * viewWidth && x >= i * viewWidth) {
+            viewIdx = i;
+            break;
+          }
+        }
+        if (viewIdx < 0) {
+          return;
+        }
+        lastViews[viewIdx].addScrollOffset(-mwe.getUnitsToScroll() * ProseVisSketch.kScrollWheelSensitivity);
+    }}); 
   }
 
   void setFont(int size) {

@@ -6,8 +6,6 @@ Small Features:
   + Add help button to color scheme screen
   + Pick pastel colors the closer in we get (don't want it to look like we're censoring the text)
     - The further out the bolder the colors
-  + Want middle wheel support for scrolling
-    - David and Tanya want this
   + Want multitouch support
   + Checkbox to disable self similarity
   + Indent the k + 1th lines when line wrapping for  all k
@@ -26,7 +24,8 @@ Big Feature Requests
     - Be able to pick say 7 items, highlite just those with good colors
 
 Odd Mac Issues:
-  + Background color for comparisons not confirmed to work
+  + Background color for comparisons not working
+    - Potentially fixed, but confirm with Tanya
   + Fonts broken on mac
 
 Priority:
