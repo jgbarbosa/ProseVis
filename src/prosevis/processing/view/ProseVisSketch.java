@@ -122,13 +122,20 @@ public class ProseVisSketch extends PApplet {
   void setFont(int size) {
     if (curFontSize != size) {
       if (!fonts.containsKey(size)) {
-        fonts.put(size, createFont("Monospaced.plain", size));
+        fonts.put(size, createFont(GetFontName(), size));
       }
       textFont(fonts.get(size), size);
       curFontSize = size;
     }
   }
 
+  private static String GetFontName() {
+//    for (String s: PFont.list()) {
+//      System.out.println(s);
+//    }
+    return "Courier New";
+  }
+  
   private int getFontDescent() {
     return (int) (fonts.get(curFontSize).descent() * curFontSize);
   }
