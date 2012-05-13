@@ -44,10 +44,9 @@ public class CoordinateWordMap {
 
   private final ArrayList<Zone> zones = new ArrayList<Zone>();
   private int allocatedZones = 0;
-  private final HashMap<Integer, ArrayList<Zone>> line2zones = new HashMap<Integer, ArrayList<Zone>>();
   
   // keep these in memory and try to avoid a bunch of heap operations
-  private Zone getZone(int x, int y, int dx, int dy, Word w) {
+  private Zone addZone(int x, int y, int dx, int dy, Word w) {
     if (allocatedZones >= zones.size()) {
       zones.add(new Zone(x, y, dx, dy, w));
     }
@@ -58,7 +57,6 @@ public class CoordinateWordMap {
   }
 
   public void clear() {
-    line2zones.clear();
     allocatedZones = 0;  
   }
   
@@ -67,22 +65,15 @@ public class CoordinateWordMap {
   }
   
   public Word translate(int x, int y) {
-    if (!line2zones.containsKey(y)) {
-      return null;
-    }
-    ArrayList<Zone> zones = line2zones.get(y);
-    for (Zone z: zones) {
-      if (z.contains(x, y)) {
-        return z.getWord();
+    for (int i = 0; i < allocatedZones; i++) {
+      if (zones.get(i).contains(x, y)) {
+        return zones.get(i).getWord();
       }
     }
     return null;
   }
   
   public void put(int x, int y, int dx, int dy, Word w) {
-    if (!line2zones.containsKey(y)) {
-      line2zones.put(y, new ArrayList<Zone>());
-    }
-    line2zones.get(y).add(getZone(x, y, dx, dy, w));
+    addZone(x, y, dx, dy, w);
   }
 }

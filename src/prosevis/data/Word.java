@@ -66,6 +66,10 @@ public class Word {
     }
     return getTypeIdxForLabelIdx(labelIdx);
   }
+  
+  public int getTypeIdxForLabelIdx(int labelIdx, int syllableIdx) {
+    return getTypeIdxForLabelIdx(labelIdx, syllableIdx, null);
+  }
 
   public void addSyllable(Syllable s){
     syllables.add(s);

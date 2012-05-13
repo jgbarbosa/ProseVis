@@ -30,6 +30,7 @@ public class ProseVisSketch extends PApplet {
   private static final int kTitleBarBackground = 200;
   private static final int kMetaTextBackgroundColor = 220;
   protected static final int kScrollWheelSensitivity = 10;
+  private static final int kToolTipTextSize = 14;
 
   private ControlP5 controlP5;
   private final ApplicationModel theModel;
@@ -47,6 +48,7 @@ public class ProseVisSketch extends PApplet {
   private int lastSliderWidth;
   private int lastViewWidth;
   private final ArrayList<CoordinateWordMap> wordMaps = new ArrayList<CoordinateWordMap>();
+  private final ToolTipContext toolTipContext = new ToolTipContext();
 
   public ProseVisSketch() {
     theModel = new ApplicationModel(ArgumentHack.getViewArea().width,
@@ -176,7 +178,9 @@ public class ProseVisSketch extends PApplet {
     }
     
     // now that we think all the documents are drawn, add in the tooltip
-    addTooltip();
+    if (lastViews.length > 0) {      
+      addTooltip(colorView);
+    }
   }
 
   private void refreshSliders(final int viewHeight) {
@@ -218,8 +222,57 @@ public class ProseVisSketch extends PApplet {
     }
   }
   
-  private void addTooltip() {
+  private void addTooltip(ColorView colorView) {
+    toolTipContext.recordPosition(mouseX, mouseY);
+    if (!toolTipContext.shouldShow()) {
+      return;
+    }
+    int viewIdx = -1;
+    for (int i = 0; i < lastViews.length; i++) {
+      if (mouseX >= i * lastViewWidth && mouseX <= (i + 1) * lastViewWidth) {
+        viewIdx = i;
+        break;
+      }
+    }
+    if (viewIdx < 0) {
+      // not sure this can happen
+      return;
+    }
+    Word w = wordMaps.get(viewIdx).translate(mouseX, mouseY);
+    if (w == null || w.isMetaNode()) {
+      // very possibly we're not even hovering over a word
+      return;
+    }
+    final String pos = colorView.getType(
+        TypeMap.kPOSLabelIdx, 
+        w.getTypeIdxForLabelIdx(TypeMap.kPOSLabelIdx));
+    StringBuilder sound = new StringBuilder(colorView.getType(
+        TypeMap.kPhonemeIdx,
+        w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx)));
+    for (int i = 1; i < w.getSyllableCount(); i++) {
+      sound.append("|");
+      sound.append(colorView.getType(TypeMap.kPhonemeIdx, 
+          w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx, i)));
+    }
     
+    String [] lines = {
+        "Word: " + w.getWord(),
+        "POS: " + pos,
+        "Sound: " + sound,
+    };
+    int boxDx = 0;
+    for (int i = 0; i < lines.length; i++) {
+      boxDx = Math.max(boxDx, 3 + (int)textWidth(lines[i]));
+    }
+    fill(kTitleBarBackground);
+    int xOrig = mouseX + 20;
+    int yOrig = mouseY + 10;
+    final int boxDy = lines.length * kToolTipTextSize + 4;
+    rect(xOrig, yOrig, boxDx, boxDy);
+    fill(0);
+    for (int i = 0; i < lines.length; i++) {
+      text(lines[i], xOrig + 1, yOrig + (i + 1) * kToolTipTextSize - 1);      
+    }
   }
   
   @Override
