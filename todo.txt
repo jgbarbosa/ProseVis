@@ -1,10 +1,6 @@
 Bugs:
   + Fix open quotations binding to the left instead of right (ie He said," hello!".)
   + Investigate XML matching errors
-  + Search still broken
-    - Not searching in all documents
-    - Searching full phoneme doesn't work?
-    - Try searching for initial I
 
 Small Features:
   + Add help button to color scheme screen

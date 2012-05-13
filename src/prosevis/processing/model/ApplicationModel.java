@@ -251,7 +251,6 @@ public class ApplicationModel {
     }
     for (DataTreeView v: selectedData) {
       v.searchForTerm(typeIdx, labelIdx);
-      break;
     }
 
     setColorBy(TypeMap.kNoLabelLabel);

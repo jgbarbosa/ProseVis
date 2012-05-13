@@ -26,7 +26,7 @@ public class TypeMap {
   public static final int kStressIdx = 9;
   public static final int kToneIdx = 10;
   public static final String kNoLabelLabel = "none";
-  public static final String kPhonemeAllLabel = "sound";
+  public static final String kPhonemeAllLabel = "sound-full";
   public static final String kPhonemeStartLabel = "sound-initial";
   public static final String kPhonemeVowelLabel = "sound-vowel";
   public static final String kPhonemeFinalLabel = "sound-final";
@@ -34,7 +34,7 @@ public class TypeMap {
 
   // not reall immutable, but nothing lasts forever
   public static final String[] kPossibleColorByLabels = {"none", "stress", "pos", "tone", "accent", "soundex", "word", kPhonemeAllLabel, kPhonemeStartLabel, kPhonemeVowelLabel, kPhonemeFinalLabel, kColorByComparison};
-  public static final String[] kPossibleTextByLabels = {"none", "pos", "sound", "word"};
+  public static final String[] kPossibleTextByLabels = {"none", "pos", kPhonemeAllLabel, "word"};
   public static final int[] kSyllableTypes = {kPhonemeC2Idx, kPhonemeVIdx, kPhonemeC1Idx, kPhonemeIdx, kStressIdx, kColorByComparisonIdx};
   public static final int kMaxFields = 12;
   public static final int kNoTypeIdx = -1;
