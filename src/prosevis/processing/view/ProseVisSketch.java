@@ -46,6 +46,7 @@ public class ProseVisSketch extends PApplet {
   private int lastDy;
   private int lastSliderWidth;
   private int lastViewWidth;
+  private final ArrayList<CoordinateWordMap> wordMaps = new ArrayList<CoordinateWordMap>();
 
   public ProseVisSketch() {
     theModel = new ApplicationModel(ArgumentHack.getViewArea().width,
@@ -142,57 +143,85 @@ public class ProseVisSketch extends PApplet {
     final int viewHeight = renderInfo.viewHeight;
 
     if (!DataTreeView.sameFiles(views, lastViews)) {
+      // crap, new data or layout, remove all sliders, reset scroll inertia, possibly add wordMaps
       lastViewScrollIdx = -1;
-      background(255, 255, 255);
-      // crap, new data or layout, remove all the sliders
       lastViews = views;
-      for (Slider s : sliders) {
-        controlP5.remove(s.name());
+      
+      while (wordMaps.size() < lastViews.length) {
+        wordMaps.add(new CoordinateWordMap());
       }
-      sliders.clear();
-      for (int i = 0; i < views.length; i++) {
-        // add a slider for this slice of the screen
-        controlP5.addSlider("slider" + sliders.size(), 0.0f, 1.0f,
-            (float) views[sliders.size()].getScroll(), (i + 1) * viewWidth
-                - sliderWidth, 0, sliderWidth, viewHeight);
-        Slider slider = (Slider) controlP5
-            .controller("slider" + sliders.size());
-        slider.setLabelVisible(false);
-        slider.setId(sliders.size());
-        slider.setMoveable(false);
-
-        // because they don't implement listeners, we'll need to keep a
-        // reference for ourselves
-        sliders.add(slider);
-        renderView(views[i], colorView, i * viewWidth, 0, viewWidth
-            - sliderWidth, viewHeight, enabledComparisons);
+      
+      refreshSliders(viewHeight);
+      
+      for (int i = 0; i < lastViews.length; i++) {
+        renderView(lastViews[i],
+            colorView,
+            wordMaps.get(i),
+            i * viewWidth, 
+            0,
+            viewWidth - sliderWidth,
+            viewHeight,
+            enabledComparisons);
       }
     } else {
-      long now = System.currentTimeMillis();
-      long dT = now - lastUpdate;
-      if (this.scrollInertia != 0.0 && this.inertialScrollIdx >= 0
-          && inertialScrollIdx < views.length && dT > 0) {
-        lastUpdate = now;
-        double scroll = views[inertialScrollIdx]
-            .addScrollOffset((int) (scrollInertia * dT));
-        sliders.get(inertialScrollIdx).setValue((float) scroll);
-        if (scrollInertia > 0) {
-          scrollInertia = Math.max(0.0, scrollInertia - DScrollInertia);
-        } else {
-          scrollInertia = Math.min(0.0, scrollInertia + DScrollInertia);
-        }
-      }
+      updateScrollWithInertia();
 
       for (int i = 0; i < views.length; i++) {
         if (views[i].getAndClearNeedsRender() || colorStateChanged) {
           sliders.get(i).setValue((float) views[i].getScroll());
-          renderView(views[i], colorView, i * viewWidth, 0, viewWidth
+          renderView(views[i], colorView, wordMaps.get(i), i * viewWidth, 0, viewWidth
               - sliderWidth, viewHeight, enabledComparisons);
         }
       }
     }
+    
+    // now that we think all the documents are drawn, add in the tooltip
+    addTooltip();
   }
 
+  private void refreshSliders(final int viewHeight) {
+    for (Slider s : sliders) {
+      controlP5.remove(s.name());
+    }
+    sliders.clear();
+    for (int i = 0; i < lastViews.length; i++) {
+      // add a slider for this slice of the screen
+      controlP5.addSlider("slider" + sliders.size(), 0.0f, 1.0f,
+          (float) lastViews[sliders.size()].getScroll(), (i + 1) * lastViewWidth
+              - lastSliderWidth, 0, lastSliderWidth, viewHeight);
+      Slider slider = (Slider) controlP5
+          .controller("slider" + sliders.size());
+      slider.setLabelVisible(false);
+      slider.setId(sliders.size());
+      slider.setMoveable(false);
+
+      // because they don't implement listeners, we'll need to keep a
+      // reference for ourselves
+      sliders.add(slider);
+    }
+  }
+
+  private void updateScrollWithInertia() {
+    long now = System.currentTimeMillis();
+    long dT = now - lastUpdate;
+    if (this.scrollInertia != 0.0 && this.inertialScrollIdx >= 0
+        && inertialScrollIdx < lastViews.length && dT > 0) {
+      lastUpdate = now;
+      double scroll = lastViews[inertialScrollIdx]
+          .addScrollOffset((int) (scrollInertia * dT));
+      sliders.get(inertialScrollIdx).setValue((float) scroll);
+      if (scrollInertia > 0) {
+        scrollInertia = Math.max(0.0, scrollInertia - DScrollInertia);
+      } else {
+        scrollInertia = Math.min(0.0, scrollInertia + DScrollInertia);
+      }
+    }
+  }
+  
+  private void addTooltip() {
+    
+  }
+  
   @Override
   public void mouseDragged() {
     if (focused) {
@@ -262,11 +291,13 @@ public class ProseVisSketch extends PApplet {
   }
 
   private void renderView(DataTreeView dataTreeView, ColorView colorView,
+      CoordinateWordMap wordMap,
       int minX, int minY, int viewWidth, int viewHeight,
       boolean[] enabledComparisons) {
     final int yOrigin = minY;
     final int xOrigin = minX;
     final int maxViewWidth = viewWidth;
+    wordMap.clear();
     fill(255);
     rect(xOrigin, yOrigin, viewWidth, viewHeight);
     // leave room for the title bar, drawn last
@@ -344,7 +375,8 @@ public class ProseVisSketch extends PApplet {
         final int wordTopY = renderedHeight + minY + dLine;
         final int wordDx = (int) wordWidth;
         final int wordDy = lineHeight - dLine;
-
+        wordMap.put(wordTopX, wordTopY, wordDx, wordDy, wordNode);
+        
         if (wordNode.isSearchResult()) {
           fill(255, 0, 0);
           rect(wordTopX, wordTopY, wordDx, wordDy);
