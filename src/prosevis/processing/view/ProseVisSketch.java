@@ -21,6 +21,7 @@ import prosevis.processing.model.ColorSchemeUtil;
 import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ScrollInfo;
 import controlP5.ControlEvent;
+import controlP5.ControlListener;
 import controlP5.ControlP5;
 import controlP5.Slider;
 
@@ -50,6 +51,20 @@ public class ProseVisSketch extends PApplet {
   private int lastViewWidth;
   private final ArrayList<CoordinateWordMap> wordMaps = new ArrayList<CoordinateWordMap>();
   private final ToolTipContext toolTipContext = new ToolTipContext();
+  private ControlListener sliderListener = new ControlListener() {
+    @Override
+    public void controlEvent(ControlEvent theEvent) {
+      int sliderIdx = theEvent.controller().id();
+      if (sliderIdx >= sliders.size() || sliderIdx < 0) {
+        System.err.println("Got a bad slider index: " + sliderIdx);
+        return;
+      }
+      Slider updated = sliders.get(theEvent.controller().id());
+      DataTreeView updateData = lastViews[theEvent.controller().id()];
+      updateData.setScroll(updated.value());
+      System.err.println("got an event" + updated.value());
+    }
+  };
 
   public ProseVisSketch() {
     theModel = new ApplicationModel(ArgumentHack.getViewArea().width,
@@ -200,6 +215,7 @@ public class ProseVisSketch extends PApplet {
   private void refreshSliders(final int viewHeight) {
     for (Slider s : sliders) {
       controlP5.remove(s.name());
+      s.removeListener(sliderListener);
     }
     sliders.clear();
     for (int i = 0; i < lastViews.length; i++) {
@@ -212,6 +228,7 @@ public class ProseVisSketch extends PApplet {
       slider.setLabelVisible(false);
       slider.setId(sliders.size());
       slider.setMoveable(false);
+      slider.addListener(sliderListener );
 
       // because they don't implement listeners, we'll need to keep a
       // reference for ourselves
@@ -532,17 +549,6 @@ public class ProseVisSketch extends PApplet {
       rect(topX, topY, dx, dy);
       break;
     }
-  }
-
-  public void controlEvent(ControlEvent theEvent) {
-    int sliderIdx = theEvent.controller().id();
-    if (sliderIdx >= sliders.size() || sliderIdx < 0) {
-      System.err.println("Got a bad slider index: " + sliderIdx);
-      return;
-    }
-    Slider updated = sliders.get(theEvent.controller().id());
-    DataTreeView updateData = lastViews[theEvent.controller().id()];
-    updateData.setScroll(updated.value());
   }
 
   /**
