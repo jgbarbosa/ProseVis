@@ -115,11 +115,14 @@ public abstract class ColorSchemeUtil {
 
   public static boolean saveToFile(String path, CustomColorScheme scheme) {
     String schemeType = scheme.getLabel();
+    String schemeName = scheme.getName();
     File file = new File(path);
     Map<String, Color> colorMap = scheme.getMapping();
     final String lineSep = System.getProperty("line.separator");
     try {
       PrintWriter writer = new PrintWriter(new FileWriter(file));
+      writer.write(schemeName);
+      writer.write(lineSep);
       writer.write(schemeType);
       writer.write(lineSep);
       writer.write(color2str(colorMap.get(kDefaultLabel)));

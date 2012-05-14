@@ -1,4 +1,6 @@
-sample parts of speech
+MyCustomColors1
 pos
 #ffffff
-"nn" = #bb0099
+"IN" = #377eb8
+"JJ" = #4daf4a
+"NN" = #e41a1c

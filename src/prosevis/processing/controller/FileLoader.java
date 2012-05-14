@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 
 import prosevis.data.Document;
 import prosevis.data.TypeMap;
+import prosevis.processing.model.ColorScheme;
 
 public class FileLoader implements Runnable, IProgressNotifiable {
   private final static String LAST_PATH_SAVE = ".lastpath.txt";
@@ -25,11 +26,12 @@ public class FileLoader implements Runnable, IProgressNotifiable {
 
   private enum ForWhat {
     DataTree,
-    ColorScheme,
+    ColorSchemeLoad,
+    ColorSchemeSave,
     Other,
   }
   public static File loadColorSchemeFile() {
-    return loadFile(ForWhat.ColorScheme);
+    return loadFile(ForWhat.ColorSchemeLoad);
   }
   private static File loadFile(ForWhat forwhat) {
     String [] lastPaths = new String[2];
@@ -55,7 +57,8 @@ public class FileLoader implements Runnable, IProgressNotifiable {
     case DataTree:
       pathIdx = 0;
       break;
-    case ColorScheme:
+    case ColorSchemeLoad:
+    case ColorSchemeSave:
       pathIdx = 1;
       break;
     default:
@@ -63,24 +66,29 @@ public class FileLoader implements Runnable, IProgressNotifiable {
     }
 
     JFileChooser fileChooser = new JFileChooser(lastPaths[pathIdx]);
-    int returnVal = fileChooser.showDialog(null, "Open File");
-
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-      File file = fileChooser.getSelectedFile();
-      lastPaths[pathIdx] = file.getParentFile().getAbsolutePath();
-
-      /* Save the last selected directory */
-      try {
-        FileWriter writer = new FileWriter(LAST_PATH_SAVE);
-        writer.write(lastPaths[0] + "\n");
-        writer.write(lastPaths[1] + "\n");
-        writer.close();
-      } catch (IOException e) {
-        System.err.println("Couldn't save last used path to file.");
-      }
-      return file;
+    int retValue = -1;
+    if (forwhat != ForWhat.ColorSchemeSave) {
+      retValue = fileChooser.showDialog(null, "Open File");
+    } else {
+      retValue = fileChooser.showSaveDialog(null);
     }
-    return null;
+    if (retValue != JFileChooser.APPROVE_OPTION) {
+      return null;
+    }
+    
+    File file = fileChooser.getSelectedFile();
+    lastPaths[pathIdx] = file.getParentFile().getAbsolutePath();
+
+    /* Save the last selected directory */
+    try {
+      FileWriter writer = new FileWriter(LAST_PATH_SAVE);
+      writer.write(lastPaths[0] + "\n");
+      writer.write(lastPaths[1] + "\n");
+      writer.close();
+    } catch (IOException e) {
+      System.err.println("Couldn't save last used path to file.");
+    }
+    return file;
   }
 
   private Document loadDataTree() {
@@ -90,6 +98,10 @@ public class FileLoader implements Runnable, IProgressNotifiable {
       return doc;
     }
     return null;
+  }
+  
+  public static File getColorSchemeSaveFile() {
+    return loadFile(ForWhat.ColorSchemeSave);
   }
 
   @Override

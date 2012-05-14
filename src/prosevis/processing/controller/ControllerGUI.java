@@ -1,6 +1,7 @@
 package prosevis.processing.controller;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowStateListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.ButtonGroup;
@@ -36,15 +38,14 @@ import net.miginfocom.swing.MigLayout;
 import prosevis.data.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
-import prosevis.processing.model.CustomColorScheme;
 import prosevis.processing.model.ColorSchemeUtil;
+import prosevis.processing.model.CustomColorScheme;
 import prosevis.processing.model.DataTreeView;
 
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
-
 
 public class ControllerGUI implements WindowStateListener {
   static final String kXmlTag = " (with XML)";
@@ -60,6 +61,15 @@ public class ControllerGUI implements WindowStateListener {
   private JLabel lblNoComparisonData;
   private JPanel comparisonContent;
   private final DefaultComboBoxModel colorTopSchemasListModel = new DefaultComboBoxModel();
+  private JTextField txtCust_0;
+  private JTextField txtCust_1;
+  private JTextField txtCust_2;
+  private JTextField txtCust_3;
+  private JTextField txtCust_4;
+  private JTextField txtCust_5;
+  private JTextField txtCust_6;
+  private JTextField txtCust_7;
+  private JTextField txtSchemeName;
 
   /**
    * Launch the application.
@@ -69,8 +79,8 @@ public class ControllerGUI implements WindowStateListener {
       @Override
       public void run() {
         try {
-          ControllerGUI window = new ControllerGUI(
-              new ApplicationModel(1440, 900));
+          ControllerGUI window = new ControllerGUI(new ApplicationModel(1440,
+              900));
           window.frame.setVisible(true);
         } catch (Exception e) {
           e.printStackTrace();
@@ -81,6 +91,7 @@ public class ControllerGUI implements WindowStateListener {
 
   /**
    * Create the application.
+   * 
    * @param wC
    */
   public ControllerGUI(ApplicationModel model) {
@@ -94,7 +105,6 @@ public class ControllerGUI implements WindowStateListener {
   private void initialize() {
     colorByModel = new DefaultComboBoxModel();
     colorByModel.addElement(TypeMap.kNoLabelLabel);
-    final JComboBox colorByDropdown = new JComboBox(colorByModel);
     textByModel = new DefaultComboBoxModel();
     textByModel.addElement(TypeMap.kNoLabelLabel);
     textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
@@ -117,15 +127,11 @@ public class ControllerGUI implements WindowStateListener {
     JPanel dataPane = new JPanel();
     controllerTabGroup.addTab("Data", null, dataPane, null);
     dataPane.setLayout(new FormLayout(new ColumnSpec[] {
-        FormFactory.RELATED_GAP_COLSPEC,
-        ColumnSpec.decode("left:min"),
-        FormFactory.RELATED_GAP_COLSPEC,
-        ColumnSpec.decode("default:grow"),
-        FormFactory.RELATED_GAP_COLSPEC,},
-      new RowSpec[] {
-        FormFactory.RELATED_GAP_ROWSPEC,
-        RowSpec.decode("default:grow"),
-        FormFactory.RELATED_GAP_ROWSPEC,}));
+        FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("left:min"),
+        FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_COLSPEC, }, new RowSpec[] {
+        FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_ROWSPEC, }));
 
     JPanel dataPaneButtonPanel = new JPanel();
     dataPane.add(dataPaneButtonPanel, "2, 2, left, top");
@@ -146,8 +152,8 @@ public class ControllerGUI implements WindowStateListener {
     btnRemoveFiles.addActionListener(new FileListActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        List<String> selectedFiles =
-            stripXMLMetaData(dataFilesList.getSelectedValues());
+        List<String> selectedFiles = stripXMLMetaData(dataFilesList
+            .getSelectedValues());
         theModel.removeData(selectedFiles);
         updateFileLists();
       }
@@ -166,43 +172,40 @@ public class ControllerGUI implements WindowStateListener {
     btnMoveToTop.addActionListener(new FileListActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        List<String> selectedFiles =
-            stripXMLMetaData(dataFilesList.getSelectedValues());
+        List<String> selectedFiles = stripXMLMetaData(dataFilesList
+            .getSelectedValues());
         theModel.moveFilesToTop(selectedFiles);
         updateFileLists();
       }
     });
 
     GroupLayout gl_dataPaneButtonPanel = new GroupLayout(dataPaneButtonPanel);
-    gl_dataPaneButtonPanel.setHorizontalGroup(
-      gl_dataPaneButtonPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_dataPaneButtonPanel.createSequentialGroup()
-          .addContainerGap()
-          .addGroup(gl_dataPaneButtonPanel.createParallelGroup(Alignment.LEADING)
-            .addComponent(lblActions)
-            .addComponent(btnAddFile)
-            .addComponent(btnRemoveFiles)
-            .addComponent(btnClearFiles)
-            .addComponent(btnMoveToTop)
-            .addComponent(lblProgress))
-          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-    );
-    gl_dataPaneButtonPanel.setVerticalGroup(
-      gl_dataPaneButtonPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_dataPaneButtonPanel.createSequentialGroup()
-          .addComponent(lblActions)
-          .addGap(18)
-          .addComponent(btnAddFile)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(btnRemoveFiles)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(btnClearFiles)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(btnMoveToTop)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(lblProgress)
-          .addContainerGap(298, Short.MAX_VALUE))
-    );
+    gl_dataPaneButtonPanel.setHorizontalGroup(gl_dataPaneButtonPanel
+        .createParallelGroup(Alignment.LEADING).addGroup(
+            gl_dataPaneButtonPanel
+                .createSequentialGroup()
+                .addContainerGap()
+                .addGroup(
+                    gl_dataPaneButtonPanel
+                        .createParallelGroup(Alignment.LEADING)
+                        .addComponent(lblActions).addComponent(btnAddFile)
+                        .addComponent(btnRemoveFiles)
+                        .addComponent(btnClearFiles).addComponent(btnMoveToTop)
+                        .addComponent(lblProgress))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+    gl_dataPaneButtonPanel.setVerticalGroup(gl_dataPaneButtonPanel
+        .createParallelGroup(Alignment.LEADING).addGroup(
+            gl_dataPaneButtonPanel.createSequentialGroup()
+                .addComponent(lblActions).addGap(18).addComponent(btnAddFile)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(btnRemoveFiles)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(btnClearFiles)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(btnMoveToTop)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(lblProgress)
+                .addContainerGap(298, Short.MAX_VALUE)));
     dataPaneButtonPanel.setLayout(gl_dataPaneButtonPanel);
 
     JScrollPane dataPaneFilePanel = new JScrollPane();
@@ -239,46 +242,66 @@ public class ControllerGUI implements WindowStateListener {
 
     JButton btnNext = new JButton("Find Next");
     GroupLayout gl_searchButtonsPanel = new GroupLayout(searchButtonsPanel);
-    gl_searchButtonsPanel.setHorizontalGroup(
-      gl_searchButtonsPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_searchButtonsPanel.createSequentialGroup()
-          .addContainerGap()
-          .addGroup(gl_searchButtonsPanel.createParallelGroup(Alignment.LEADING)
-            .addGroup(gl_searchButtonsPanel.createSequentialGroup()
-              .addComponent(rdbtnSound)
-              .addPreferredGap(ComponentPlacement.UNRELATED)
-              .addComponent(searchSoundOptions, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .addComponent(rdbtnSoundex)
-            .addComponent(rdbtnPos)
-            .addGroup(gl_searchButtonsPanel.createSequentialGroup()
-              .addComponent(lblSearch)
-              .addPreferredGap(ComponentPlacement.RELATED)
-              .addComponent(searchTermBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .addComponent(rdbtnWord)
-            .addComponent(btnNext))
-          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-    );
-    gl_searchButtonsPanel.setVerticalGroup(
-      gl_searchButtonsPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_searchButtonsPanel.createSequentialGroup()
-          .addGap(5)
-          .addGroup(gl_searchButtonsPanel.createParallelGroup(Alignment.BASELINE)
-            .addComponent(lblSearch)
-            .addComponent(searchTermBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(rdbtnWord)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(rdbtnPos)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(rdbtnSoundex)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addGroup(gl_searchButtonsPanel.createParallelGroup(Alignment.BASELINE)
-            .addComponent(rdbtnSound)
-            .addComponent(searchSoundOptions, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(btnNext)
-          .addContainerGap(310, Short.MAX_VALUE))
-    );
+    gl_searchButtonsPanel.setHorizontalGroup(gl_searchButtonsPanel
+        .createParallelGroup(Alignment.LEADING).addGroup(
+            gl_searchButtonsPanel
+                .createSequentialGroup()
+                .addContainerGap()
+                .addGroup(
+                    gl_searchButtonsPanel
+                        .createParallelGroup(Alignment.LEADING)
+                        .addGroup(
+                            gl_searchButtonsPanel
+                                .createSequentialGroup()
+                                .addComponent(rdbtnSound)
+                                .addPreferredGap(ComponentPlacement.UNRELATED)
+                                .addComponent(searchSoundOptions,
+                                    GroupLayout.PREFERRED_SIZE,
+                                    GroupLayout.DEFAULT_SIZE,
+                                    GroupLayout.PREFERRED_SIZE))
+                        .addComponent(rdbtnSoundex)
+                        .addComponent(rdbtnPos)
+                        .addGroup(
+                            gl_searchButtonsPanel
+                                .createSequentialGroup()
+                                .addComponent(lblSearch)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(searchTermBox,
+                                    GroupLayout.PREFERRED_SIZE,
+                                    GroupLayout.DEFAULT_SIZE,
+                                    GroupLayout.PREFERRED_SIZE))
+                        .addComponent(rdbtnWord).addComponent(btnNext))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+    gl_searchButtonsPanel.setVerticalGroup(gl_searchButtonsPanel
+        .createParallelGroup(Alignment.LEADING).addGroup(
+            gl_searchButtonsPanel
+                .createSequentialGroup()
+                .addGap(5)
+                .addGroup(
+                    gl_searchButtonsPanel
+                        .createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblSearch)
+                        .addComponent(searchTermBox,
+                            GroupLayout.PREFERRED_SIZE,
+                            GroupLayout.DEFAULT_SIZE,
+                            GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(rdbtnWord)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(rdbtnPos)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(rdbtnSoundex)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addGroup(
+                    gl_searchButtonsPanel
+                        .createParallelGroup(Alignment.BASELINE)
+                        .addComponent(rdbtnSound)
+                        .addComponent(searchSoundOptions,
+                            GroupLayout.PREFERRED_SIZE,
+                            GroupLayout.DEFAULT_SIZE,
+                            GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(btnNext).addContainerGap(310, Short.MAX_VALUE)));
     searchButtonsPanel.setLayout(gl_searchButtonsPanel);
 
     JScrollPane searchScrollPanel = new JScrollPane();
@@ -287,20 +310,22 @@ public class ControllerGUI implements WindowStateListener {
     searchScrollPanel.setViewportView(searchFilesList);
     JLabel whichFilesLabel = new JLabel("Files");
     searchScrollPanel.setColumnHeaderView(whichFilesLabel);
+    JLabel lblColorBy = new JLabel("  Color by:  ");
+    final JComboBox colorByDropdown = new JComboBox(colorByModel);
 
     ActionListener searchActionListener = new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
         String label = searchButtons.getSelection().getActionCommand();
         if ("sound".equals(label)) {
-          label += '-' + (String)searchSoundOptions.getSelectedItem();
+          label += '-' + (String) searchSoundOptions.getSelectedItem();
         }
         label = label.toLowerCase();
         String searchTerm = searchTermBox.getText();
         List<String> selectedFiles = new ArrayList<String>();
-        Object [] selected = searchFilesList.getSelectedValues();
+        Object[] selected = searchFilesList.getSelectedValues();
         for (int i = 0; i < selected.length; i++) {
-          selectedFiles.add((String)selected[i]);
+          selectedFiles.add((String) selected[i]);
         }
         theModel.searchForTerm(searchTerm, label, selectedFiles);
         colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
@@ -315,109 +340,468 @@ public class ControllerGUI implements WindowStateListener {
 
     JPanel navigationPane = new JPanel();
     navigationPane.setLayout(new FormLayout(new ColumnSpec[] {
-        FormFactory.RELATED_GAP_COLSPEC,
-        ColumnSpec.decode("left:min"),
-        FormFactory.RELATED_GAP_COLSPEC,
-        ColumnSpec.decode("default:grow"),
-        FormFactory.RELATED_GAP_COLSPEC,},
-      new RowSpec[] {
-        FormFactory.RELATED_GAP_ROWSPEC,
-        RowSpec.decode("default:grow"),
-        FormFactory.RELATED_GAP_ROWSPEC,}));
+        FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("left:min"),
+        FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_COLSPEC, }, new RowSpec[] {
+        FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_ROWSPEC, }));
 
     controllerTabGroup.addTab("Search", null, navigationPane, null);
     navigationPane.add(searchButtonsPanel, "2, 2, left, top");
     navigationPane.add(searchScrollPanel, "4, 2, fill, fill");
 
-
     JPanel renderPane = new JPanel();
     controllerTabGroup.addTab("Render", null, renderPane, null);
     GridBagLayout gbl_renderPane = new GridBagLayout();
-    gbl_renderPane.columnWidths = new int[]{0, 0, 0, 0};
-    gbl_renderPane.rowHeights = new int[]{0, 0, 0, 0, 0};
-    gbl_renderPane.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
-    gbl_renderPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+    gbl_renderPane.columnWidths = new int[] { 0, 0, };
+    gbl_renderPane.rowHeights = new int[] { 0, };
+    gbl_renderPane.columnWeights = new double[] { 0.0, 0.0 };
+    gbl_renderPane.rowWeights = new double[] { 1.0 };
     renderPane.setLayout(gbl_renderPane);
-
-    JLabel lblLineBreaksBy = new JLabel("  Line breaks by:  ");
-    GridBagConstraints gbc_lblLineBreaksBy = new GridBagConstraints();
-    gbc_lblLineBreaksBy.anchor = GridBagConstraints.EAST;
-    gbc_lblLineBreaksBy.fill = GridBagConstraints.VERTICAL;
-    gbc_lblLineBreaksBy.insets = new Insets(0, 0, 5, 5);
-    gbc_lblLineBreaksBy.gridx = 1;
-    gbc_lblLineBreaksBy.gridy = 1;
-    renderPane.add(lblLineBreaksBy, gbc_lblLineBreaksBy);
-
     JComboBox breakLineByDropdown = new JComboBox();
-    for (BreakLinesBy breakType : BreakLinesBy.values()){
+    for (BreakLinesBy breakType : BreakLinesBy.values()) {
       breakLineByDropdown.addItem(breakType.toString());
     }
+
+    JPanel panel = new JPanel();
+    GridBagConstraints gbc_panel = new GridBagConstraints();
+    gbc_panel.insets = new Insets(0, 0, 5, 5);
+    gbc_panel.fill = GridBagConstraints.BOTH;
+    gbc_panel.gridx = 0;
+    gbc_panel.gridy = 0;
+    renderPane.add(panel, gbc_panel);
+
+    JLabel lblLineBreaksBy = new JLabel("  Line breaks by:  ");
+
     breakLineByDropdown.setSelectedItem(theModel.getBreakLevel().toString());
     breakLineByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
-        String typeStr = (String)cb.getSelectedItem();
+        JComboBox cb = (JComboBox) e.getSource();
+        String typeStr = (String) cb.getSelectedItem();
         theModel.setBreakLevel(BreakLinesBy.valueOf(typeStr));
       }
     });
-
-    GridBagConstraints breakLineConstraints = new GridBagConstraints();
-    breakLineConstraints.anchor = GridBagConstraints.WEST;
-    breakLineConstraints.insets = new Insets(0, 0, 5, 0);
-    breakLineConstraints.gridx = 2;
-    breakLineConstraints.gridy = 1;
-    renderPane.add(breakLineByDropdown, breakLineConstraints);
-
-    JLabel lblColorBy = new JLabel("  Color by:  ");
-    GridBagConstraints gbc_lblColorBy = new GridBagConstraints();
-    gbc_lblColorBy.anchor = GridBagConstraints.EAST;
-    gbc_lblColorBy.insets = new Insets(0, 0, 5, 5);
-    gbc_lblColorBy.gridx = 1;
-    gbc_lblColorBy.gridy = 2;
-    renderPane.add(lblColorBy, gbc_lblColorBy);
 
     colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
     colorByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
-        String labelStr = (String)cb.getSelectedItem();
+        JComboBox cb = (JComboBox) e.getSource();
+        String labelStr = (String) cb.getSelectedItem();
         theModel.setColorBy(labelStr);
       }
     });
 
-    GridBagConstraints colorByConstraints = new GridBagConstraints();
-    colorByConstraints.insets = new Insets(0, 0, 5, 0);
-    colorByConstraints.anchor = GridBagConstraints.WEST;
-    colorByConstraints.gridx = 2;
-    colorByConstraints.gridy = 2;
-    renderPane.add(colorByDropdown, colorByConstraints);
+    colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
 
     JLabel lblText = new JLabel("  Text:  ");
-    GridBagConstraints gbc_lblText = new GridBagConstraints();
-    gbc_lblText.anchor = GridBagConstraints.EAST;
-    gbc_lblText.insets = new Insets(0, 0, 0, 5);
-    gbc_lblText.gridx = 1;
-    gbc_lblText.gridy = 3;
-    renderPane.add(lblText, gbc_lblText);
 
     JComboBox textByDropdown = new JComboBox(textByModel);
     textByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
-        String labelStr = (String)cb.getSelectedItem();
+        JComboBox cb = (JComboBox) e.getSource();
+        String labelStr = (String) cb.getSelectedItem();
         theModel.setTextBy(labelStr);
       }
     });
+    GroupLayout gl_panel = new GroupLayout(panel);
+    gl_panel
+        .setHorizontalGroup(gl_panel
+            .createParallelGroup(Alignment.LEADING)
+            .addGroup(
+                gl_panel
+                    .createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(
+                        gl_panel
+                            .createParallelGroup(Alignment.LEADING)
+                            .addGroup(
+                                gl_panel
+                                    .createSequentialGroup()
+                                    .addGroup(
+                                        gl_panel
+                                            .createParallelGroup(
+                                                Alignment.LEADING)
+                                            .addGroup(
+                                                gl_panel
+                                                    .createSequentialGroup()
+                                                    .addComponent(
+                                                        lblLineBreaksBy)
+                                                    .addPreferredGap(
+                                                        ComponentPlacement.RELATED)
+                                                    .addComponent(
+                                                        breakLineByDropdown,
+                                                        GroupLayout.PREFERRED_SIZE,
+                                                        GroupLayout.DEFAULT_SIZE,
+                                                        GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(
+                                                gl_panel
+                                                    .createSequentialGroup()
+                                                    .addComponent(lblColorBy)
+                                                    .addPreferredGap(
+                                                        ComponentPlacement.RELATED,
+                                                        33, Short.MAX_VALUE)
+                                                    .addComponent(
+                                                        colorByDropdown,
+                                                        GroupLayout.PREFERRED_SIZE,
+                                                        GroupLayout.DEFAULT_SIZE,
+                                                        GroupLayout.PREFERRED_SIZE)))
+                                    .addContainerGap(10, Short.MAX_VALUE))
+                            .addGroup(
+                                gl_panel
+                                    .createSequentialGroup()
+                                    .addComponent(lblText)
+                                    .addPreferredGap(
+                                        ComponentPlacement.RELATED, 51,
+                                        Short.MAX_VALUE)
+                                    .addComponent(textByDropdown,
+                                        GroupLayout.PREFERRED_SIZE,
+                                        GroupLayout.DEFAULT_SIZE,
+                                        GroupLayout.PREFERRED_SIZE)
+                                    .addContainerGap()))));
+    gl_panel.setVerticalGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+        .addGroup(
+            gl_panel
+                .createSequentialGroup()
+                .addContainerGap()
+                .addGroup(
+                    gl_panel
+                        .createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblLineBreaksBy)
+                        .addComponent(breakLineByDropdown,
+                            GroupLayout.PREFERRED_SIZE,
+                            GroupLayout.DEFAULT_SIZE,
+                            GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(
+                    gl_panel
+                        .createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblColorBy)
+                        .addComponent(colorByDropdown,
+                            GroupLayout.PREFERRED_SIZE,
+                            GroupLayout.DEFAULT_SIZE,
+                            GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(
+                    gl_panel
+                        .createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblText)
+                        .addComponent(textByDropdown,
+                            GroupLayout.PREFERRED_SIZE,
+                            GroupLayout.DEFAULT_SIZE,
+                            GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(254, Short.MAX_VALUE)));
+    panel.setLayout(gl_panel);
 
-    colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
-    GridBagConstraints textByConstraints = new GridBagConstraints();
-    textByConstraints.anchor = GridBagConstraints.WEST;
-    textByConstraints.gridx = 2;
-    textByConstraints.gridy = 3;
-    renderPane.add(textByDropdown, textByConstraints);
+    JPanel panel_1 = new JPanel();
+    GridBagConstraints gbc_panel_1 = new GridBagConstraints();
+    gbc_panel_1.insets = new Insets(0, 0, 5, 5);
+    gbc_panel_1.fill = GridBagConstraints.BOTH;
+    gbc_panel_1.gridx = 1;
+    gbc_panel_1.gridy = 0;
+    renderPane.add(panel_1, gbc_panel_1);
+
+    JLabel lblCustomColorScheme = new JLabel("Custom Color Scheme Builder");
+
+    JLabel lblAttributeType = new JLabel("Attribute type:");
+
+    JLabel lblGroup_0 = new JLabel("  Group 1:  ");
+    JLabel lblGroup_1 = new JLabel("  Group 2:  ");
+    JLabel lblGroup_2 = new JLabel("  Group 3:  ");
+    JLabel lblGroup_3 = new JLabel("  Group 4:  ");
+    JLabel lblGroup_4 = new JLabel("  Group 5:  ");
+    JLabel lblGroup_5 = new JLabel("  Group 6:  ");
+    JLabel lblGroup_6 = new JLabel("  Group 7:  ");
+    JLabel lblGroup_7 = new JLabel("  Group 8:  ");
+
+    final JComboBox whichAttrBox = new JComboBox();
+    for (String s: TypeMap.kPossibleColorByLabels) {
+      whichAttrBox.addItem(s);
+    }
+
+    txtCust_0 = new JTextField();
+    txtCust_0.setColumns(10);
+
+    txtCust_1 = new JTextField();
+    txtCust_1.setColumns(10);
+
+    txtCust_2 = new JTextField();
+    txtCust_2.setColumns(10);
+
+    txtCust_3 = new JTextField();
+    txtCust_3.setColumns(10);
+
+    txtCust_4 = new JTextField();
+    txtCust_4.setColumns(10);
+
+    txtCust_5 = new JTextField();
+    txtCust_5.setColumns(10);
+
+    txtCust_6 = new JTextField();
+    txtCust_6.setColumns(10);
+
+    txtCust_7 = new JTextField();
+    txtCust_7.setColumns(10);
+
+    // colors from colorbrewer2.org
+    txtCust_0.setBackground(new Color(228, 26, 28));
+    txtCust_1.setBackground(new Color(55, 126, 184));
+    txtCust_2.setBackground(new Color(77, 175, 74));
+    txtCust_3.setBackground(new Color(152, 78, 163));
+    txtCust_4.setBackground(new Color(255, 127, 0));
+    txtCust_5.setBackground(new Color(255, 255, 51));
+    txtCust_6.setBackground(new Color(166, 86, 40));
+    txtCust_7.setBackground(new Color(247, 129, 191));
+
+    JLabel lblName = new JLabel("Name:");
+
+    txtSchemeName = new JTextField();
+    txtSchemeName.setText("MyCustomColors1");
+    txtSchemeName.setColumns(10);
+
+    JButton btnSaveSchemeToFile = new JButton("Save to file");
+    btnSaveSchemeToFile.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        JTextField[] custTxts = { txtCust_0, txtCust_1, txtCust_2, txtCust_3,
+            txtCust_4, txtCust_5, txtCust_6, txtCust_7, };
+        String schemeName = txtSchemeName.getText();
+        if (schemeName == null || schemeName.isEmpty()) {
+          JOptionPane.showMessageDialog(frame,
+              "Please enter a name for this custom color scheme.");
+          return;
+        }
+        String schemeType = (String) (whichAttrBox.getSelectedItem());
+        if (TypeMap.kNoLabelLabel.equals(schemeType)) {
+          JOptionPane.showMessageDialog(frame,
+              "I can't color anything for the 'none' attribute.  Select a different attribute to look for.");
+          return;
+        }
+        HashMap<String, Color> colors = new HashMap<String, Color>();
+        for (JTextField t : custTxts) {
+          if (t.getText() == null || t.getText().isEmpty()) {
+            continue;
+          }
+          colors.put(t.getText(), t.getBackground());
+        }
+        if (colors.isEmpty()) {
+          JOptionPane.showMessageDialog(frame,
+              "Refusing to save an empty color scheme.  Pick something interesting to color first!");
+          return;
+        }
+        colors.put(ColorSchemeUtil.kDefaultLabel, Color.white);
+        File f = FileLoader.getColorSchemeSaveFile();
+        if (f == null) {
+          return;
+        }
+        CustomColorScheme cs = new CustomColorScheme(schemeName, schemeType,
+            colors, f.getAbsolutePath());
+        cs.saveToFile();
+      }
+    });
+    GroupLayout gl_panel_1 = new GroupLayout(panel_1);
+    gl_panel_1
+        .setHorizontalGroup(gl_panel_1
+            .createParallelGroup(Alignment.LEADING)
+            .addGroup(
+                gl_panel_1
+                    .createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(
+                        gl_panel_1
+                            .createParallelGroup(Alignment.LEADING)
+                            .addComponent(lblCustomColorScheme)
+                            .addGroup(
+                                gl_panel_1
+                                    .createSequentialGroup()
+                                    .addGap(10)
+                                    .addGroup(
+                                        gl_panel_1
+                                            .createParallelGroup(
+                                                Alignment.LEADING, false)
+                                            .addGroup(
+                                                gl_panel_1
+                                                    .createSequentialGroup()
+                                                    .addGroup(
+                                                        gl_panel_1
+                                                            .createParallelGroup(
+                                                                Alignment.LEADING)
+                                                            .addComponent(
+                                                                lblAttributeType)
+                                                            .addComponent(
+                                                                lblGroup_0)
+                                                            .addComponent(
+                                                                lblGroup_3)
+                                                            .addComponent(
+                                                                lblGroup_4)
+                                                            .addComponent(
+                                                                lblGroup_5)
+                                                            .addComponent(
+                                                                lblGroup_6)
+                                                            .addComponent(
+                                                                lblGroup_7)
+                                                            .addGroup(
+                                                                gl_panel_1
+                                                                    .createParallelGroup(
+                                                                        Alignment.TRAILING,
+                                                                        false)
+                                                                    .addComponent(
+                                                                        lblGroup_1,
+                                                                        Alignment.LEADING,
+                                                                        GroupLayout.DEFAULT_SIZE,
+                                                                        GroupLayout.DEFAULT_SIZE,
+                                                                        Short.MAX_VALUE)
+                                                                    .addComponent(
+                                                                        lblGroup_2,
+                                                                        Alignment.LEADING,
+                                                                        GroupLayout.DEFAULT_SIZE,
+                                                                        GroupLayout.DEFAULT_SIZE,
+                                                                        Short.MAX_VALUE)))
+                                                    .addGap(18)
+                                                    .addGroup(
+                                                        gl_panel_1
+                                                            .createParallelGroup(
+                                                                Alignment.LEADING)
+                                                            .addComponent(
+                                                                txtCust_7,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)
+                                                            .addComponent(
+                                                                txtCust_6,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)
+                                                            .addComponent(
+                                                                txtCust_5,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)
+                                                            .addComponent(
+                                                                txtCust_4,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)
+                                                            .addComponent(
+                                                                txtCust_3,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)
+                                                            .addComponent(
+                                                                txtCust_2,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)
+                                                            .addComponent(
+                                                                txtCust_1,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)
+                                                            .addComponent(
+                                                                whichAttrBox,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)
+                                                            .addComponent(
+                                                                txtCust_0,
+                                                                GroupLayout.PREFERRED_SIZE,
+                                                                GroupLayout.DEFAULT_SIZE,
+                                                                GroupLayout.PREFERRED_SIZE)))
+                                            .addGroup(
+                                                gl_panel_1
+                                                    .createSequentialGroup()
+                                                    .addComponent(lblName)
+                                                    .addGap(18)
+                                                    .addGroup(
+                                                        gl_panel_1
+                                                            .createParallelGroup(
+                                                                Alignment.LEADING)
+                                                            .addComponent(
+                                                                btnSaveSchemeToFile)
+                                                            .addComponent(
+                                                                txtSchemeName))))))
+                    .addContainerGap(14, Short.MAX_VALUE)));
+    gl_panel_1.setVerticalGroup(gl_panel_1.createParallelGroup(
+        Alignment.LEADING).addGroup(
+        gl_panel_1
+            .createSequentialGroup()
+            .addContainerGap()
+            .addComponent(lblCustomColorScheme)
+            .addPreferredGap(ComponentPlacement.UNRELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblAttributeType)
+                    .addComponent(whichAttrBox, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblGroup_0)
+                    .addComponent(txtCust_0, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblGroup_1)
+                    .addComponent(txtCust_1, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblGroup_2)
+                    .addComponent(txtCust_2, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblGroup_3)
+                    .addComponent(txtCust_3, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblGroup_4)
+                    .addComponent(txtCust_4, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblGroup_5)
+                    .addComponent(txtCust_5, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblGroup_6)
+                    .addComponent(txtCust_6, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblGroup_7)
+                    .addComponent(txtCust_7, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addGap(18)
+            .addGroup(
+                gl_panel_1
+                    .createParallelGroup(Alignment.BASELINE)
+                    .addComponent(lblName)
+                    .addComponent(txtSchemeName, GroupLayout.PREFERRED_SIZE,
+                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addPreferredGap(ComponentPlacement.RELATED)
+            .addComponent(btnSaveSchemeToFile)
+            .addContainerGap(25, Short.MAX_VALUE)));
+    panel_1.setLayout(gl_panel_1);
 
     JPanel colorPane = new JPanel();
     controllerTabGroup.addTab("Settings", null, colorPane, null);
@@ -440,15 +824,11 @@ public class ControllerGUI implements WindowStateListener {
     colorPane.add(colorBottom, colorBottomConstraints);
 
     colorTop.setLayout(new FormLayout(new ColumnSpec[] {
-        FormFactory.RELATED_GAP_COLSPEC,
-        ColumnSpec.decode("left:min"),
-        FormFactory.RELATED_GAP_COLSPEC,
-        ColumnSpec.decode("default:grow"),
-        FormFactory.RELATED_GAP_COLSPEC,},
-      new RowSpec[] {
-        FormFactory.RELATED_GAP_ROWSPEC,
-        RowSpec.decode("default:grow"),
-        FormFactory.RELATED_GAP_ROWSPEC,}));
+        FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("left:min"),
+        FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_COLSPEC, }, new RowSpec[] {
+        FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_ROWSPEC, }));
 
     JPanel colorTopButtons = new JPanel();
     colorTop.add(colorTopButtons, "2, 2, left, top");
@@ -490,14 +870,16 @@ public class ControllerGUI implements WindowStateListener {
     btnRemoveScheme.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        String selectedItem = (String)colorTopSchemasListModel.getSelectedItem();
+        String selectedItem = (String) colorTopSchemasListModel
+            .getSelectedItem();
         if (selectedItem == null) {
-          JOptionPane.showMessageDialog(frame, "Please select a color scheme to remove");
+          JOptionPane.showMessageDialog(frame,
+              "Please select a color scheme to remove");
           return;
         }
         theModel.removeColorScheme(selectedItem);
         colorTopSchemasListModel.removeAllElements();
-        for (String s: theModel.getCustomColorSchemeList()) {
+        for (String s : theModel.getCustomColorSchemeList()) {
           colorTopSchemasListModel.addElement(s);
         }
       }
@@ -508,53 +890,49 @@ public class ControllerGUI implements WindowStateListener {
       @Override
       public void actionPerformed(ActionEvent e) {
         System.err.println("Unimplemented");
-//        String selectedItem = (String)colorTopSchemasListModel.getSelectedItem();
-//        if (selectedItem == null) {
-//          JOptionPane.showMessageDialog(frame, "Please select a color scheme to save");
-//          return;
-//        }
+        // String selectedItem =
+        // (String)colorTopSchemasListModel.getSelectedItem();
+        // if (selectedItem == null) {
+        // JOptionPane.showMessageDialog(frame,
+        // "Please select a color scheme to save");
+        // return;
+        // }
       }
     });
 
     GroupLayout gl_colorTopButtons = new GroupLayout(colorTopButtons);
-    gl_colorTopButtons.setHorizontalGroup(
-      gl_colorTopButtons.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_colorTopButtons.createSequentialGroup()
-          .addContainerGap()
-          .addGroup(gl_colorTopButtons.createParallelGroup(Alignment.LEADING)
+    gl_colorTopButtons.setHorizontalGroup(gl_colorTopButtons
+        .createParallelGroup(Alignment.LEADING).addGroup(
+            gl_colorTopButtons
+                .createSequentialGroup()
+                .addContainerGap()
+                .addGroup(
+                    gl_colorTopButtons.createParallelGroup(Alignment.LEADING)
+                        .addComponent(lblNewLabel).addComponent(btnLoadScheme)
+                        .addComponent(btnSaveScheme)
+                        .addComponent(btnRemoveScheme))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
+    gl_colorTopButtons.setVerticalGroup(gl_colorTopButtons.createParallelGroup(
+        Alignment.LEADING).addGroup(
+        gl_colorTopButtons.createSequentialGroup().addContainerGap()
             .addComponent(lblNewLabel)
+            .addPreferredGap(ComponentPlacement.UNRELATED)
             .addComponent(btnLoadScheme)
+            .addPreferredGap(ComponentPlacement.UNRELATED)
             .addComponent(btnSaveScheme)
-            .addComponent(btnRemoveScheme))
-          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-    );
-    gl_colorTopButtons.setVerticalGroup(
-      gl_colorTopButtons.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_colorTopButtons.createSequentialGroup()
-          .addContainerGap()
-          .addComponent(lblNewLabel)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(btnLoadScheme)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(btnSaveScheme)
-          .addPreferredGap(ComponentPlacement.UNRELATED)
-          .addComponent(btnRemoveScheme)
-          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-    );
+            .addPreferredGap(ComponentPlacement.UNRELATED)
+            .addComponent(btnRemoveScheme)
+            .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
     colorTopButtons.setLayout(gl_colorTopButtons);
 
     JPanel comparisonPane = new JPanel();
     controllerTabGroup.addTab("Comparisons", null, comparisonPane, null);
     comparisonPane.setLayout(new FormLayout(new ColumnSpec[] {
-        FormFactory.RELATED_GAP_COLSPEC,
-        ColumnSpec.decode("left:min"),
-        FormFactory.RELATED_GAP_COLSPEC,
-        ColumnSpec.decode("default:grow"),
-        FormFactory.RELATED_GAP_COLSPEC,},
-      new RowSpec[] {
-        FormFactory.RELATED_GAP_ROWSPEC,
-        RowSpec.decode("default:grow"),
-        FormFactory.RELATED_GAP_ROWSPEC,}));
+        FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("left:min"),
+        FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_COLSPEC, }, new RowSpec[] {
+        FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("default:grow"),
+        FormFactory.RELATED_GAP_ROWSPEC, }));
 
     JPanel comparisonPaneLeftPanel = new JPanel();
     comparisonPane.add(comparisonPaneLeftPanel, "2, 2, left, fill");
@@ -565,8 +943,8 @@ public class ControllerGUI implements WindowStateListener {
     smoothingWindowCombo.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        JComboBox cb = (JComboBox)e.getSource();
-        int selected = (Integer)cb.getSelectedItem();
+        JComboBox cb = (JComboBox) e.getSource();
+        int selected = (Integer) cb.getSelectedItem();
         theModel.setSmoothingWindow(selected);
       }
     });
@@ -574,25 +952,32 @@ public class ControllerGUI implements WindowStateListener {
       smoothingWindowCombo.addItem(i * 2 + 1);
     }
     smoothingWindowCombo.setSelectedItem(theModel.getSmoothingWindow());
-    GroupLayout gl_comparisonPaneLeftPanel = new GroupLayout(comparisonPaneLeftPanel);
-    gl_comparisonPaneLeftPanel.setHorizontalGroup(
-      gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
-          .addContainerGap()
-          .addComponent(lblSmoothingWindow)
-          .addPreferredGap(ComponentPlacement.RELATED)
-          .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE)
-          .addContainerGap(16, Short.MAX_VALUE))
-    );
-    gl_comparisonPaneLeftPanel.setVerticalGroup(
-      gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
-        .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
-          .addContainerGap()
-          .addGroup(gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.BASELINE)
-            .addComponent(lblSmoothingWindow)
-            .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-          .addContainerGap(439, Short.MAX_VALUE))
-    );
+    GroupLayout gl_comparisonPaneLeftPanel = new GroupLayout(
+        comparisonPaneLeftPanel);
+    gl_comparisonPaneLeftPanel.setHorizontalGroup(gl_comparisonPaneLeftPanel
+        .createParallelGroup(Alignment.LEADING).addGroup(
+            gl_comparisonPaneLeftPanel
+                .createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblSmoothingWindow)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE,
+                    82, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(16, Short.MAX_VALUE)));
+    gl_comparisonPaneLeftPanel.setVerticalGroup(gl_comparisonPaneLeftPanel
+        .createParallelGroup(Alignment.LEADING).addGroup(
+            gl_comparisonPaneLeftPanel
+                .createSequentialGroup()
+                .addContainerGap()
+                .addGroup(
+                    gl_comparisonPaneLeftPanel
+                        .createParallelGroup(Alignment.BASELINE)
+                        .addComponent(lblSmoothingWindow)
+                        .addComponent(smoothingWindowCombo,
+                            GroupLayout.PREFERRED_SIZE,
+                            GroupLayout.DEFAULT_SIZE,
+                            GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(439, Short.MAX_VALUE)));
     comparisonPaneLeftPanel.setLayout(gl_comparisonPaneLeftPanel);
 
     JScrollPane comparisonPaneRightPanel = new JScrollPane();
@@ -607,27 +992,29 @@ public class ControllerGUI implements WindowStateListener {
 
   }
 
-   public void go() {
+  public void go() {
     this.frame.setVisible(true);
   }
 
   @Override
   public void windowStateChanged(WindowEvent e) {
     if (e instanceof FileProgressEvent) {
-      FileProgressEvent fpe = (FileProgressEvent)e;
+      FileProgressEvent fpe = (FileProgressEvent) e;
 
       switch (fpe.getStatus()) {
       case PROGRESS:
-        lblProgress.setText(String.format("Progress: (%2.2f%%)", fpe.getProgress() * 100.0));
+        lblProgress.setText(String.format("Progress: (%2.2f%%)",
+            fpe.getProgress() * 100.0));
         break;
       case FINISHED_SUCC:
         theModel.addData(fpe.getResult(), fpe.getResultingTypeMap());
         updateFileLists();
         TypeMap typeMap = fpe.getResultingTypeMap();
         refreshColorSchemeElements();
-        
-        for (String l: TypeMap.kPossibleTextByLabels) {
-          if (typeMap.hasLabel(l.toLowerCase()) && textByModel.getIndexOf(l.toLowerCase()) < 0) {
+
+        for (String l : TypeMap.kPossibleTextByLabels) {
+          if (typeMap.hasLabel(l.toLowerCase())
+              && textByModel.getIndexOf(l.toLowerCase()) < 0) {
             textByModel.addElement(l);
           }
         }
@@ -648,14 +1035,14 @@ public class ControllerGUI implements WindowStateListener {
     List<String> customColorSchemes = theModel.getCustomColorSchemeList();
     List<String> builtInColorSchemes = theModel.getBuiltInColorSchemeList();
     colorTopSchemasListModel.removeAllElements();
-    for (String s: customColorSchemes) {
+    for (String s : customColorSchemes) {
       colorTopSchemasListModel.addElement(s);
     }
     colorByModel.removeAllElements();
-    for (String key: customColorSchemes) {
+    for (String key : customColorSchemes) {
       colorByModel.addElement(key);
     }
-    for (String key: builtInColorSchemes) {
+    for (String key : builtInColorSchemes) {
       colorByModel.addElement(key);
     }
   }
@@ -663,13 +1050,13 @@ public class ControllerGUI implements WindowStateListener {
   protected void updateFileLists() {
     searchListModel.removeAllElements();
     DataTreeView[] views = theModel.getRenderingData().views;
-    for (DataTreeView s: views) {
+    for (DataTreeView s : views) {
       String line = s.getData().getPath();
       searchListModel.addElement(line);
     }
 
     fileListModel.removeAllElements();
-    for (DataTreeView s: views) {
+    for (DataTreeView s : views) {
       String line = s.getData().getPath();
       if (s.canRenderByProseLines()) {
         line += ControllerGUI.kXmlTag;
@@ -689,7 +1076,7 @@ public class ControllerGUI implements WindowStateListener {
       lblNoComparisonData.setVisible(true);
       return;
     }
-    ComparisonState [] state = theModel.getComparisonState();
+    ComparisonState[] state = theModel.getComparisonState();
     boolean haveChanged = state.length != this.comparisonsEnabled.size();
     for (int i = 0; !haveChanged && i < state.length; i++) {
       if (!state[i].getName().equals(comparisonsEnabled.get(i).getText())) {
@@ -715,7 +1102,7 @@ public class ControllerGUI implements WindowStateListener {
       box.addActionListener(new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent arg0) {
-          JCheckBox box = (JCheckBox)arg0.getSource();
+          JCheckBox box = (JCheckBox) arg0.getSource();
           theModel.setComparisonEnabled(box.isSelected(), box.getText());
         }
       });
@@ -727,10 +1114,11 @@ public class ControllerGUI implements WindowStateListener {
 abstract class FileListActionListener implements ActionListener {
   protected List<String> stripXMLMetaData(Object[] rawInput) {
     List<String> strippedPaths = new ArrayList<String>(rawInput.length);
-    for (Object inObj: rawInput) {
-      String in = (String)inObj;
+    for (Object inObj : rawInput) {
+      String in = (String) inObj;
       if (in.endsWith(ControllerGUI.kXmlTag)) {
-        strippedPaths.add(in.substring(0, in.lastIndexOf(ControllerGUI.kXmlTag)));
+        strippedPaths
+            .add(in.substring(0, in.lastIndexOf(ControllerGUI.kXmlTag)));
       } else {
         strippedPaths.add(in);
       }
