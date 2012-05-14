@@ -1,6 +1,7 @@
 package prosevis.data;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,10 +27,13 @@ public class TypeMap {
   public static final int kStressIdx = 9;
   public static final int kToneIdx = 10;
   public static final String kNoLabelLabel = "none";
+  public static final String kWordLabel = "word";
+  public static final String kPosLabel = "pos";
   public static final String kPhonemeAllLabel = "sound-full";
   public static final String kPhonemeStartLabel = "sound-initial";
   public static final String kPhonemeVowelLabel = "sound-vowel";
   public static final String kPhonemeFinalLabel = "sound-final";
+  public static final String kSoundexLabel = "soundex";
   public static final String kColorByComparison = "comparison";
 
   // not reall immutable, but nothing lasts forever
@@ -178,7 +182,11 @@ public class TypeMap {
   }
 
   public Collection<Integer> getTypeIdxsForLabel(int labelIdx) {
-    return this.typeIdx2type.get(labelIdx).keySet();
+    Map<Integer, String> forLabel = typeIdx2type.get(labelIdx);
+    if (forLabel == null) {
+      return Collections.emptyList();
+    }
+    return forLabel.keySet();
   }
 
   public boolean hasComparisonDataHeaders() {

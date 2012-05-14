@@ -2,7 +2,6 @@ package prosevis.processing.view;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import prosevis.data.Word;
 

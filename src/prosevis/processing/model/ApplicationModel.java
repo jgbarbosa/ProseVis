@@ -3,6 +3,7 @@ package prosevis.processing.model;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import prosevis.data.BreakLinesBy;
 import prosevis.data.Document;
@@ -27,10 +28,7 @@ public class ApplicationModel {
   // this lets us add the raw number of pixels a user has right-click-dragged to
   // zoomLevel and later convert that to a desired font size
   private int zoomLevel = 14 * kZoomSensitivity;
-  private int colorByLabelIdx = TypeMap.kNoLabelIdx;
-  private final ColorMap colorDB = new ColorMap();
-  private int textByLabelIdx = TypeMap.kWordIdx;
-  private final List<ColorScheme> colorSchemes = new ArrayList<ColorScheme>();
+  private final ColorSchemeDB colorDB = new ColorSchemeDB();
   private final GeometryModel geoModel;
   private ComparisonState[] comparisonState = null;
   private int smoothingWindow = 1;
@@ -60,7 +58,7 @@ public class ApplicationModel {
     colorDB.mergeTypeMap(correspondingTypeMap);
     DataTreeView view = new DataTreeView(newTree, zoomLevel / kZoomSensitivity, geoModel, wc);
     view.setRenderingBy(lineBreaks);
-    view.setColorBy(colorByLabelIdx);
+    view.setColorBy(colorDB.getSelectedColorScheme());
     view.setSmoothingWindow(smoothingWindow);
     data.add(view);
     geoModel.setX(xResolution / data.size());
@@ -119,7 +117,8 @@ public class ApplicationModel {
     }
     return new RenderingInformation(
         data.toArray(new DataTreeView[0]),
-        colorDB.getColorView(),
+        colorDB.getSelectedColorScheme(),
+        colorDB.getTypeMapCopy(),
         geoModel.getSliderSize(),
         geoModel.getViewX(),
         geoModel.getViewY(),
@@ -148,21 +147,15 @@ public class ApplicationModel {
     return lineBreaks;
   }
 
-  public synchronized int getColorBy() {
-    return colorByLabelIdx;
+  public synchronized String getColorBy() {
+    return colorDB.getSelectedColorScheme().getName();
   }
 
   public synchronized void setColorBy(String label) {
-    int labelIdx;
-    if (TypeMap.kColorByComparison.equals(label)) {
-      labelIdx = TypeMap.kColorByComparisonIdx;
-    } else {
-      labelIdx = colorDB.getLabelIdx(label);
-    }
+    ColorScheme selectedScheme = colorDB.selectColorScheme(label);
     for (DataTreeView view : data) {
-      view.setColorBy(labelIdx);
+      view.setColorBy(selectedScheme);
     }
-    colorByLabelIdx = labelIdx;
   }
 
   public synchronized TypeMap getTypeMapCopy() {
@@ -174,58 +167,22 @@ public class ApplicationModel {
     for (DataTreeView view : data) {
       view.setTextBy(labelIdx);
     }
-    textByLabelIdx  = labelIdx;
   }
 
-  public synchronized void addColorScheme(ColorScheme colorScheme) {
-    if (!colorDB.addCustomColorScheme(colorScheme.getLabel(), colorScheme.getMapping())) {
+  public synchronized void addColorScheme(CustomColorScheme colorScheme) {
+    if (!colorDB.addColorScheme(colorScheme)) {
       return;
     }
-    removeColorScheme(colorScheme.getLabel(), false);
-    colorSchemes.add(colorScheme);
     refreshComparisonColors();
   }
 
-  private void removeColorScheme(String label, boolean replaceWithRandomColors) {
-    boolean foundScheme = false;
-    for (int i = 0; i < colorSchemes.size(); i++) {
-      if (colorSchemes.get(i).getLabel().equals(label)) {
-        colorSchemes.remove(i);
-        i--;
-        foundScheme = true;
-      }
-    }
-    if (!foundScheme) {
-      // don't want to drop the color pallette if we have this error
-      System.err.println("Tried to remove color scheme for label " + label + " but couldn't find it.");
-      return;
-    }
-    colorDB.dropColorsForLabel(label, replaceWithRandomColors);
-    refreshComparisonColors();
-  }
-
-  public synchronized void removeColorScheme(String label) {
-    removeColorScheme(label, true);
+  public synchronized void removeColorScheme(String name) {
+    colorDB.removeColorScheme(name);
     refreshComparisonColors();
   }
 
   public synchronized ArrayList<String> getColorSchemeList() {
-    ArrayList<String> labels = new ArrayList<String>();
-
-    for (ColorScheme colorScheme: colorSchemes) {
-      labels.add(colorScheme.getLabel());
-    }
-
-    return labels;
-  }
-
-  public synchronized ColorScheme getColorScheme(String label) {
-    for (ColorScheme colorScheme: colorSchemes) {
-      if (label.equals(colorScheme.getLabel())) {
-        return colorScheme;
-      }
-    }
-    return null;
+    return colorDB.getNamesOfSchemes();
   }
 
   public synchronized void searchForTerm(String searchTerm, String label, List<String> selectedFiles) {
@@ -306,9 +263,12 @@ public class ApplicationModel {
     if (comparisonState == null) {
       return;
     }
+    ColorScheme comparisonColors = colorDB.getComparisonColors();
+    Map<String, Color> colorMap = comparisonColors.getMapping();
+
     for (int i = 0; i < comparisonState.length; i++) {
       ComparisonState s = comparisonState[i];
-      s.setColor(colorDB.getColorView().getColor(TypeMap.kColorByComparisonIdx, i));
+      s.setColor(colorMap.get(s.getName()));
     }
   }
 

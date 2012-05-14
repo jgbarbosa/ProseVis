@@ -173,10 +173,8 @@ public class Word {
     }
     Syllable curr = null;
     LinkedList<Syllable> before = new LinkedList<Syllable>();
-    double beforeSum = 0.0;
     ComparisonData runningSum = new ComparisonData(numComparisons);
     LinkedList<Syllable> after = new LinkedList<Syllable>();
-    double afterSum = 0.0;
     for (Word itr = head; itr != null; itr = itr.next) {
       for (Syllable s: itr.syllables) {
         if (before.size() < prefixSize) {

@@ -8,6 +8,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -16,7 +17,7 @@ import prosevis.data.TypeMap;
 import prosevis.data.Word;
 import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
-import prosevis.processing.model.ColorView;
+import prosevis.processing.model.ColorSchemeUtil;
 import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ScrollInfo;
 import controlP5.ControlEvent;
@@ -144,9 +145,8 @@ public class ProseVisSketch extends PApplet {
   public void draw() {
     RenderingInformation renderInfo = theModel.getRenderingData();
     DataTreeView[] views = renderInfo.views;
-    ColorView colorView = renderInfo.colorView;
+    TypeMap typeMap = renderInfo.typeMap;
     boolean[] enabledComparisons = renderInfo.enabled;
-    boolean colorStateChanged = colorView.firstRenderSinceUpdate();
     final int sliderWidth = lastSliderWidth = renderInfo.sliderWidth;
     final int viewWidth = lastViewWidth = renderInfo.viewWidth;
     final int viewHeight = renderInfo.viewHeight;
@@ -164,7 +164,7 @@ public class ProseVisSketch extends PApplet {
       
       for (int i = 0; i < lastViews.length; i++) {
         renderView(lastViews[i],
-            colorView,
+            typeMap, 
             wordMaps.get(i),
             i * viewWidth, 
             0,
@@ -176,17 +176,24 @@ public class ProseVisSketch extends PApplet {
       updateScrollWithInertia();
 
       for (int i = 0; i < views.length; i++) {
-        if (views[i].getAndClearNeedsRender() || colorStateChanged) {
+        if (views[i].getAndClearNeedsRender()) {
           sliders.get(i).setValue((float) views[i].getScroll());
-          renderView(views[i], colorView, wordMaps.get(i), i * viewWidth, 0, viewWidth
-              - sliderWidth, viewHeight, enabledComparisons);
+          renderView(
+              views[i], 
+              typeMap, 
+              wordMaps.get(i),
+              i * viewWidth,
+              0, 
+              viewWidth - sliderWidth, 
+              viewHeight, 
+              enabledComparisons);
         }
       }
     }
     
     // now that we think all the documents are drawn, add in the tooltip
     if (lastViews.length > 0) {      
-      addTooltip(colorView);
+      addTooltip(typeMap);
     }
   }
 
@@ -229,7 +236,7 @@ public class ProseVisSketch extends PApplet {
     }
   }
   
-  private void addTooltip(ColorView colorView) {
+  private void addTooltip(TypeMap typeMap) {
     toolTipContext.recordPosition(mouseX, mouseY);
     if (!toolTipContext.shouldShow()) {
       return;
@@ -250,15 +257,15 @@ public class ProseVisSketch extends PApplet {
       // very possibly we're not even hovering over a word
       return;
     }
-    final String pos = colorView.getType(
+    final String pos = typeMap.getTypeForIdx(
         TypeMap.kPOSLabelIdx, 
         w.getTypeIdxForLabelIdx(TypeMap.kPOSLabelIdx));
-    StringBuilder sound = new StringBuilder(colorView.getType(
+    StringBuilder sound = new StringBuilder(typeMap.getTypeForIdx(
         TypeMap.kPhonemeIdx,
         w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx)));
     for (int i = 1; i < w.getSyllableCount(); i++) {
       sound.append("|");
-      sound.append(colorView.getType(TypeMap.kPhonemeIdx, 
+      sound.append(typeMap.getTypeForIdx(TypeMap.kPhonemeIdx, 
           w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx, i)));
     }
     
@@ -350,13 +357,17 @@ public class ProseVisSketch extends PApplet {
     scrollInertia = 0.0;
   }
 
-  private void renderView(DataTreeView dataTreeView, ColorView colorView,
+  private void renderView(
+      DataTreeView dataTreeView,
+      TypeMap typeMap,
       CoordinateWordMap wordMap,
       int minX, int minY, int viewWidth, int viewHeight,
       boolean[] enabledComparisons) {
     final int yOrigin = minY;
     final int xOrigin = minX;
     final int maxViewWidth = viewWidth;
+    final int colorByLabelIdx = typeMap.getLabelIdx(dataTreeView.getColorByLabel());
+    final Map<String, Color> colorMap = dataTreeView.getColorMap();
     wordMap.clear();
     fill(255);
     rect(xOrigin, yOrigin, viewWidth, viewHeight);
@@ -385,7 +396,6 @@ public class ProseVisSketch extends PApplet {
     // for instance, if we're rendering words, we'll get the idx for the word
     // field
     final int renderTextByLabelIdx = dataTreeView.getTextBy();
-    final int colorByLabelIdx = dataTreeView.getColorBy();
     final StringBuilder tmp = new StringBuilder();
     while (renderedHeight + lineHeight < viewHeight) {
       // we still have space, render another line
@@ -411,14 +421,14 @@ public class ProseVisSketch extends PApplet {
           final int phonemeCount = wordNode.getSyllableCount();
           tmp.setLength(0);
           for (int i = 0; i < phonemeCount; i++) {
-            tmp.append(colorView.getType(renderTextByLabelIdx, wordNode
+            tmp.append(typeMap.getTypeForIdx(renderTextByLabelIdx, wordNode
                 .getTypeIdxForLabelIdx(renderTextByLabelIdx, i,
                     enabledComparisons)));
             tmp.append(' ');
           }
           renderedText = tmp.toString();
         } else {
-          renderedText = colorView.getType(renderTextByLabelIdx,
+          renderedText = typeMap.getTypeForIdx(renderTextByLabelIdx,
               wordNode.getTypeIdxForLabelIdx(renderTextByLabelIdx));
         }
         final float wordWidth = textWidth(renderedText);
@@ -445,7 +455,7 @@ public class ProseVisSketch extends PApplet {
           fill(kMetaTextBackgroundColor);
           rect(wordTopX, wordTopY, wordDx, wordDy);
         } else if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
-          colorBackground(colorByLabelIdx, colorView, wordNode, wordTopX,
+          colorBackground(colorByLabelIdx, colorMap, typeMap, wordNode, wordTopX,
               wordTopY, wordDx, wordDy, enabledComparisons);
         }
         lineBuffer.append(renderedText);
@@ -469,7 +479,8 @@ public class ProseVisSketch extends PApplet {
         yOrigin + kTitleBarHeight - 1);
   }
 
-  private void colorBackground(int colorByLabelIdx, ColorView colorView,
+  private void colorBackground(int colorByLabelIdx, Map<String, Color> colorMap,
+      TypeMap typeMap,
       Word wordNode, int topX, int topY, int dx, int dy,
       boolean[] enabledComparisons) {
     if (wordNode.isPunct()) {
@@ -490,9 +501,12 @@ public class ProseVisSketch extends PApplet {
       for (int i = 0; i < phonemeCount; i++) {
         final int syllableTypeIdx = wordNode.getTypeIdxForLabelIdx(
             colorByLabelIdx, i, enabledComparisons);
-        Color c = colorView.getColor(colorByLabelIdx, syllableTypeIdx);
-        if (colorByLabelIdx == TypeMap.kColorByComparisonIdx
-            && syllableTypeIdx != TypeMap.kNoTypeIdx) {
+        final String type = typeMap.getTypeForIdx(colorByLabelIdx, syllableTypeIdx);
+        Color c = colorMap.get(type);
+        if (c == null) {
+          c = colorMap.get(ColorSchemeUtil.kDefaultLabel);
+        }
+        if (colorByLabelIdx == TypeMap.kColorByComparisonIdx) {
           final float[] hsb = new float[3];
           Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), hsb);
           final float similarity = wordNode.getComparisonValue(i,
@@ -506,8 +520,14 @@ public class ProseVisSketch extends PApplet {
       }
       break;
     default:
-      Color c = colorView.getColor(colorByLabelIdx,
-          wordNode.getTypeIdxForLabelIdx(colorByLabelIdx));
+      final int syllableTypeIdx = 
+          wordNode.getTypeIdxForLabelIdx(colorByLabelIdx);
+      final String type =
+          typeMap.getTypeForIdx(colorByLabelIdx, syllableTypeIdx);
+      Color c = colorMap.get(type);
+      if (c == null) {
+        return;
+      }
       fill(c.getRed(), c.getGreen(), c.getBlue());
       rect(topX, topY, dx, dy);
       break;

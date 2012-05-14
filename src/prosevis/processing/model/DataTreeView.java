@@ -1,5 +1,8 @@
 package prosevis.processing.model;
 
+import java.awt.Color;
+import java.util.Map;
+
 import prosevis.data.BreakLinesBy;
 import prosevis.data.Document;
 import prosevis.data.TypeMap;
@@ -12,7 +15,6 @@ public class DataTreeView {
   private double scrollFraction;
   private boolean needsRender = true;
   private int currentFontSize = 14;
-  private int colorByLabelIdx = TypeMap.kNoLabelIdx;
   private int textByLabelIdx = TypeMap.kWordIdx;
   private final Searcher searcher = new Searcher();
   private ScrollInfo lastScrollInfo;
@@ -22,6 +24,7 @@ public class DataTreeView {
   private static final double kScrollMultiplier = 1.0;
   private BreakLinesBy renderType = BreakLinesBy.Phrase;
   private int smoothingWindow;
+  private ColorScheme colorScheme;
 
   public DataTreeView(Document data, int fontSz, GeometryModel geoModel, WidthCalculator wc) {
     this.data = data;
@@ -118,12 +121,17 @@ public class DataTreeView {
     return textByLabelIdx;
   }
 
-  public synchronized void setColorBy(int labelIdx) {
-    colorByLabelIdx = labelIdx;
+  public synchronized void setColorBy(ColorScheme scheme) {
+    colorScheme = scheme;
     this.needsRender = true;
   }
-  public synchronized int getColorBy() {
-    return colorByLabelIdx;
+
+  public synchronized Map<String, Color> getColorMap() {
+    return colorScheme.getMapping();
+  }
+  
+  public synchronized String getColorByLabel() {
+    return colorScheme.getLabel();
   }
 
   public synchronized void searchForTerm(int typeIdx, int labelIdx) {

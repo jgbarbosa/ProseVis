@@ -36,7 +36,8 @@ import net.miginfocom.swing.MigLayout;
 import prosevis.data.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
-import prosevis.processing.model.ColorScheme;
+import prosevis.processing.model.CustomColorScheme;
+import prosevis.processing.model.ColorSchemeUtil;
 import prosevis.processing.model.DataTreeView;
 
 import com.jgoodies.forms.factories.FormFactory;
@@ -354,7 +355,6 @@ public class ControllerGUI implements WindowStateListener {
     breakLineByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        @SuppressWarnings("unchecked")
         JComboBox cb = (JComboBox)e.getSource();
         String typeStr = (String)cb.getSelectedItem();
         theModel.setBreakLevel(BreakLinesBy.valueOf(typeStr));
@@ -472,7 +472,11 @@ public class ControllerGUI implements WindowStateListener {
           return;
         }
         try {
-          ColorScheme colorScheme = ColorScheme.loadFromFile(file);
+          CustomColorScheme colorScheme = ColorSchemeUtil.loadFromFile(file);
+          if (colorScheme == null) {
+            // Must have hit an error when reading from the file
+            return;
+          }
           theModel.addColorScheme(colorScheme);
           colorTopSchemasListModel.removeAllElements();
           for (String s: theModel.getColorSchemeList()) {
@@ -506,13 +510,12 @@ public class ControllerGUI implements WindowStateListener {
     btnSaveScheme.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        String selectedItem = (String)colorTopSchemasListModel.getSelectedItem();
-        if (selectedItem == null) {
-          JOptionPane.showMessageDialog(frame, "Please select a color scheme to save");
-          return;
-        }
-        ColorScheme colorScheme = theModel.getColorScheme(selectedItem);
-        colorScheme.saveToFile();
+        System.err.println("Unimplemented");
+//        String selectedItem = (String)colorTopSchemasListModel.getSelectedItem();
+//        if (selectedItem == null) {
+//          JOptionPane.showMessageDialog(frame, "Please select a color scheme to save");
+//          return;
+//        }
       }
     });
 
@@ -565,7 +568,6 @@ public class ControllerGUI implements WindowStateListener {
     smoothingWindowCombo.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        @SuppressWarnings("unchecked")
         JComboBox cb = (JComboBox)e.getSource();
         int selected = (Integer)cb.getSelectedItem();
         theModel.setSmoothingWindow(selected);
@@ -625,13 +627,10 @@ public class ControllerGUI implements WindowStateListener {
         theModel.addData(fpe.getResult(), fpe.getResultingTypeMap());
         updateFileLists();
         TypeMap typeMap = fpe.getResultingTypeMap();
-        for (String l: TypeMap.kPossibleColorByLabels) {
-          if (typeMap.hasLabel(l.toLowerCase()) && colorByModel.getIndexOf(l.toLowerCase()) < 0) {
-            colorByModel.addElement(l);
-          }
-        }
-        if (typeMap.hasComparisonDataHeaders() && colorByModel.getIndexOf(TypeMap.kColorByComparison) < 0) {
-          colorByModel.addElement(TypeMap.kColorByComparison);
+        ArrayList<String> schemes = theModel.getColorSchemeList();
+        colorByModel.removeAllElements();
+        for (String key: schemes) {
+          colorByModel.addElement(key);
         }
         for (String l: TypeMap.kPossibleTextByLabels) {
           if (typeMap.hasLabel(l.toLowerCase()) && textByModel.getIndexOf(l.toLowerCase()) < 0) {
