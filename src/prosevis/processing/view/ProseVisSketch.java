@@ -53,6 +53,12 @@ public class ProseVisSketch extends PApplet {
   private final ToolTipContext toolTipContext = new ToolTipContext();
   private ControlListener sliderListener = new ControlListener() {
     @Override
+    // In theory, receive events from sliders when they get clicked
+    // In practice, this method is called frequently and without any user input
+    // I suspect it is being called on every frame render
+    // Why is this happening?  I cannot divine the cause from the documentation
+    // Processing is the worst library I have ever had the misfortune to have
+    // used.
     public void controlEvent(ControlEvent theEvent) {
       int sliderIdx = theEvent.controller().id();
       if (sliderIdx >= sliders.size() || sliderIdx < 0) {
@@ -62,7 +68,6 @@ public class ProseVisSketch extends PApplet {
       Slider updated = sliders.get(theEvent.controller().id());
       DataTreeView updateData = lastViews[theEvent.controller().id()];
       updateData.setScroll(updated.value());
-      System.err.println("got an event" + updated.value());
     }
   };
 
@@ -297,6 +302,9 @@ public class ProseVisSketch extends PApplet {
     }
     fill(kTitleBarBackground);
     int xOrig = mouseX + 20;
+    if (xOrig + boxDx > (viewIdx + 1) * lastViewWidth) {
+      xOrig = xOrig - boxDx;
+    }
     int yOrig = mouseY + 10;
     final int boxDy = lines.length * kToolTipTextSize + 4;
     rect(xOrig, yOrig, boxDx, boxDy);
