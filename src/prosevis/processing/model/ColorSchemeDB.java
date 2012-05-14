@@ -1,6 +1,7 @@
 package prosevis.processing.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import prosevis.data.TypeMap;
 
@@ -138,13 +139,9 @@ public class ColorSchemeDB {
     this.typeMap.clearComparisonData();
   }
 
-  public ArrayList<String> getNamesOfSchemes() {
-    ArrayList<String> ret = new ArrayList<String>(
-        customColorSchemes.size() + builtInSchemes.size());
+  public ArrayList<String> getNamesOfCustomSchemes() {
+    ArrayList<String> ret = new ArrayList<String>(customColorSchemes.size());
     for (ColorScheme s: customColorSchemes) {
-      ret.add(s.getName());
-    }
-    for (ColorScheme s: builtInSchemes) {
       ret.add(s.getName());
     }
     return ret;
@@ -169,5 +166,13 @@ public class ColorSchemeDB {
     for (BuiltInColorScheme bs: builtInSchemes) {
       bs.refresh(typeMap);
     }
+  }
+
+  public List<String> getNamesOfBuiltInSchemes() {
+    ArrayList<String> ret = new ArrayList<String>(builtInSchemes.size());
+    for (ColorScheme s: builtInSchemes) {
+      ret.add(s.getName());
+    }
+    return ret;
   }
 }

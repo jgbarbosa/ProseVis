@@ -526,6 +526,9 @@ public class ProseVisSketch extends PApplet {
       for (int i = 0; i < phonemeCount; i++) {
         final int syllableTypeIdx = wordNode.getTypeIdxForLabelIdx(
             colorByLabelIdx, i, enabledComparisons);
+        if (syllableTypeIdx == TypeMap.kNoTypeIdx) {
+          continue;
+        }
         final String type = typeMap.getTypeForIdx(colorByLabelIdx, syllableTypeIdx);
         Color c = colorMap.get(type);
         if (c == null) {

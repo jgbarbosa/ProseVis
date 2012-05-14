@@ -59,6 +59,7 @@ public class ControllerGUI implements WindowStateListener {
   private final List<JCheckBox> comparisonsEnabled = new ArrayList<JCheckBox>();
   private JLabel lblNoComparisonData;
   private JPanel comparisonContent;
+  private final DefaultComboBoxModel colorTopSchemasListModel = new DefaultComboBoxModel();
 
   /**
    * Launch the application.
@@ -459,7 +460,6 @@ public class ControllerGUI implements WindowStateListener {
     colorTopSchemasPanel.setColumnHeaderView(lblSchemas);
 
     final JList colorTopSchemasList = new JList();
-    final DefaultComboBoxModel colorTopSchemasListModel = new DefaultComboBoxModel();
     colorTopSchemasList.setModel(colorTopSchemasListModel);
     colorTopSchemasPanel.setViewportView(colorTopSchemasList);
     colorTop.add(colorTopSchemasPanel, "4, 2, fill, fill");
@@ -478,10 +478,7 @@ public class ControllerGUI implements WindowStateListener {
             return;
           }
           theModel.addColorScheme(colorScheme);
-          colorTopSchemasListModel.removeAllElements();
-          for (String s: theModel.getColorSchemeList()) {
-            colorTopSchemasListModel.addElement(s);
-          }
+          refreshColorSchemeElements();
           refreshComparisonDataCheckboxes();
         } catch (InstantiationException e1) {
           JOptionPane.showMessageDialog(frame, e1.getMessage());
@@ -500,7 +497,7 @@ public class ControllerGUI implements WindowStateListener {
         }
         theModel.removeColorScheme(selectedItem);
         colorTopSchemasListModel.removeAllElements();
-        for (String s: theModel.getColorSchemeList()) {
+        for (String s: theModel.getCustomColorSchemeList()) {
           colorTopSchemasListModel.addElement(s);
         }
       }
@@ -627,11 +624,8 @@ public class ControllerGUI implements WindowStateListener {
         theModel.addData(fpe.getResult(), fpe.getResultingTypeMap());
         updateFileLists();
         TypeMap typeMap = fpe.getResultingTypeMap();
-        ArrayList<String> schemes = theModel.getColorSchemeList();
-        colorByModel.removeAllElements();
-        for (String key: schemes) {
-          colorByModel.addElement(key);
-        }
+        refreshColorSchemeElements();
+        
         for (String l: TypeMap.kPossibleTextByLabels) {
           if (typeMap.hasLabel(l.toLowerCase()) && textByModel.getIndexOf(l.toLowerCase()) < 0) {
             textByModel.addElement(l);
@@ -647,6 +641,22 @@ public class ControllerGUI implements WindowStateListener {
         btnAddFile.setEnabled(true);
         break;
       }
+    }
+  }
+
+  private void refreshColorSchemeElements() {
+    List<String> customColorSchemes = theModel.getCustomColorSchemeList();
+    List<String> builtInColorSchemes = theModel.getBuiltInColorSchemeList();
+    colorTopSchemasListModel.removeAllElements();
+    for (String s: customColorSchemes) {
+      colorTopSchemasListModel.addElement(s);
+    }
+    colorByModel.removeAllElements();
+    for (String key: customColorSchemes) {
+      colorByModel.addElement(key);
+    }
+    for (String key: builtInColorSchemes) {
+      colorByModel.addElement(key);
     }
   }
 

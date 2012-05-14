@@ -117,7 +117,6 @@ public class ApplicationModel {
     }
     return new RenderingInformation(
         data.toArray(new DataTreeView[0]),
-        colorDB.getSelectedColorScheme(),
         colorDB.getTypeMapCopy(),
         geoModel.getSliderSize(),
         geoModel.getViewX(),
@@ -181,8 +180,8 @@ public class ApplicationModel {
     refreshComparisonColors();
   }
 
-  public synchronized ArrayList<String> getColorSchemeList() {
-    return colorDB.getNamesOfSchemes();
+  public synchronized ArrayList<String> getCustomColorSchemeList() {
+    return colorDB.getNamesOfCustomSchemes();
   }
 
   public synchronized void searchForTerm(String searchTerm, String label, List<String> selectedFiles) {
@@ -288,5 +287,9 @@ public class ApplicationModel {
       }
     }
     return smoothingWindow;
+  }
+
+  public synchronized List<String> getBuiltInColorSchemeList() {
+    return colorDB.getNamesOfBuiltInSchemes();
   }
 }

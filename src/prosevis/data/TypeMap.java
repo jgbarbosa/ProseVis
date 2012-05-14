@@ -202,8 +202,11 @@ public class TypeMap {
       return;
     }
     this.comparisonDataHeaders = new String[newHeaders.length];
+    this.addLabel(kColorByComparison, kColorByComparisonIdx);
     for (int i = 0; i < newHeaders.length; i++) {
       comparisonDataHeaders[i] = newHeaders[i];
+      // put the headers in so that the random colorset has something to reason about
+      this.getOrAddTypeIdx(kColorByComparisonIdx, newHeaders[i]);
     }
   }
 
