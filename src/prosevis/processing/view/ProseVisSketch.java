@@ -469,7 +469,7 @@ public class ProseVisSketch extends PApplet {
         final int wordTopX = (int) renderedWidth + minX;
         final int wordTopY = renderedHeight + minY + dLine;
         final int wordDx = (int) wordWidth;
-        final int wordDy = lineHeight - dLine;
+        final int wordDy = lineHeight;
         wordMap.put(wordTopX, wordTopY, wordDx, wordDy, wordNode);
         
         if (wordNode.isSearchResult()) {

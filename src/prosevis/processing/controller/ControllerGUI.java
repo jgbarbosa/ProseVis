@@ -1072,8 +1072,6 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
     for (String key : builtInColorSchemes) {
       colorByModel.addElement(key);
     }
-    // might have no effect if lastSelected has been removed
-    System.err.println("resetting selected to " + lastSelected);
     colorByModel.setSelectedItem(lastSelected);
   }
 
