@@ -1,4 +1,4 @@
-package prosevis.processing.model;
+package prosevis.processing.model.color;
 
 import java.awt.Color;
 import java.util.Map;

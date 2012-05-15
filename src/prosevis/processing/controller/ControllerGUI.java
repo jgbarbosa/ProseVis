@@ -33,21 +33,23 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import prosevis.data.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
-import prosevis.processing.model.ColorSchemeUtil;
-import prosevis.processing.model.CustomColorScheme;
 import prosevis.processing.model.DataTreeView;
+import prosevis.processing.model.color.ColorSchemeUtil;
+import prosevis.processing.model.color.CustomColorScheme;
 
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
-public class ControllerGUI implements WindowStateListener {
+public class ControllerGUI implements WindowStateListener, ColorRefreshable {
   static final String kXmlTag = " (with XML)";
   private final ApplicationModel theModel;
   private JFrame frame;
@@ -554,7 +556,27 @@ public class ControllerGUI implements WindowStateListener {
     txtCust_5.setBackground(new Color(255, 255, 51));
     txtCust_6.setBackground(new Color(166, 86, 40));
     txtCust_7.setBackground(new Color(247, 129, 191));
-
+    
+    final JTextField[] custTxts = { txtCust_0, txtCust_1, txtCust_2, txtCust_3,
+        txtCust_4, txtCust_5, txtCust_6, txtCust_7, };
+    final ColorSchemeDocumentListener custUpdateListener = new ColorSchemeDocumentListener(custTxts, theModel, this);
+    whichAttrBox.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        JComboBox src = (JComboBox)(arg0.getSource());
+        custUpdateListener.setLabel((String)src.getSelectedItem());
+      }
+    });
+    
+    txtCust_0.getDocument().addDocumentListener(custUpdateListener);
+    txtCust_1.getDocument().addDocumentListener(custUpdateListener);
+    txtCust_2.getDocument().addDocumentListener(custUpdateListener);
+    txtCust_3.getDocument().addDocumentListener(custUpdateListener);
+    txtCust_4.getDocument().addDocumentListener(custUpdateListener);
+    txtCust_5.getDocument().addDocumentListener(custUpdateListener);
+    txtCust_6.getDocument().addDocumentListener(custUpdateListener);
+    txtCust_7.getDocument().addDocumentListener(custUpdateListener);
+    
     JLabel lblName = new JLabel("Name:");
 
     txtSchemeName = new JTextField();
@@ -564,8 +586,6 @@ public class ControllerGUI implements WindowStateListener {
     JButton btnSaveSchemeToFile = new JButton("Save to file");
     btnSaveSchemeToFile.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        JTextField[] custTxts = { txtCust_0, txtCust_1, txtCust_2, txtCust_3,
-            txtCust_4, txtCust_5, txtCust_6, txtCust_7, };
         String schemeName = txtSchemeName.getText();
         if (schemeName == null || schemeName.isEmpty()) {
           JOptionPane.showMessageDialog(frame,
@@ -598,6 +618,12 @@ public class ControllerGUI implements WindowStateListener {
         CustomColorScheme cs = new CustomColorScheme(schemeName, schemeType,
             colors, f.getAbsolutePath());
         cs.saveToFile();
+        theModel.addColorScheme(cs);
+        refreshColorSchemeElements();
+        for (JTextField t : custTxts) {
+          t.setText("");
+        }
+        colorByDropdown.setSelectedItem(cs.getName());
       }
     });
     GroupLayout gl_panel_1 = new GroupLayout(panel_1);
@@ -1031,13 +1057,14 @@ public class ControllerGUI implements WindowStateListener {
     }
   }
 
-  private void refreshColorSchemeElements() {
+  public void refreshColorSchemeElements() {
     List<String> customColorSchemes = theModel.getCustomColorSchemeList();
     List<String> builtInColorSchemes = theModel.getBuiltInColorSchemeList();
     colorTopSchemasListModel.removeAllElements();
     for (String s : customColorSchemes) {
       colorTopSchemasListModel.addElement(s);
     }
+    String lastSelected = (String)theModel.getColorBy();
     colorByModel.removeAllElements();
     for (String key : customColorSchemes) {
       colorByModel.addElement(key);
@@ -1045,6 +1072,9 @@ public class ControllerGUI implements WindowStateListener {
     for (String key : builtInColorSchemes) {
       colorByModel.addElement(key);
     }
+    // might have no effect if lastSelected has been removed
+    System.err.println("resetting selected to " + lastSelected);
+    colorByModel.setSelectedItem(lastSelected);
   }
 
   protected void updateFileLists() {

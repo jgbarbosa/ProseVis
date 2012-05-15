@@ -1,4 +1,4 @@
-package prosevis.processing.model;
+package prosevis.processing.model.color;
 
 import java.awt.Color;
 import java.util.Collection;
@@ -8,24 +8,8 @@ import java.util.Map;
 import prosevis.data.TypeMap;
 
 public class BuiltInColorScheme extends ColorScheme {
-  private static Map<String, Color> buildEmptyMapping() {
-    HashMap<String, Color> ret = new HashMap<String, Color>();
-    ret.put(ColorSchemeUtil.kDefaultLabel, Color.white);
-    return ret;
-  }
-
   public BuiltInColorScheme(String schemeName, String schemeType) {
     super(schemeName, schemeType, buildEmptyMapping());
-  }
-  
-  @Override
-  public synchronized Map<String, Color> getMapping() {
-    return super.getMapping();
-  }
-
-  @Override
-  protected synchronized void setMapping(Map<String, Color> map) {
-    super.setMapping(map);
   }
   
   public void refresh(TypeMap typeMap) {

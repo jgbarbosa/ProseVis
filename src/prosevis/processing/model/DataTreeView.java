@@ -7,6 +7,7 @@ import prosevis.data.BreakLinesBy;
 import prosevis.data.Document;
 import prosevis.data.TypeMap;
 import prosevis.data.Word;
+import prosevis.processing.model.color.ColorScheme;
 import prosevis.processing.view.GeometryModel;
 import prosevis.processing.view.WidthCalculator;
 

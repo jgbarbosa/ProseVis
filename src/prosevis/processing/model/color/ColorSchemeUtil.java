@@ -1,4 +1,4 @@
-package prosevis.processing.model;
+package prosevis.processing.model.color;
 
 import java.awt.Color;
 import java.io.File;
@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 
 public abstract class ColorSchemeUtil {
+  public static final String kWorkingLabel = "Working color scheme";
   public static String kDefaultLabel = "~other";
 
   public static CustomColorScheme loadFromFile(File file) throws InstantiationException {

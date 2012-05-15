@@ -1,4 +1,4 @@
-package prosevis.processing.model;
+package prosevis.processing.model.color;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,9 @@ public class ColorSchemeDB {
         return false;
       }
     }
+    if (ColorSchemeUtil.kWorkingLabel.equals(name)) {
+      return false;
+    }
     return true;
   }
 
@@ -33,6 +36,7 @@ public class ColorSchemeDB {
   private final ArrayList<ColorScheme> customColorSchemes = new ArrayList<ColorScheme>();
   private final TypeMap typeMap = new TypeMap();
   private ColorScheme selectedScheme;
+  private WorkingColorScheme workingColorScheme;
   
   public ColorSchemeDB() {
     BuiltInColorScheme noneScheme = new BuiltInColorScheme(kNoneSchemeName, "none");
@@ -91,6 +95,9 @@ public class ColorSchemeDB {
   }
 
   public ColorScheme selectColorScheme(String name) {
+    if (workingColorScheme != null && workingColorScheme.getName().equals(name)) {
+      selectedScheme = workingColorScheme;
+    }
     for (ColorScheme scheme: customColorSchemes) {
       if (scheme.getName().equals(name)) {
         selectedScheme = scheme;
@@ -173,6 +180,13 @@ public class ColorSchemeDB {
     for (ColorScheme s: builtInSchemes) {
       ret.add(s.getName());
     }
+    if (workingColorScheme != null) {
+      ret.add(workingColorScheme.getName());
+    }
     return ret;
+  }
+
+  public void registerWorkingColorScheme(WorkingColorScheme colorScheme) {
+    this.workingColorScheme = colorScheme;
   }
 }

@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 
 import prosevis.data.Document;
 import prosevis.data.TypeMap;
-import prosevis.processing.model.ColorScheme;
+import prosevis.processing.model.color.ColorScheme;
 
 public class FileLoader implements Runnable, IProgressNotifiable {
   private final static String LAST_PATH_SAVE = ".lastpath.txt";

@@ -9,6 +9,10 @@ import prosevis.data.BreakLinesBy;
 import prosevis.data.Document;
 import prosevis.data.TypeMap;
 import prosevis.processing.controller.ComparisonState;
+import prosevis.processing.model.color.ColorScheme;
+import prosevis.processing.model.color.ColorSchemeDB;
+import prosevis.processing.model.color.CustomColorScheme;
+import prosevis.processing.model.color.WorkingColorScheme;
 import prosevis.processing.view.GeometryModel;
 import prosevis.processing.view.RenderingInformation;
 import prosevis.processing.view.WidthCalculator;
@@ -291,5 +295,9 @@ public class ApplicationModel {
 
   public synchronized List<String> getBuiltInColorSchemeList() {
     return colorDB.getNamesOfBuiltInSchemes();
+  }
+
+  public synchronized void registerWorkingColorScheme(WorkingColorScheme colorScheme) {
+    colorDB.registerWorkingColorScheme(colorScheme);
   }
 }

@@ -1,8 +1,8 @@
 package prosevis.processing.view;
 
 import prosevis.data.TypeMap;
-import prosevis.processing.model.ColorScheme;
 import prosevis.processing.model.DataTreeView;
+import prosevis.processing.model.color.ColorScheme;
 
 public class RenderingInformation {
 

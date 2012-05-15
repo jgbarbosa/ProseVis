@@ -1,6 +1,8 @@
 MyCustomColors1
 pos
 #ffffff
-"IN" = #377eb8
-"JJ" = #4daf4a
-"NN" = #e41a1c
+"VB" = #ff7f00
+"IN" = #4daf4a
+"VBD" = #e41a1c
+"PRP$" = #377eb8
+"NN" = #984ea3
