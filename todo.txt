@@ -26,6 +26,10 @@ Odd Mac Issues:
 Priority:
   + Want to know why two items are the same color (tool tip)
   + Lock scrolling across docs
+  + Button to toggle between Sketch and Controller
+  + Controls tab to explain controls
+    - Shift to scroll all documents
+  + add small area for comparison color in top bar
 
 
 
