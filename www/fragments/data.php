@@ -30,7 +30,7 @@ Document 4: <input type="file" name="documents[]" /><br />
 Document 5: <input type="file" name="documents[]" /><br />
 Document 6: <input type="file" name="documents[]" /><br />
 <br />
-Compute comparisons? <input disabled="true" type="checkbox" name="documents[comp]" /><br /><br />
+Compute comparisons? <input type="checkbox" name="documents[comp]" /><br /><br />
 </div>
 
 <!-- Capcha stuff -->

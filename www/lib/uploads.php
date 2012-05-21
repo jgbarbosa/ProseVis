@@ -1,15 +1,12 @@
 <?php
 //ini_set('display_errors', 'On');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/settings.php');
-require_once($site_root . 'lib/recaptchalib.php');
-require_once($site_root . 'lib/JSON.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . $site_prefix . 'lib/recaptchalib.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . $site_prefix . 'lib/JSON.php');
 
 $kMaxSz = 1000000;
-$kUploadDir = $site_root . 'uploads/';
-$seasr_url = 'http://leovip032.ncsa.uiuc.edu:8888/submitDocument';
-
 $privatekey = "6LdqrtESAAAAAJd9UDNw9fU-48jojyoIaxp2XUbu";
-
+$enableCaptcha = true;
 
 function post_data($url, $params) {
   $curlOb = curl_init();
@@ -28,12 +25,12 @@ function post_data($url, $params) {
 }
 
 function process_req($req) {
-  global $kMaxSz, $kUploadDir, $seasr_url, $privatekey;
+  global $kMaxSz, $site_prefix, $privatekey, $enableCaptcha;
   $resp = recaptcha_check_answer ($privatekey,
                                   $_SERVER["REMOTE_ADDR"],
                                   $_POST["recaptcha_challenge_field"],
                                   $_POST["recaptcha_response_field"]);
-  if (!$resp->is_valid) {
+  if ($enableCaptcha && !$resp->is_valid) {
     return "That pesky Captcha didn't like your answer.  Be a good sport and try again.";
   }
 
@@ -69,8 +66,8 @@ function process_req($req) {
       return 'File too large';
     }
 
-    $file_name = uniqid() . '.xml';
-    $uploadFile = $kUploadDir . $file_name;
+    $file_name = str_replace(' ', '', $_FILES['documents']['name'][$idx]) . '_' . uniqid() . '.xml';
+    $uploadFile = $_SERVER['DOCUMENT_ROOT'] . $site_prefix . 'uploads/' . $file_name;
 
     if (!move_uploaded_file($_FILES['documents']['tmp_name'][$idx], $uploadFile)) {
       // moving the file failed somehow
@@ -87,15 +84,30 @@ function process_req($req) {
   $request_id = uniqid();
   // so now we're sure we have at least one file
   if ($use_comp && count($files) > 1) {
+    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . $site_prefix . 'uploads/';
+    $zip_file = uniqid() . '.zip';
+    $file_list = implode($files, ' ');
+    $cmd_str = "cd $upload_dir && zip $zip_file $file_list";
+    shell_exec($cmd_str);
+    $params = array(
+        'email' => $email_str,
+        'token' => $request_id,
+        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $site_prefix . 'uploads/' . $zip_file
+        );
+      $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/computeSimilarities', $params);
+      $resp = json_decode($json_str);
+      if ($resp->status->code != 0) {
+        return $resp->status->message;
+      }
   } else {
     $json = new Services_JSON();
     foreach ($files as $file) {
       $params = array(
         'email' => $email_str,
         'token' => $request_id,
-        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . '/uploads/' . $file
+        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $site_prefix . 'uploads/' . $file
       );
-      $json_str = post_data($seasr_url, $params);
+      $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/submitDocument', $params);
       $resp = json_decode($json_str);
       if ($resp->status->code != 0) {
         return $resp->status->message;
