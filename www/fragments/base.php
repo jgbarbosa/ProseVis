@@ -5,7 +5,7 @@
 
 <head>
 <title>ProseVis</title>
-<style type="text/css" media="screen">@import "/style.css";</style>
+<style type="text/css" media="screen">@import "<?php echo $site_prefix; ?>/style.css";</style>
 </head>
 
 <body>
@@ -17,7 +17,7 @@
 </div>
 
 <div id="Menu">
-  <?php include($site_root . 'fragments/menu.php') ?>
+  <?php include($site_root . '/fragments/menu.php') ?>
 </div>
 
 <!-- BlueRobot was here. -->

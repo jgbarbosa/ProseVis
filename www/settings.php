@@ -1,4 +1,4 @@
 <?php
-$site_root = $_SERVER['DOCUMENT_ROOT'] . '/';
-$site_prefix = '/';
+$site_prefix = '/ProseVis';
+$site_root = $_SERVER['DOCUMENT_ROOT'] . $site_prefix;
 ?>

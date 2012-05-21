@@ -14,7 +14,7 @@ if (isset($error_msg)) {
 ?>
 </p></div>
 
-<form action="<?php echo $site_prefix; ?>data/index.php" enctype="multipart/form-data" method="post">
+<form action="<?php echo $site_prefix; ?>/data/index.php" enctype="multipart/form-data" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
 <div style="margin-bottom:1em;">
 Email: <input type="text" name="documents[email]" />
@@ -36,7 +36,7 @@ Compute comparisons? <input type="checkbox" name="documents[comp]" /><br /><br /
 <!-- Capcha stuff -->
 <div style="margin-bottom:1em;">
 <?php
-  require_once($site_root . 'lib/recaptchalib.php');
+  require_once($site_root . '/lib/recaptchalib.php');
   $publickey = "6LdqrtESAAAAAFVqiQ9BCphNdxVmxXO2KVKtImdD";
   echo recaptcha_get_html($publickey);
 ?>

@@ -1,7 +1,7 @@
 <?php
-require_once($_SERVER['DOCUMENT_ROOT'] . '/settings.php');
-//ini_set('display_errors', 'On');
-$content = $site_root . 'fragments/code.php';
+require_once($_SERVER['DOCUMENT_ROOT'] . '/ProseVis/settings.php');
 
-include($site_root . 'fragments/base.php');
+$content = $site_root . '/fragments/code.php';
+
+include($site_root . '/fragments/base.php');
 ?>

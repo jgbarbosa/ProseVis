@@ -1,8 +1,8 @@
 <?php
 //ini_set('display_errors', 'On');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/settings.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . $site_prefix . 'lib/recaptchalib.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . $site_prefix . 'lib/JSON.php');
+require_once($site_root . '/settings.php');
+require_once($site_root . '/lib/recaptchalib.php');
+require_once($site_root . '/lib/JSON.php');
 
 $kMaxSz = 1000000;
 $privatekey = "6LdqrtESAAAAAJd9UDNw9fU-48jojyoIaxp2XUbu";
@@ -67,7 +67,7 @@ function process_req($req) {
     }
 
     $file_name = str_replace(' ', '', $_FILES['documents']['name'][$idx]) . '_' . uniqid() . '.xml';
-    $uploadFile = $_SERVER['DOCUMENT_ROOT'] . $site_prefix . 'uploads/' . $file_name;
+    $uploadFile = $_SERVER['DOCUMENT_ROOT'] . $site_prefix . '/uploads/' . $file_name;
 
     if (!move_uploaded_file($_FILES['documents']['tmp_name'][$idx], $uploadFile)) {
       // moving the file failed somehow
@@ -84,7 +84,7 @@ function process_req($req) {
   $request_id = uniqid();
   // so now we're sure we have at least one file
   if ($use_comp && count($files) > 1) {
-    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . $site_prefix . 'uploads/';
+    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . $site_prefix . '/uploads/';
     $zip_file = uniqid() . '.zip';
     $file_list = implode($files, ' ');
     $cmd_str = "cd $upload_dir && zip $zip_file $file_list";
@@ -92,7 +92,7 @@ function process_req($req) {
     $params = array(
         'email' => $email_str,
         'token' => $request_id,
-        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $site_prefix . 'uploads/' . $zip_file
+        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $site_prefix . '/uploads/' . $zip_file
         );
       $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/computeSimilarities', $params);
       $resp = json_decode($json_str);
@@ -105,7 +105,7 @@ function process_req($req) {
       $params = array(
         'email' => $email_str,
         'token' => $request_id,
-        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $site_prefix . 'uploads/' . $file
+        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $site_prefix . '/uploads/' . $file
       );
       $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/submitDocument', $params);
       $resp = json_decode($json_str);
