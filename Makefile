@@ -51,6 +51,7 @@ mac_package: $(OUTPUT_DIR)/prosevis.jar
 	cp resources/PkgInfo $(BUNDLE_PATH)/Contents/
 	cp resources/Info.plist $(BUNDLE_PATH)/Contents/
 	./scripts/update_info_plist.sh $(BUNDLE_PATH)/Contents/Info.plist
+	pushd $(OUTPUT_DIR) && zip prosevis.mac.zip ProseVis.app
 
 win32_package: $(OUTPUT_DIR)/prosevis.jar
 	rm -rf $(WIN32_PATH)
