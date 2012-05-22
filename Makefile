@@ -94,7 +94,7 @@ linux64_package: $(OUTPUT_DIR)/prosevis.jar
 		-C ../../../resources run.sh 
 
 data_package:
-	zip $(OUTPUT_DIR)/data.zip colorschemes/* public_data/*
+	cd data && zip ../$(OUTPUT_DIR)/data.zip colorschemes/* shakespeare/*
 
 
 
