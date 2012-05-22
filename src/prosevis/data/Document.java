@@ -73,9 +73,10 @@ public class Document {
     try {
       BufferedReader reader = new BufferedReader(new FileReader(file));
       String line = reader.readLine();
+      RowParser rp = RowParser.buildParser(line);
       // this may be slightly off on Windows (\r\n)
       bytesProcessed += line.length() + 1;
-      String[] columns = line.split("\t");
+      String[] columns = rp.getColumns(line);
 
       // create a fresh color map, we'll merge it with existing maps later
       if (columns.length < TypeMap.kMaxFields - 1) {
@@ -124,7 +125,7 @@ public class Document {
         if (prog != null) {
           prog.notifyProgess(bytesProcessed / (double) totalBytes);
         }
-        columns = line.split("\t");
+        columns = rp.getColumns(line);
         lastWord = processInputLine(columns, typeMap, lastWord, loadComparisonData);
         if (head == null) {
           head = lastWord;
@@ -136,6 +137,11 @@ public class Document {
       return true;
     } catch (IOException e) {
       String message = "Error while reading file, aborting.";
+      JOptionPane.showMessageDialog(new JFrame(), message, "Error",
+          JOptionPane.ERROR_MESSAGE);
+      return false;
+    } catch (TransformationException e) {
+      String message = "Badly formatted file, are you sure this was meant for ProseVis?";
       JOptionPane.showMessageDialog(new JFrame(), message, "Error",
           JOptionPane.ERROR_MESSAGE);
       return false;
