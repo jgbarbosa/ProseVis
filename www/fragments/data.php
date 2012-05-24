@@ -21,16 +21,9 @@ Email: <input type="text" name="documents[email]" />
 </div>
 
 <div style="margin-bottom:1em;">
-<p>Users may upload up to 6 documents to be processed at a time.  Optionally, we can compute comparisons between the documents, although this will take longer than processing the documents without comparisons.</p>
+<p>Users may upload a document or zip file containing documents for processing.  If a zip file is provided, comparisons will be calculated between the contained documents.</p>
 
-Document 1: <input type="file" name="documents[]" /><br />
-Document 2: <input type="file" name="documents[]" /><br />
-Document 3: <input type="file" name="documents[]" /><br />
-Document 4: <input type="file" name="documents[]" /><br />
-Document 5: <input type="file" name="documents[]" /><br />
-Document 6: <input type="file" name="documents[]" /><br />
-<br />
-Compute comparisons? <input type="checkbox" name="documents[comp]" /><br /><br />
+Document or zip file: <input type="file" name="documents[]" />
 </div>
 
 <!-- Capcha stuff -->

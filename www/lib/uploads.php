@@ -7,6 +7,7 @@ require_once($site_root . '/lib/JSON.php');
 $kMaxSz = 1000000;
 $privatekey = "6LdqrtESAAAAAJd9UDNw9fU-48jojyoIaxp2XUbu";
 $enableCaptcha = true;
+$doc_root = $_SERVER['DOCUMENT_ROOT'];
 
 function post_data($url, $params) {
   $curlOb = curl_init();
@@ -24,12 +25,87 @@ function post_data($url, $params) {
   return $output;
 }
 
+function rrmdir($dir) {
+  foreach(glob($dir . '/*') as $file) {
+    if(is_dir($file)) {
+      rrmdir($file);
+    } else {
+      unlink($file);
+    }
+  }
+  rmdir($dir);
+}
+
+function process_workspace($workspace, $use_comp, $email, $request_id) {
+  global $doc_root, $kMaxSz;
+  $files = array();
+  foreach (glob($doc_root . $workspace . '*') as $file) {
+    $suff = substr($file, -4);
+    if ($suff != '.xml') {
+      return 'Please submit only .xml files';
+    }
+
+    if (filesize($file) > $kMaxSz) {
+      return "$file is too big for submission";
+    }
+    $safe_name = substr($file, strlen($doc_root . $workspace));
+    $safe_name = substr($safe_name, 0, strlen($safe_name) - 4);
+    $safe_name = str_replace('.', '_', $safe_name);
+    $safe_name = str_replace(' ', '_', $safe_name);
+    $safe_name = $safe_name . '.xml';
+
+    if (!rename($file, $doc_root . $workspace . $safe_name)) {
+      // moving the file failed somehow
+      return 'Internal error: Failed to move file for processing';
+    }
+
+    $files[] = $safe_name;
+  }
+
+  if (count($files) < 1) {
+    return 'Please submit at least one document';
+  }
+
+  if ($use_comp === False) {
+    foreach($files as $file) {
+      $params = array(
+        'email' => $email,
+        'token' => $request_id,
+        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $workspace . $file
+      );
+      $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/submitDocument', $params);
+      $resp = json_decode($json_str);
+      if ($resp->status->code != 0) {
+        return 'Remote request failed: ' . $resp->status->message;
+      }
+    }
+  } else {
+    $zip_file = uniqid() . '.zip';
+    shell_exec("cd $doc_root$workspace  && zip $zip_file *");
+    $params = array(
+      'email' => $email,
+      'token' => $request_id,
+      'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $workspace . $zip_file
+    );
+
+    $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/computeSimilarities', $params);
+    $resp = json_decode($json_str);
+    if (!isset($resp->status->code) || $resp->status->code !== 0) {
+      return 'Remote request failed: ' . $resp->status->message;
+    }
+    echo "<!-- $json_str -->";
+  }
+  return 'Documents submitted successfully.  You will receive an email shortly.';
+}
+
+
 function process_req($req) {
-  global $kMaxSz, $site_prefix, $privatekey, $enableCaptcha;
+  global $doc_root, $site_prefix, $privatekey, $enableCaptcha, $kMaxSz;
   $resp = recaptcha_check_answer ($privatekey,
                                   $_SERVER["REMOTE_ADDR"],
                                   $_POST["recaptcha_challenge_field"],
                                   $_POST["recaptcha_response_field"]);
+
   if ($enableCaptcha && !$resp->is_valid) {
     return "That pesky Captcha didn't like your answer.  Be a good sport and try again.";
   }
@@ -43,79 +119,57 @@ function process_req($req) {
     return 'Invalid email: ' . $req['email'];
   }
 
-  $use_comp = false;
-  if (isset($req['comp']) && $req['comp']) {
-    $use_comp = true;
-  }
 
   if (!isset($_FILES['documents'])) {
     return 'Corrupt form';
   }
 
-  $files = array();
-  foreach (array(0,1,2,3,4,5) as $idx) {
+  $workspace = $site_prefix . '/uploads/' . uniqid() . '/';
+  mkdir($doc_root . $workspace);
+
+  $ret_msg = 'OK';
+  $use_comp = False;
+
+  foreach (array(0) as $idx) {
     if (!isset($_FILES['documents']['name'][$idx])) {
       continue;
     }
     if ($_FILES['documents']['size'][$idx] < 1) {
+      // empty file or no file
       continue;
     }
 
     if ($_FILES['documents']['size'][$idx] > $kMaxSz) {
       // too big, or not uploaded
-      return 'File too large';
+      $ret_msg = 'File too large';
+      break;
     }
 
-    $file_name = str_replace(' ', '', $_FILES['documents']['name'][$idx]) . '_' . uniqid() . '.xml';
-    $uploadFile = $_SERVER['DOCUMENT_ROOT'] . $site_prefix . '/uploads/' . $file_name;
-
-    if (!move_uploaded_file($_FILES['documents']['tmp_name'][$idx], $uploadFile)) {
-      // moving the file failed somehow
-      return 'Failed to move file for processing';
-    }
-
-    $files[] = $file_name;
-  }
-
-  if (count($files) < 1) {
-    return 'Please select at least one file to upload';
-  }
-
-  $request_id = uniqid();
-  // so now we're sure we have at least one file
-  if ($use_comp && count($files) > 1) {
-    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . $site_prefix . '/uploads/';
-    $zip_file = uniqid() . '.zip';
-    $file_list = implode($files, ' ');
-    $cmd_str = "cd $upload_dir && zip $zip_file $file_list";
-    shell_exec($cmd_str);
-    $params = array(
-        'email' => $email_str,
-        'token' => $request_id,
-        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $site_prefix . '/uploads/' . $zip_file
-        );
-      $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/computeSimilarities', $params);
-      $resp = json_decode($json_str);
-      if ($resp->status->code != 0) {
-        return $resp->status->message;
+    $file_name = $_FILES['documents']['name'][$idx];
+    $suff = substr($file_name, -4);
+    if ($suff === '.xml') {
+      if (!move_uploaded_file($_FILES['documents']['tmp_name'][$idx], $doc_root . $workspace . $file_name)) {
+        $ret_msg = 'Internal error: failed to move file';
+        break;
       }
-  } else {
-    $json = new Services_JSON();
-    foreach ($files as $file) {
-      $params = array(
-        'email' => $email_str,
-        'token' => $request_id,
-        'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $site_prefix . '/uploads/' . $file
-      );
-      $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/submitDocument', $params);
-      $resp = json_decode($json_str);
-      if ($resp->status->code != 0) {
-        return $resp->status->message;
-      }
+    } elseif ($suff === '.zip') {
+      $orig_zip = $_FILES['documents']['tmp_name'][$idx];
+      shell_exec("cd $doc_root$workspace && unzip \"$orig_zip\"");
+      $use_comp = True;
+    } else {
+      $ret_msg = 'Please upload either an .xml or .zip file.';
+      break;
     }
   }
 
-  return "Documents submitted successfully.  You will receive an email shortly.";
+  if ($ret_msg === 'OK') {
+    $ret_msg = process_workspace($workspace, $use_comp, $email_str, uniqid());
+  }
+
+  rrmdir($doc_root . $workspace);
+
+  return $ret_msg;
 }
+
 
 ?>
