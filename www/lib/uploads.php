@@ -48,15 +48,17 @@ function process_workspace($workspace, $use_comp, $email, $request_id) {
     if (filesize($file) > $kMaxSz) {
       return "$file is too big for submission";
     }
-    $safe_name = substr($file, strlen($doc_root . $workspace));
-    $safe_name = substr($safe_name, 0, strlen($safe_name) - 4);
+    $old_name = substr($file, strlen($doc_root . $workspace));
+    $safe_name = substr($old_name, 0, strlen($old_name) - 4);
     $safe_name = str_replace('.', '_', $safe_name);
     $safe_name = str_replace(' ', '_', $safe_name);
     $safe_name = $safe_name . '.xml';
 
-    if (!rename($file, $doc_root . $workspace . $safe_name)) {
-      // moving the file failed somehow
-      return 'Internal error: Failed to move file for processing';
+    if ($old_name !== $safe_name) {
+      if (!rename($file, $doc_root . $workspace . $safe_name)) {
+        // moving the file failed somehow
+        return 'Internal error: Failed to move file for processing';
+      }
     }
 
     $files[] = $safe_name;
@@ -133,16 +135,6 @@ function process_req($req) {
   foreach (array(0) as $idx) {
     if (!isset($_FILES['documents']['name'][$idx])) {
       continue;
-    }
-    if ($_FILES['documents']['size'][$idx] < 1) {
-      // empty file or no file
-      continue;
-    }
-
-    if ($_FILES['documents']['size'][$idx] > $kMaxSz) {
-      // too big, or not uploaded
-      $ret_msg = 'File too large';
-      break;
     }
 
     $file_name = $_FILES['documents']['name'][$idx];
