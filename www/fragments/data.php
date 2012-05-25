@@ -15,7 +15,7 @@ if (isset($error_msg)) {
 </p></div>
 
 <form action="<?php echo $site_prefix; ?>/data/index.php" enctype="multipart/form-data" method="post">
-<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
+<input type="hidden" name="MAX_FILE_SIZE" value="10000000" />
 <div style="margin-bottom:1em;">
 Email: <input type="text" name="documents[email]" />
 </div>
