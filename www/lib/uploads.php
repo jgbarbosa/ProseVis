@@ -4,7 +4,7 @@ require_once($site_root . '/settings.php');
 require_once($site_root . '/lib/recaptchalib.php');
 require_once($site_root . '/lib/JSON.php');
 
-$kMaxSz = 2 * 1000 * 1000; // less than 2MB
+$kMaxSz = 5 * 1000 * 1000; // less than 2MB
 $privatekey = "6LdqrtESAAAAAJd9UDNw9fU-48jojyoIaxp2XUbu";
 $enableCaptcha = true;
 $doc_root = $_SERVER['DOCUMENT_ROOT'];
