@@ -77,8 +77,14 @@ function process_workspace($workspace, $use_comp, $email, $request_id) {
         'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $workspace . $file
       );
       $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/submitDocument', $params);
+      if (strlen($json_str) < 1) {
+        return 'Didn\'t get a response from the remote servers.';
+
+      }
+      print_r($params);
       $resp = json_decode($json_str);
-      if ($resp->status->code != 0) {
+      if (!isset($resp->status->code) || $resp->status->code != 0) {
+        echo $json_str;
         return 'Remote request failed: ' . $resp->status->message;
       }
     }
@@ -92,6 +98,10 @@ function process_workspace($workspace, $use_comp, $email, $request_id) {
     );
 
     $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/computeSimilarities', $params);
+    if (strlen($json_str) < 1) {
+      return 'Didn\'t get a response from the remote servers.';
+
+    }
     $resp = json_decode($json_str);
     if (!isset($resp->status->code) || $resp->status->code !== 0) {
       return 'Remote request failed: ' . $resp->status->message;
