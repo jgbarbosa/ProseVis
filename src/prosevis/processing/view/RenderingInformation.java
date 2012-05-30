@@ -12,13 +12,15 @@ public class RenderingInformation {
   public final int viewHeight;
   public final boolean[] enabled;
   public final TypeMap typeMap;
-
-  public RenderingInformation(DataTreeView[] views, TypeMap typeMap, int sliderSize, int viewWidth, int viewHeight, boolean[] enabled) {
+  public final boolean enableSelfSimilarity;
+  
+  public RenderingInformation(DataTreeView[] views, TypeMap typeMap, int sliderSize, int viewWidth, int viewHeight, boolean[] enabled, boolean allowSelfSimilarity) {
     this.views = views;
     this.typeMap = typeMap;
     this.sliderWidth = sliderSize;
     this.viewWidth = viewWidth;
     this.viewHeight = viewHeight;
     this.enabled = enabled;
+    this.enableSelfSimilarity = allowSelfSimilarity;
   }
 }

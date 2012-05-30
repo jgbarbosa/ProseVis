@@ -94,13 +94,16 @@ public class LineWrapper {
 
       final int tokenWidth = wc.width(token, lastFontSz);
 
+      
       for (int i = 0; i < BreakLinesBy.kNumIndices; i++) {
-        if (curIds[i] != lastWord.getId(i) ||
+        boolean idsMatch = curIds[i] == lastWord.getId(i);
+        
+        if (!idsMatch ||
             (1 + tokenWidth + widths[i] >= maxWidth - spaceWidth &&
             BreakLinesBy.usesLengthBasedLineBreaks(i))) {
           // previous line has ended, and this token starts a new line
-          if (curIds[i] != lastWord.getId(i) &&
-              BreakLinesBy.usesLengthBasedLineBreaks(i) && lines[i].size() > 0) {
+          if (!idsMatch &&
+              BreakLinesBy.insertWhiteSpace(i) && lines[i].size() > 0) {
             // add a blank line if we're looking at divisions that are widely
             // spaced enough to benefit from the additional whitespace
             lines[i].add(null);
@@ -125,7 +128,6 @@ public class LineWrapper {
               lastSpeaker = lastWord.getShakespeareSpeaker();
             }
           }
-          curIds[i] = wordsInToken.get(0).getId(i);
           widths[i] = tokenWidth;
           lines[i].add(wordsInToken.get(0));
         } else {
@@ -137,6 +139,10 @@ public class LineWrapper {
         }
       }
 
+      
+      for (int i = 0; i < BreakLinesBy.kNumIndices; i++) {
+        curIds[i] = lastWord.getId(i);
+      }
       token.setLength(0);
       wordsInToken.clear();
     }

@@ -14,7 +14,8 @@ public class ColorSchemeDB {
   private static final String kRandomVowelSoundName = "Random Vowel Sound";
   private static final String kRandomFinalSoundName = "Random Final Sound";
   private static final String kRandomSoundexName = "Random Soundex";
-  private static final String kRandomComparision = "Random Comparison";
+  public static final String kRandomComparision = "Random Comparison";
+  
   
   private boolean nameIsValid(String name) {
     if (name == null) {

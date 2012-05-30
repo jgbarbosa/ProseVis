@@ -10,7 +10,7 @@
 
 <body>
 
-<div id="Header"><a href="/" title="ProseVis Home">ProseVis</a></div>
+<div id="Header"><a href="<?php echo $site_prefix ?>" title="ProseVis Home">ProseVis</a></div>
 
 <div id="Content">
 <?php include($content) ?>

@@ -41,6 +41,8 @@ import prosevis.data.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView;
+import prosevis.processing.model.color.ColorScheme;
+import prosevis.processing.model.color.ColorSchemeDB;
 import prosevis.processing.model.color.ColorSchemeUtil;
 import prosevis.processing.model.color.CustomColorScheme;
 
@@ -72,24 +74,6 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
   private JTextField txtCust_6;
   private JTextField txtCust_7;
   private JTextField txtSchemeName;
-
-  /**
-   * Launch the application.
-   */
-  public static void main(String[] args) {
-    EventQueue.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          ControllerGUI window = new ControllerGUI(new ApplicationModel(1440,
-              900));
-          window.frame.setVisible(true);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    });
-  }
 
   /**
    * Create the application.
@@ -520,7 +504,9 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
 
     final JComboBox whichAttrBox = new JComboBox();
     for (String s: TypeMap.kPossibleColorByLabels) {
-      whichAttrBox.addItem(s);
+      if (!TypeMap.kColorByComparison.equals(s)) {
+        whichAttrBox.addItem(s);
+      }
     }
 
     txtCust_0 = new JTextField();
@@ -978,32 +964,53 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
       smoothingWindowCombo.addItem(i * 2 + 1);
     }
     smoothingWindowCombo.setSelectedItem(theModel.getSmoothingWindow());
+    
+    JCheckBox chckbxAllowSelfSimilarity = new JCheckBox("Allow self similarity");
+    chckbxAllowSelfSimilarity.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        JCheckBox src = (JCheckBox)e.getSource();
+        theModel.setAllowSelfSimilarity(src.isSelected());
+      }
+    });
+    chckbxAllowSelfSimilarity.setSelected(theModel.getAllowSelfSimilarity());
+    
+    JButton btnRefresh = new JButton("Refresh");
+    btnRefresh.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent arg0) {
+        theModel.setColorBy(ColorSchemeDB.kRandomComparision);
+        colorByModel.setSelectedItem(TypeMap.kNoLabelLabel);
+      }
+    });
     GroupLayout gl_comparisonPaneLeftPanel = new GroupLayout(
         comparisonPaneLeftPanel);
-    gl_comparisonPaneLeftPanel.setHorizontalGroup(gl_comparisonPaneLeftPanel
-        .createParallelGroup(Alignment.LEADING).addGroup(
-            gl_comparisonPaneLeftPanel
-                .createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblSmoothingWindow)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE,
-                    82, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE)));
-    gl_comparisonPaneLeftPanel.setVerticalGroup(gl_comparisonPaneLeftPanel
-        .createParallelGroup(Alignment.LEADING).addGroup(
-            gl_comparisonPaneLeftPanel
-                .createSequentialGroup()
-                .addContainerGap()
-                .addGroup(
-                    gl_comparisonPaneLeftPanel
-                        .createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblSmoothingWindow)
-                        .addComponent(smoothingWindowCombo,
-                            GroupLayout.PREFERRED_SIZE,
-                            GroupLayout.DEFAULT_SIZE,
-                            GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(439, Short.MAX_VALUE)));
+    gl_comparisonPaneLeftPanel.setHorizontalGroup(
+      gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
+          .addContainerGap()
+          .addGroup(gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
+            .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
+              .addComponent(lblSmoothingWindow)
+              .addPreferredGap(ComponentPlacement.RELATED)
+              .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE))
+            .addComponent(chckbxAllowSelfSimilarity)
+            .addComponent(btnRefresh))
+          .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+    gl_comparisonPaneLeftPanel.setVerticalGroup(
+      gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
+          .addContainerGap()
+          .addGroup(gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.BASELINE)
+            .addComponent(lblSmoothingWindow)
+            .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(chckbxAllowSelfSimilarity)
+          .addPreferredGap(ComponentPlacement.RELATED, 385, Short.MAX_VALUE)
+          .addComponent(btnRefresh)
+          .addContainerGap())
+    );
     comparisonPaneLeftPanel.setLayout(gl_comparisonPaneLeftPanel);
 
     JScrollPane comparisonPaneRightPanel = new JScrollPane();
@@ -1011,7 +1018,7 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
 
     comparisonContent = new JPanel();
     comparisonPaneRightPanel.setViewportView(comparisonContent);
-    comparisonContent.setLayout(new MigLayout("", "[grow]", ""));
+    comparisonContent.setLayout(new MigLayout("", "[left]", "[]"));
 
     lblNoComparisonData = new JLabel("No comparison data loaded.");
     comparisonContent.add(lblNoComparisonData, "cell 0 0");
@@ -1060,6 +1067,10 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
   public void refreshColorSchemeElements() {
     List<String> customColorSchemes = theModel.getCustomColorSchemeList();
     List<String> builtInColorSchemes = theModel.getBuiltInColorSchemeList();
+    
+    // Remove comparison color scheme from builtin color schemes
+    builtInColorSchemes.remove(ColorSchemeDB.kRandomComparision);
+    
     colorTopSchemasListModel.removeAllElements();
     for (String s : customColorSchemes) {
       colorTopSchemasListModel.addElement(s);
@@ -1097,44 +1108,50 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
 
   private void refreshComparisonDataCheckboxes() {
     if (!theModel.hasComparisonData()) {
-      // remove checkboxes from Comparison panel
-      comparisonContent.removeAll();
-      // enable no comparison data label
-      comparisonContent.add(lblNoComparisonData, "cell 0 0");
-      lblNoComparisonData.setVisible(true);
+      if (comparisonsEnabled.size() > 0) {
+        // remove checkboxes from Comparison panel
+        comparisonContent.removeAll();
+        // remove our references
+        comparisonsEnabled.clear();
+        // enable no comparison data label
+        comparisonContent.add(lblNoComparisonData, "cell 0 0");
+        lblNoComparisonData.setVisible(true);
+      }
       return;
     }
     ComparisonState[] state = theModel.getComparisonState();
-    boolean haveChanged = state.length != this.comparisonsEnabled.size();
-    for (int i = 0; !haveChanged && i < state.length; i++) {
-      if (!state[i].getName().equals(comparisonsEnabled.get(i).getText())) {
-        haveChanged = true;
-        break;
+    boolean isSame = state.length == comparisonsEnabled.size();
+    for (int i = 0; i < state.length && isSame; i++) {
+      isSame = state[i].getName().equals(comparisonsEnabled.get(i).getText());
+    }
+ 
+    if (!isSame) {
+      // on change, remove all the buttons, add them all again, refresh the values
+      lblNoComparisonData.setVisible(false);
+      comparisonContent.removeAll();
+      comparisonsEnabled.clear();
+      for (int i = 0; i < state.length; i++) {
+        JCheckBox box = new JCheckBox(state[i].getName());
+        box.setSelected(state[i].getEnabled());
+        box.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent arg0) {
+            JCheckBox box = (JCheckBox) arg0.getSource();
+            theModel.setComparisonEnabled(box.isSelected(), box.getText());
+          }
+        });
+        JTextField textField = new JTextField();
+        textField.setEditable(false);
+        textField.setBackground(state[i].getColor());
+        textField.setOpaque(true);
+        textField.setColumns(10);
+        comparisonContent.add(textField, "cell 0 " + i);
+        comparisonContent.add(box, "cell 1 " + i);
       }
-      comparisonsEnabled.get(i).setBackground(state[i].getColor());
-      // this opaque call is needed to get background colors showing up on mac
-      comparisonsEnabled.get(i).setOpaque(true);
-      comparisonsEnabled.get(i).setSelected(state[i].getEnabled());
-    }
-    if (!haveChanged) {
-      return;
-    }
-    // on change, remove all the buttons, add them all again, refresh the values
-    lblNoComparisonData.setVisible(false);
-    comparisonContent.removeAll();
-    comparisonsEnabled.clear();
-    for (int i = 0; i < state.length; i++) {
-      JCheckBox box = new JCheckBox(state[i].getName());
-      box.setBackground(state[i].getColor());
-      box.setSelected(state[i].getEnabled());
-      box.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent arg0) {
-          JCheckBox box = (JCheckBox) arg0.getSource();
-          theModel.setComparisonEnabled(box.isSelected(), box.getText());
-        }
-      });
-      comparisonContent.add(box, "cell 0 " + i);
+    } else {
+      for (int i = 0; i < state.length; i++) {
+        comparisonsEnabled.get(i).setSelected(state[i].getEnabled());
+      }
     }
   }
 }

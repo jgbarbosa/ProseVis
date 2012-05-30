@@ -7,6 +7,7 @@ import java.awt.Toolkit;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -176,13 +177,27 @@ public class ProseVisSketch extends PApplet {
       lastViewScrollIdx = -1;
       lastViews = views;
       
+      
       while (wordMaps.size() < lastViews.length) {
         wordMaps.add(new CoordinateWordMap());
       }
       
       refreshSliders(viewHeight);
+
+      if (lastViews.length < 1) {
+        fill(255);
+        rect(0,0, renderInfo.viewWidth, viewHeight);
+      }
       
       for (int i = 0; i < lastViews.length; i++) {
+        enabledComparisons = renderInfo.enabled;
+        if (!renderInfo.enableSelfSimilarity) {
+          enabledComparisons = Arrays.copyOf(renderInfo.enabled, renderInfo.enabled.length);
+          int selfIdx = lastViews[i].getSelfIdx();
+          if (selfIdx >= 0) {
+            enabledComparisons[selfIdx] = false;
+          }
+        }
         renderView(lastViews[i],
             typeMap, 
             wordMaps.get(i),
@@ -198,6 +213,11 @@ public class ProseVisSketch extends PApplet {
       for (int i = 0; i < views.length; i++) {
         if (views[i].getAndClearNeedsRender()) {
           sliders.get(i).setValue((float) views[i].getScroll());
+          enabledComparisons = renderInfo.enabled;
+          if (!renderInfo.enableSelfSimilarity) {
+            enabledComparisons = Arrays.copyOf(renderInfo.enabled, renderInfo.enabled.length);
+            enabledComparisons[i] = false;
+          }
           renderView(
               views[i], 
               typeMap, 
@@ -206,14 +226,15 @@ public class ProseVisSketch extends PApplet {
               0, 
               viewWidth - sliderWidth, 
               viewHeight, 
-              enabledComparisons);
+              enabledComparisons
+              );
         }
       }
     }
     
     // now that we think all the documents are drawn, add in the tooltip
     if (lastViews.length > 0) {      
-      addTooltip(typeMap);
+      addTooltip(typeMap, enabledComparisons);
     }
   }
 
@@ -258,7 +279,7 @@ public class ProseVisSketch extends PApplet {
     }
   }
   
-  private void addTooltip(TypeMap typeMap) {
+  private void addTooltip(TypeMap typeMap, boolean[] enabledComparisons) {
     toolTipContext.recordPosition(mouseX, mouseY);
     if (!toolTipContext.shouldShow()) {
       return;
@@ -285,6 +306,10 @@ public class ProseVisSketch extends PApplet {
     StringBuilder sound = new StringBuilder(typeMap.getTypeForIdx(
         TypeMap.kPhonemeIdx,
         w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx)));
+    // only look at the first syllable, which gets 90% of the use cases
+    final int maxSimIdx = w.getTypeIdxForLabelIdx(
+        TypeMap.kColorByComparisonIdx, 0, enabledComparisons);
+    final String maxSim = typeMap.getTypeForIdx(TypeMap.kColorByComparisonIdx, maxSimIdx);
     for (int i = 1; i < w.getSyllableCount(); i++) {
       sound.append("|");
       sound.append(typeMap.getTypeForIdx(TypeMap.kPhonemeIdx, 
@@ -295,6 +320,7 @@ public class ProseVisSketch extends PApplet {
         "Word: " + w.getWord(),
         "POS: " + pos,
         "Sound: " + sound,
+        "Most similar to: " + maxSim,
     };
     int boxDx = 0;
     for (int i = 0; i < lines.length; i++) {
@@ -388,6 +414,7 @@ public class ProseVisSketch extends PApplet {
       CoordinateWordMap wordMap,
       int minX, int minY, int viewWidth, int viewHeight,
       boolean[] enabledComparisons) {
+    
     final int yOrigin = minY;
     final int xOrigin = minX;
     final int maxViewWidth = viewWidth;

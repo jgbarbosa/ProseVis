@@ -199,4 +199,9 @@ public class DataTreeView {
       this.needsRender = true;
     }
   }
+
+
+  public synchronized int getSelfIdx() {
+    return data.getSelfIdx();
+  }
 }

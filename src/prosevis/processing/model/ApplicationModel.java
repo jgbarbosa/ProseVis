@@ -36,6 +36,7 @@ public class ApplicationModel {
   private final GeometryModel geoModel;
   private ComparisonState[] comparisonState = null;
   private int smoothingWindow = 1;
+  private boolean allowSelfSimilarity = true;
 
   public ApplicationModel(int xres, int yres) {
     xResolution = xres;
@@ -89,6 +90,7 @@ public class ApplicationModel {
     this.data.clear();
     this.colorDB.clearComparisonData();
     this.comparisonState = null;
+    this.geoModel.setX(xResolution);
   }
 
   public synchronized void removeData(List<String> selectedFiles) {
@@ -105,6 +107,7 @@ public class ApplicationModel {
     if (data.isEmpty()) {
       this.colorDB.clearComparisonData();
       this.comparisonState = null;
+      geoModel.setX(xResolution);
     } else {
       geoModel.setX(xResolution / data.size());
     }
@@ -125,7 +128,8 @@ public class ApplicationModel {
         geoModel.getSliderSize(),
         geoModel.getViewX(),
         geoModel.getViewY(),
-        enabled);
+        enabled,
+        allowSelfSimilarity);
   }
 
   public synchronized void updateZoom(int lastDy) {
@@ -299,5 +303,13 @@ public class ApplicationModel {
 
   public synchronized void registerWorkingColorScheme(WorkingColorScheme colorScheme) {
     colorDB.registerWorkingColorScheme(colorScheme);
+  }
+
+  public synchronized void setAllowSelfSimilarity(boolean enabled) {
+    allowSelfSimilarity = enabled;
+  }
+  
+  public synchronized boolean getAllowSelfSimilarity() {
+    return allowSelfSimilarity;
   }
 }

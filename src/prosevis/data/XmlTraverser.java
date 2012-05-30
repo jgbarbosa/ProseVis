@@ -7,13 +7,12 @@ import nu.xom.Node;
 import nu.xom.Text;
 
 public class XmlTraverser {
-  private final LinkedList<Element> remaining;
-  // some elements have text before and after intermediate nodes
-  private Element current = null;
-  private int nextChildIdx = -1;
+  // Queue of all nodes in document, which we're searching for text in
+  private final LinkedList<Element> remaining = new LinkedList<Element>();
+  // Queue of all nodes remaining in our current node
+  private final LinkedList<Node> possiblyHaveText = new LinkedList<Node>();
 
   public XmlTraverser(Element root) {
-    this.remaining = new LinkedList<Element>();
     this.remaining.add(root);
   }
 
@@ -26,7 +25,7 @@ public class XmlTraverser {
       for (int i = 0; i < childrenCount; i++) {
         remaining.add(e.getChildElements().get(i));
       }
-      if ("ab".equals(e.getQualifiedName()) || "l".equals(e.getQualifiedName())) {
+      if ("ab".equals(e.getQualifiedName()) || "l".equals(e.getQualifiedName()) || "p".equals(e.getQualifiedName())) {
         return e;
       }
     }
@@ -35,21 +34,26 @@ public class XmlTraverser {
 
   public String getNextLineOfText() {
     while (true) {
-      if (current == null || nextChildIdx < 0) {
-        current = getNextTextNode();
-        nextChildIdx = 0;
-      }
-      if (current == null) {
-        return null;
-      }
-      for ( ; nextChildIdx < current.getChildCount(); nextChildIdx++) {
-        Node n = current.getChild(nextChildIdx);
-        if (n instanceof Text) {
-          nextChildIdx++;
-          return n.getValue();
+      while (possiblyHaveText.isEmpty()) {
+        Element next = getNextTextNode();
+        if (next == null) {
+          return null;
+        }
+        for (int i = next.getChildCount() - 1; i >= 0; i--) {
+          possiblyHaveText.push(next.getChild(i));
         }
       }
-      current = null;
+      Node curr = possiblyHaveText.pop();
+      if (curr == null) {
+        continue;
+      }
+      if (curr instanceof Text) {
+        return curr.getValue();
+      } else {
+        for (int i = curr.getChildCount() - 1; i >= 0; i--) {
+          possiblyHaveText.push(curr.getChild(i));
+        }
+      }
     }
   }
 
