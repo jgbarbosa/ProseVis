@@ -51,7 +51,7 @@ mac_package: $(OUTPUT_DIR)/prosevis.jar
 	cp resources/PkgInfo $(BUNDLE_PATH)/Contents/
 	cp resources/Info.plist $(BUNDLE_PATH)/Contents/
 	./scripts/update_info_plist.sh $(BUNDLE_PATH)/Contents/Info.plist
-	pushd $(OUTPUT_DIR) && zip prosevis.mac.zip ProseVis.app
+	pushd $(OUTPUT_DIR) && tar czvf prosevis.mac.tar.gz ProseVis.app
 
 win32_package: $(OUTPUT_DIR)/prosevis.jar
 	rm -rf $(WIN32_PATH)
@@ -61,7 +61,6 @@ win32_package: $(OUTPUT_DIR)/prosevis.jar
 	cp lib/*.jar $(WIN32_PATH)
 	cp lib/processingopengl/windows32/*.dll $(WIN32_PATH)
 	cp resources/run32.bat $(WIN32_PATH)/run.bat
-	cp -R colorschemes $(WIN32_PATH)/
 	pushd $(WIN32_PATH) && find . | xargs zip prosevis.win32.zip && popd
 	mv $(WIN32_PATH)/prosevis.win32.zip $(OUTPUT_DIR)
 
@@ -73,7 +72,6 @@ win64_package: $(OUTPUT_DIR)/prosevis.jar
 	cp lib/*.jar $(WIN64_PATH)
 	cp lib/processingopengl/windows64/*.dll $(WIN64_PATH)
 	cp resources/run64.bat $(WIN64_PATH)/run.bat
-	cp -R colorschemes $(WIN64_PATH)/
 	pushd $(WIN64_PATH) && find . | xargs zip prosevis.win64.zip && popd
 	mv $(WIN64_PATH)/prosevis.win64.zip $(OUTPUT_DIR)
 
