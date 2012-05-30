@@ -24,6 +24,10 @@ public enum BreakLinesBy {
   }
 
   public static boolean usesLengthBasedLineBreaks(int i) {
+    return i != Phrase.idx;
+//    return i == Section.idx || i == Paragraph.idx;
+  }
+  public static boolean insertWhiteSpace(int i) {
     return i == Section.idx || i == Paragraph.idx;
   }
 }

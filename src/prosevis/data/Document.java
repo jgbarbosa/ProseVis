@@ -23,6 +23,9 @@ public class Document {
   private String shortName;
 
   private boolean xmlLoaded;
+
+  private int selfIdx = -1;
+  
   public boolean load(File file, IProgressNotifiable prog, TypeMap typeMap) {
     if (loaded) {
       throw new RuntimeException("You can't load this tree twice");
@@ -110,10 +113,14 @@ public class Document {
           }
         }
       }
+      String nameWithoutSuffix = shortName.substring(0, shortName.lastIndexOf('.'));
       if (loadComparisonData > 0 && !typeMap.hasComparisonDataHeaders()) {
         String[] newHeaders = new String[loadComparisonData];
         for (int i = 0; i < loadComparisonData; i++) {
           newHeaders[i] = columns[i + TypeMap.kMaxFields];
+          if (newHeaders[i].equals(nameWithoutSuffix)) {
+            selfIdx = i;
+          }
         }
         typeMap.addComparisonDataHeaders(newHeaders);
       }
@@ -126,7 +133,12 @@ public class Document {
           prog.notifyProgess(bytesProcessed / (double) totalBytes);
         }
         columns = rp.getColumns(line);
-        lastWord = processInputLine(columns, typeMap, lastWord, loadComparisonData);
+        Word tmp = processInputLine(columns, typeMap, lastWord, loadComparisonData);
+        if (tmp != null) {
+          lastWord = tmp;
+        } else {
+          continue;
+        }
         if (head == null) {
           head = lastWord;
         }
@@ -229,10 +241,13 @@ public class Document {
 
         }
       }
-
+//    } catch (NullPointerException ex) {
+//      return false;
     } catch (ParsingException ex) {
+      System.err.println("Aborting XML parser because of parsing exception.");
       return false;
     } catch (IOException e) {
+      System.err.println("Aborting XML parser because of IO exception.");
       return false;
     }
     return true;
@@ -250,7 +265,8 @@ public class Document {
       idTuple[BreakLinesBy.Phrase.getIdx()] = Long.parseLong(line[4]);
     } catch (NumberFormatException e) {
       System.err
-          .println("Found badly formatted section number, but recovering.");
+          .println("Found badly formatted tree ids" +  ", but recovering.");
+      return null;
     }
     return idTuple;
   }
@@ -281,7 +297,9 @@ public class Document {
     if (lastWord == null || !lastWord.word().equals(line[TypeMap.kWordIdx])) {
       // Create new word
       Word newWord = buildWordNode(line, s, typeMap);
-
+      if (newWord == null) {
+        return null;
+      }
       if (lastWord != null) {
         lastWord.setNext(newWord);
       }
@@ -296,6 +314,9 @@ public class Document {
 
   private Word buildWordNode(String[] line, Syllable s, TypeMap typeMap) {
     long[] idTuple = parseIdTuple(line);
+    if (idTuple == null) {
+      return null;
+    }
     boolean isOpeningQuote = line[TypeMap.kWordIdx].equals("\"") &&
         line[TypeMap.kPOSLabelIdx].equals("``");
 
@@ -374,5 +395,9 @@ public class Document {
 
   public boolean hasXml() {
     return xmlLoaded;
+  }
+
+  public int getSelfIdx() {
+    return selfIdx;
   }
 }
