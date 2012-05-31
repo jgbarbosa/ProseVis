@@ -1,32 +1,22 @@
 
-
-TakeColsAfterInc = 11
-StdWIdx = 5
-AddWIdx = 4
-
-def drop_col(src_path, dst_path, cols_to_drop):
-    inf = open(src_path, 'r')
-    outf = open(dst_path, 'w')
-    for line in inf:
-        fields = line.strip().split('\t')
-        fixed = list()
-        for idx, token in enumerate(fields):
-            if (not idx in cols_to_drop):
-                fixed.append(token)
-        outf.write('\t'.join(fixed) + '\n')
-    inf.close()
-    outf.close()
-
+import os
 
 def hack():
-    cols = list()
-    cols.append(12)
-    import os
-    for f in ['1h4.tsv', '1h6.tsv', '2h6.tsv', '3h6.tsv', 'he8.tsv', 'bonduca.tsv']:
-        src_f = 'data/shakes/' + f
-        dst_f = 'data/tmp/' + f
-        drop_col(src_f, dst_f, cols)
-#        os.system('mv ' + dst_f + ' ' + src_f)
+    src1 = open('threelives.tsv', 'r')
+    src2 = open('comp_threelives.tsv', 'r')
+    line1 = src1.readline()
+    line2 = src2.readline()
+    while line1 and line2:
+        line1 = line1.strip()
+        line2 = line2.strip()
+        part1 = line1.split('\t')[0:13]
+        part2 = line2.split('\t')[10:]
+        joined = part1 + part2
+        print('\t'.join(joined))
+        line1 = src1.readline()
+        line2 = src2.readline()
+
+
 
 
 if __name__ == '__main__':
