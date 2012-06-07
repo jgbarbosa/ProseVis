@@ -6,7 +6,7 @@ public class ArgumentHack {
   private static Dimension ViewAreaDim;
 
   public static void pickSizeForDimension(Dimension screenDim) {
-    ViewAreaDim = new Dimension(screenDim.width - 200, screenDim.height - 200);
+    ViewAreaDim = new Dimension(screenDim.width - 100, screenDim.height - 100);
   }
 
   public static Dimension getViewArea() {

@@ -307,21 +307,30 @@ public class ProseVisSketch extends PApplet {
         TypeMap.kPhonemeIdx,
         w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx)));
     // only look at the first syllable, which gets 90% of the use cases
-    final int maxSimIdx = w.getTypeIdxForLabelIdx(
-        TypeMap.kColorByComparisonIdx, 0, enabledComparisons);
-    final String maxSim = typeMap.getTypeForIdx(TypeMap.kColorByComparisonIdx, maxSimIdx);
     for (int i = 1; i < w.getSyllableCount(); i++) {
       sound.append("|");
       sound.append(typeMap.getTypeForIdx(TypeMap.kPhonemeIdx, 
           w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx, i)));
     }
+    final int maxSimIdx = w.getTypeIdxForLabelIdx(
+        TypeMap.kColorByComparisonIdx, 0, enabledComparisons);
+    String [] lines = null;
+    if (maxSimIdx >= 0) {
+      final String maxSim = typeMap.getTypeForIdx(TypeMap.kColorByComparisonIdx, maxSimIdx);
+      lines = new String [] {
+          "Word: " + w.getWord(),
+          "POS: " + pos,
+          "Sound: " + sound,
+          "Most similar to: " + maxSim,
+      };
+    } else {
+      lines = new String [] {
+          "Word: " + w.getWord(),
+          "POS: " + pos,
+          "Sound: " + sound,
+      };
+    }
     
-    String [] lines = {
-        "Word: " + w.getWord(),
-        "POS: " + pos,
-        "Sound: " + sound,
-        "Most similar to: " + maxSim,
-    };
     int boxDx = 0;
     for (int i = 0; i < lines.length; i++) {
       boxDx = Math.max(boxDx, 3 + (int)textWidth(lines[i]));
