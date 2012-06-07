@@ -27,6 +27,16 @@ function post_data($url, $params) {
 }
 
 function rrmdir($dir) {
+  foreach(glob($dir . '/.*') as $file) {
+    if (substr($file, -2) === '..' || substr($file, -1) === '.') {
+      continue;
+    }
+    if(is_dir($file)) {
+      rrmdir($file);
+    } else {
+      unlink($file);
+    }
+  }
   foreach(glob($dir . '/*') as $file) {
     if(is_dir($file)) {
       rrmdir($file);
@@ -43,7 +53,8 @@ function process_workspace($workspace, $use_comp, $email, $request_id) {
   foreach (glob($doc_root . $workspace . '*') as $file) {
     $suff = substr($file, -4);
     if ($suff != '.xml') {
-      return 'Please submit only .xml files';
+      rrmdir($file);
+      continue;
     }
 
     if (filesize($file) > $kMaxSz) {
@@ -76,15 +87,13 @@ function process_workspace($workspace, $use_comp, $email, $request_id) {
         'token' => $request_id,
         'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $workspace . $file
       );
-      $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/submitDocument', $params);
+      $json_str = post_data('http://leovip023.ncsa.uiuc.edu:8888/submitDocument', $params);
       if (strlen($json_str) < 1) {
         return 'Didn\'t get a response from the remote servers.';
 
       }
-      print_r($params);
       $resp = json_decode($json_str);
       if (!isset($resp->status->code) || $resp->status->code != 0) {
-        echo $json_str;
         return 'Remote request failed: ' . $resp->status->message;
       }
     }
@@ -97,7 +106,7 @@ function process_workspace($workspace, $use_comp, $email, $request_id) {
       'url' => 'http://' . $_SERVER['SERVER_ADDR'] . $workspace . $zip_file
     );
 
-    $json_str = post_data('http://leovip032.ncsa.uiuc.edu:8888/computeSimilarities', $params);
+    $json_str = post_data('http://leovip023.ncsa.uiuc.edu:8888/computeSimilarities', $params);
     if (strlen($json_str) < 1) {
       return 'Didn\'t get a response from the remote servers.';
 
@@ -169,7 +178,9 @@ function process_req($req) {
     $ret_msg = process_workspace($workspace, $use_comp, $email_str, uniqid());
   }
 
-  rrmdir($doc_root . $workspace);
+  foreach(glob($doc_root . $site_prefix . '/uploads/*') as $file) {
+    rrmdir($file);
+  }
 
   return $ret_msg;
 }
