@@ -37,6 +37,7 @@ public class ApplicationModel {
   private ComparisonState[] comparisonState = null;
   private int smoothingWindow = 1;
   private boolean allowSelfSimilarity = true;
+  private final ToolTipFields tooltipFields = new ToolTipFields();
 
   public ApplicationModel(int xres, int yres) {
     xResolution = xres;
@@ -129,7 +130,8 @@ public class ApplicationModel {
         geoModel.getViewX(),
         geoModel.getViewY(),
         enabled,
-        allowSelfSimilarity);
+        allowSelfSimilarity,
+        tooltipFields);
   }
 
   public synchronized void updateZoom(int lastDy) {
@@ -311,5 +313,10 @@ public class ApplicationModel {
   
   public synchronized boolean getAllowSelfSimilarity() {
     return allowSelfSimilarity;
+  }
+
+  public synchronized void setTooltipFieldsEnabled(boolean wordEnabled, boolean posEnabled,
+      boolean soundEnabled, boolean simiEnabled) {
+    this.tooltipFields.setTooltipFieldsEnabled(wordEnabled, posEnabled, soundEnabled, simiEnabled);
   }
 }

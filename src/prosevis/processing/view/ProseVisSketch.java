@@ -20,6 +20,7 @@ import prosevis.processing.controller.ControllerGUI;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView;
 import prosevis.processing.model.ScrollInfo;
+import prosevis.processing.model.ToolTipFields;
 import prosevis.processing.model.color.ColorSchemeUtil;
 import controlP5.ControlEvent;
 import controlP5.ControlListener;
@@ -235,7 +236,7 @@ public class ProseVisSketch extends PApplet {
     
     // now that we think all the documents are drawn, add in the tooltip
     if (lastViews.length > 0) {      
-      addTooltip(typeMap, enabledComparisons);
+      addTooltip(typeMap, enabledComparisons, renderInfo.toolTipFields);
     }
   }
 
@@ -280,7 +281,7 @@ public class ProseVisSketch extends PApplet {
     }
   }
   
-  private void addTooltip(TypeMap typeMap, boolean[] enabledComparisons) {
+  private void addTooltip(TypeMap typeMap, boolean[] enabledComparisons, ToolTipFields toolTipFields) {
     toolTipContext.recordPosition(mouseX, mouseY);
     if (!toolTipContext.shouldShow()) {
       return;
@@ -301,37 +302,36 @@ public class ProseVisSketch extends PApplet {
       // very possibly we're not even hovering over a word
       return;
     }
-    final String pos = typeMap.getTypeForIdx(
-        TypeMap.kPOSLabelIdx, 
-        w.getTypeIdxForLabelIdx(TypeMap.kPOSLabelIdx));
-    StringBuilder sound = new StringBuilder(typeMap.getTypeForIdx(
-        TypeMap.kPhonemeIdx,
-        w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx)));
-    // only look at the first syllable, which gets 90% of the use cases
-    for (int i = 1; i < w.getSyllableCount(); i++) {
-      sound.append("|");
-      sound.append(typeMap.getTypeForIdx(TypeMap.kPhonemeIdx, 
-          w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx, i)));
+    ArrayList<String> linesList = new ArrayList<String>(4);
+    if (toolTipFields.isWordEnabled()) {
+      linesList.add("Word: " + w.getWord());
+    }
+    if (toolTipFields.isPOSEnabled()) {
+      final String pos = "POS: " + typeMap.getTypeForIdx(
+          TypeMap.kPOSLabelIdx, 
+          w.getTypeIdxForLabelIdx(TypeMap.kPOSLabelIdx));
+      linesList.add(pos);
+    }
+    if (toolTipFields.isSoundEnabled()) {
+      StringBuilder sound = new StringBuilder("Sound: ");
+      sound.append(typeMap.getTypeForIdx(
+          TypeMap.kPhonemeIdx,
+          w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx)));
+      // only look at the first syllable, which gets 90% of the use cases
+      for (int i = 1; i < w.getSyllableCount(); i++) {
+        sound.append("|");
+        sound.append(typeMap.getTypeForIdx(TypeMap.kPhonemeIdx, 
+            w.getTypeIdxForLabelIdx(TypeMap.kPhonemeIdx, i)));
+      }
+      linesList.add(sound.toString());
     }
     final int maxSimIdx = w.getTypeIdxForLabelIdx(
         TypeMap.kColorByComparisonIdx, 0, enabledComparisons);
-    String [] lines = null;
-    if (maxSimIdx >= 0) {
+    if (maxSimIdx >= 0 && toolTipFields.isSimilarityEnabled()) {
       final String maxSim = typeMap.getTypeForIdx(TypeMap.kColorByComparisonIdx, maxSimIdx);
-      lines = new String [] {
-          "Word: " + w.getWord(),
-          "POS: " + pos,
-          "Sound: " + sound,
-          "Most similar to: " + maxSim,
-      };
-    } else {
-      lines = new String [] {
-          "Word: " + w.getWord(),
-          "POS: " + pos,
-          "Sound: " + sound,
-      };
+      linesList.add("Most similar to: " + maxSim);
     }
-    
+    String [] lines = linesList.toArray(new String[0]);
     int boxDx = 0;
     for (int i = 0; i < lines.length; i++) {
       boxDx = Math.max(boxDx, 3 + (int)textWidth(lines[i]));

@@ -15,6 +15,7 @@ public abstract class ColorSchemeUtil {
   public static final String kWorkingLabel = "Working color scheme";
   public static String kDefaultLabel = "~other";
   // colors from colorbrewer2.org
+  /*
   public final static Color[] goodColors = new Color[] {
         new Color(228, 26, 28),
         new Color(55, 126, 184),
@@ -25,6 +26,21 @@ public abstract class ColorSchemeUtil {
         new Color(166, 86, 40),
         new Color(247, 129, 191),
     };
+    */
+  public final static Color[] goodColors = new Color[] {
+    new Color(141, 211, 199),
+    new Color(255, 255, 179),
+    new Color(190, 186, 218),
+    new Color(251, 128, 114),
+    new Color(128, 177, 211),
+    new Color(253, 180, 98),
+    new Color(179, 222, 105),
+    new Color(252, 205, 229),
+    new Color(217, 217, 217),
+    new Color(188, 128, 189),
+    new Color(204, 235, 197),
+    new Color(255, 237, 111),
+  };
 
   public static CustomColorScheme loadFromFile(File file) throws InstantiationException {
     try {

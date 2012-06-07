@@ -393,93 +393,103 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
         theModel.setTextBy(labelStr);
       }
     });
+    
+    JLabel lblTooltipFields = new JLabel("Tooltip fields:");
+    
+    final JCheckBox chckbxWord = new JCheckBox("Word");
+    chckbxWord.setSelected(true);
+    
+    final JCheckBox chckbxPartOfSpeech = new JCheckBox("Part of Speech");
+    chckbxPartOfSpeech.setSelected(true);
+    
+    final JCheckBox chckbxSounds = new JCheckBox("Sound");
+    chckbxSounds.setSelected(true);
+    
+    final JCheckBox chckbxSimilarity = new JCheckBox("Similarity");
+    chckbxSimilarity.setSelected(true);
+
+    ActionListener tooltipFieldListener = new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        theModel.setTooltipFieldsEnabled(
+            chckbxWord.isSelected(), 
+            chckbxPartOfSpeech.isSelected(), 
+            chckbxSounds.isSelected(), 
+            chckbxSimilarity.isSelected());
+      }
+    };
+    chckbxWord.addActionListener(tooltipFieldListener);
+    chckbxPartOfSpeech.addActionListener(tooltipFieldListener);
+    chckbxSounds.addActionListener(tooltipFieldListener);
+    chckbxSimilarity.addActionListener(tooltipFieldListener);
+
     GroupLayout gl_panel = new GroupLayout(panel);
-    gl_panel
-        .setHorizontalGroup(gl_panel
-            .createParallelGroup(Alignment.LEADING)
-            .addGroup(
-                gl_panel
-                    .createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(
-                        gl_panel
-                            .createParallelGroup(Alignment.LEADING)
-                            .addGroup(
-                                gl_panel
-                                    .createSequentialGroup()
-                                    .addGroup(
-                                        gl_panel
-                                            .createParallelGroup(
-                                                Alignment.LEADING)
-                                            .addGroup(
-                                                gl_panel
-                                                    .createSequentialGroup()
-                                                    .addComponent(
-                                                        lblLineBreaksBy)
-                                                    .addPreferredGap(
-                                                        ComponentPlacement.RELATED)
-                                                    .addComponent(
-                                                        breakLineByDropdown,
-                                                        GroupLayout.PREFERRED_SIZE,
-                                                        GroupLayout.DEFAULT_SIZE,
-                                                        GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(
-                                                gl_panel
-                                                    .createSequentialGroup()
-                                                    .addComponent(lblColorBy)
-                                                    .addPreferredGap(
-                                                        ComponentPlacement.RELATED,
-                                                        33, Short.MAX_VALUE)
-                                                    .addComponent(
-                                                        colorByDropdown,
-                                                        GroupLayout.PREFERRED_SIZE,
-                                                        GroupLayout.DEFAULT_SIZE,
-                                                        GroupLayout.PREFERRED_SIZE)))
-                                    .addContainerGap(10, Short.MAX_VALUE))
-                            .addGroup(
-                                gl_panel
-                                    .createSequentialGroup()
-                                    .addComponent(lblText)
-                                    .addPreferredGap(
-                                        ComponentPlacement.RELATED, 51,
-                                        Short.MAX_VALUE)
-                                    .addComponent(textByDropdown,
-                                        GroupLayout.PREFERRED_SIZE,
-                                        GroupLayout.DEFAULT_SIZE,
-                                        GroupLayout.PREFERRED_SIZE)
-                                    .addContainerGap()))));
-    gl_panel.setVerticalGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-        .addGroup(
-            gl_panel
-                .createSequentialGroup()
-                .addContainerGap()
-                .addGroup(
-                    gl_panel
-                        .createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblLineBreaksBy)
-                        .addComponent(breakLineByDropdown,
-                            GroupLayout.PREFERRED_SIZE,
-                            GroupLayout.DEFAULT_SIZE,
-                            GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(
-                    gl_panel
-                        .createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblColorBy)
-                        .addComponent(colorByDropdown,
-                            GroupLayout.PREFERRED_SIZE,
-                            GroupLayout.DEFAULT_SIZE,
-                            GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(
-                    gl_panel
-                        .createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblText)
-                        .addComponent(textByDropdown,
-                            GroupLayout.PREFERRED_SIZE,
-                            GroupLayout.DEFAULT_SIZE,
-                            GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(254, Short.MAX_VALUE)));
+    gl_panel.setHorizontalGroup(
+      gl_panel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_panel.createSequentialGroup()
+          .addContainerGap()
+          .addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+            .addGroup(gl_panel.createSequentialGroup()
+              .addComponent(chckbxSimilarity)
+              .addContainerGap())
+            .addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+              .addGroup(gl_panel.createSequentialGroup()
+                .addComponent(chckbxSounds)
+                .addContainerGap())
+              .addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+                .addGroup(gl_panel.createSequentialGroup()
+                  .addComponent(chckbxWord)
+                  .addContainerGap())
+                .addGroup(gl_panel.createSequentialGroup()
+                  .addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+                    .addGroup(gl_panel.createSequentialGroup()
+                      .addComponent(lblLineBreaksBy)
+                      .addPreferredGap(ComponentPlacement.RELATED)
+                      .addComponent(breakLineByDropdown, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addGroup(gl_panel.createSequentialGroup()
+                      .addComponent(lblColorBy)
+                      .addPreferredGap(ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                      .addComponent(colorByDropdown, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                  .addContainerGap(10, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                  .addComponent(lblText)
+                  .addPreferredGap(ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
+                  .addComponent(textByDropdown, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                  .addContainerGap())
+                .addGroup(gl_panel.createSequentialGroup()
+                  .addComponent(lblTooltipFields)
+                  .addContainerGap(81, Short.MAX_VALUE))
+                .addGroup(gl_panel.createSequentialGroup()
+                  .addComponent(chckbxPartOfSpeech)
+                  .addContainerGap(52, Short.MAX_VALUE))))))
+    );
+    gl_panel.setVerticalGroup(
+      gl_panel.createParallelGroup(Alignment.LEADING)
+        .addGroup(gl_panel.createSequentialGroup()
+          .addContainerGap()
+          .addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+            .addComponent(lblLineBreaksBy)
+            .addComponent(breakLineByDropdown, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+          .addPreferredGap(ComponentPlacement.RELATED)
+          .addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+            .addComponent(lblColorBy)
+            .addComponent(colorByDropdown, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+          .addPreferredGap(ComponentPlacement.RELATED)
+          .addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+            .addComponent(lblText)
+            .addComponent(textByDropdown, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+          .addGap(18)
+          .addComponent(lblTooltipFields)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(chckbxWord)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(chckbxPartOfSpeech)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(chckbxSounds)
+          .addPreferredGap(ComponentPlacement.UNRELATED)
+          .addComponent(chckbxSimilarity)
+          .addContainerGap(264, Short.MAX_VALUE))
+    );
     panel.setLayout(gl_panel);
 
     JPanel panel_1 = new JPanel();
@@ -1175,7 +1185,7 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
       txtCust_3.setBackground(ColorSchemeUtil.goodColors[3]);
       txtCust_4.setBackground(ColorSchemeUtil.goodColors[4]);
       txtCust_5.setBackground(ColorSchemeUtil.goodColors[5]);
-      txtCust_6.setBackground(ColorSchemeUtil.goodColors[5]);
+      txtCust_6.setBackground(ColorSchemeUtil.goodColors[6]);
       txtCust_7.setBackground(ColorSchemeUtil.goodColors[7]);
     }
   }
