@@ -7,7 +7,7 @@ ProseVis is available for Windows, Linux, and OSX.  Please click the appropriate
 <a href="<?php echo $site_prefix; ?>/downloads/prosevis.win32.zip" title="Windows 32 Bit Package">Windows 32 bit package</a> <br />
 <a href="<?php echo $site_prefix; ?>/downloads/prosevis.linux64.tar.gz" title="Linux 64 Bit Package">Linux 64 bit package</a> <br />
 <a href="<?php echo $site_prefix; ?>/downloads/prosevis.linux32.tar.gz" title="Linux 32 Bit Package">Linux 32 bit package</a> <br />
-<a href="<?php echo $site_prefix; ?>/downloads/prosevis.mac.zip" title="Mac OSX Package">Mac OSX package</a> <br />
+<a href="<?php echo $site_prefix; ?>/downloads/prosevis.mac.tar.gz" title="Mac OSX Package">Mac OSX package</a> <br />
 <br/>
 There is also sample data for use with ProseVis below. <br />
 <br />
