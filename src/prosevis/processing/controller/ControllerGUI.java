@@ -376,6 +376,7 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
         JComboBox cb = (JComboBox) e.getSource();
         String labelStr = (String) cb.getSelectedItem();
         theModel.setColorBy(labelStr);
+        notifyWorkingColorsSelected(ColorSchemeUtil.kWorkingLabel.equals(labelStr));
       }
     });
 
@@ -533,15 +534,14 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
     txtCust_7 = new JTextField();
     txtCust_7.setColumns(10);
 
-    // colors from colorbrewer2.org
-    txtCust_0.setBackground(new Color(228, 26, 28));
-    txtCust_1.setBackground(new Color(55, 126, 184));
-    txtCust_2.setBackground(new Color(77, 175, 74));
-    txtCust_3.setBackground(new Color(152, 78, 163));
-    txtCust_4.setBackground(new Color(255, 127, 0));
-    txtCust_5.setBackground(new Color(255, 255, 51));
-    txtCust_6.setBackground(new Color(166, 86, 40));
-    txtCust_7.setBackground(new Color(247, 129, 191));
+    txtCust_0.setBackground(Color.white);
+    txtCust_1.setBackground(Color.white);
+    txtCust_2.setBackground(Color.white);
+    txtCust_3.setBackground(Color.white);
+    txtCust_4.setBackground(Color.white);
+    txtCust_5.setBackground(Color.white);
+    txtCust_6.setBackground(Color.white);
+    txtCust_7.setBackground(Color.white);
     
     final JTextField[] custTxts = { txtCust_0, txtCust_1, txtCust_2, txtCust_3,
         txtCust_4, txtCust_5, txtCust_6, txtCust_7, };
@@ -1152,6 +1152,31 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
       for (int i = 0; i < state.length; i++) {
         comparisonsEnabled.get(i).setSelected(state[i].getEnabled());
       }
+    }
+  }
+
+  private void notifyWorkingColorsSelected(boolean selected) {
+    if (txtCust_0 == null) {
+      return;
+    }
+    if (!selected) {
+      txtCust_0.setBackground(Color.white);
+      txtCust_1.setBackground(Color.white);
+      txtCust_2.setBackground(Color.white);
+      txtCust_3.setBackground(Color.white);
+      txtCust_4.setBackground(Color.white);
+      txtCust_5.setBackground(Color.white);
+      txtCust_6.setBackground(Color.white);
+      txtCust_7.setBackground(Color.white);
+    } else {
+      txtCust_0.setBackground(ColorSchemeUtil.goodColors[0]);
+      txtCust_1.setBackground(ColorSchemeUtil.goodColors[1]);
+      txtCust_2.setBackground(ColorSchemeUtil.goodColors[2]);
+      txtCust_3.setBackground(ColorSchemeUtil.goodColors[3]);
+      txtCust_4.setBackground(ColorSchemeUtil.goodColors[4]);
+      txtCust_5.setBackground(ColorSchemeUtil.goodColors[5]);
+      txtCust_6.setBackground(ColorSchemeUtil.goodColors[5]);
+      txtCust_7.setBackground(ColorSchemeUtil.goodColors[7]);
     }
   }
 }

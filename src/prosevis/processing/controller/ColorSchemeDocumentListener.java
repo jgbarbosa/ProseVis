@@ -6,6 +6,7 @@ import java.util.HashMap;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.ColorUIResource;
 
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.color.ColorSchemeUtil;
@@ -50,7 +51,8 @@ public class ColorSchemeDocumentListener implements DocumentListener {
   
   private void updateWorkingColorScheme() {
     HashMap<String, Color> newMapping = new HashMap<String, Color>();
-    for (JTextField t : watchedFields) {
+    for (int i = 0;i < watchedFields.length; i++) {
+      JTextField t = watchedFields[i];
       if (t.getText() == null || t.getText().isEmpty()) {
         continue;
       }

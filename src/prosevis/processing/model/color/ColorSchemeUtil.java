@@ -14,6 +14,17 @@ import java.util.Scanner;
 public abstract class ColorSchemeUtil {
   public static final String kWorkingLabel = "Working color scheme";
   public static String kDefaultLabel = "~other";
+  // colors from colorbrewer2.org
+  public final static Color[] goodColors = new Color[] {
+        new Color(228, 26, 28),
+        new Color(55, 126, 184),
+        new Color(77, 175, 74),
+        new Color(152, 78, 163),
+        new Color(255, 127, 0),
+        new Color(255, 255, 51),
+        new Color(166, 86, 40),
+        new Color(247, 129, 191),
+    };
 
   public static CustomColorScheme loadFromFile(File file) throws InstantiationException {
     try {
