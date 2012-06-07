@@ -337,7 +337,7 @@ public class ProseVisSketch extends PApplet {
     }
     fill(kTitleBarBackground);
     int xOrig = mouseX + 20;
-    if (xOrig + boxDx > (viewIdx + 1) * lastViewWidth) {
+    if (xOrig + boxDx > this.width) {
       xOrig = xOrig - boxDx;
     }
     int yOrig = mouseY + 10;
