@@ -1,4 +1,3 @@
-MyCustomColors1
 pos
 #ffffff
 "VB" = #ff7f00

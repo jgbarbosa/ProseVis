@@ -1,4 +1,3 @@
-nice-comparison-shake
 comparison
 #ffffff
 "1h4" = #50E01B

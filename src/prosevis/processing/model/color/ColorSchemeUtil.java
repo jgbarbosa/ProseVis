@@ -18,7 +18,7 @@ public abstract class ColorSchemeUtil {
   public static CustomColorScheme loadFromFile(File file) throws InstantiationException {
     try {
       Scanner scanner = new Scanner(file);
-      String schemeName = scanner.nextLine();
+      String schemeName =  file.getName().substring(0, file.getName().lastIndexOf('.'));
       String schemeType = scanner.nextLine();
       String secondLine = scanner.nextLine();
       if (schemeType == null || secondLine == null) {
@@ -116,14 +116,11 @@ public abstract class ColorSchemeUtil {
 
   public static boolean saveToFile(String path, CustomColorScheme scheme) {
     String schemeType = scheme.getLabel();
-    String schemeName = scheme.getName();
     File file = new File(path);
     Map<String, Color> colorMap = scheme.getMapping();
     final String lineSep = System.getProperty("line.separator");
     try {
       PrintWriter writer = new PrintWriter(new FileWriter(file));
-      writer.write(schemeName);
-      writer.write(lineSep);
       writer.write(schemeType);
       writer.write(lineSep);
       writer.write(color2str(colorMap.get(kDefaultLabel)));
