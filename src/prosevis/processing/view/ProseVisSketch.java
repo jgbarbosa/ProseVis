@@ -138,6 +138,7 @@ public class ProseVisSketch extends PApplet {
           return;
         }
         lastViews[viewIdx].addScrollOffset(-mwe.getUnitsToScroll() * ProseVisSketch.kScrollWheelSensitivity);
+        toolTipContext.resetTimer();
     }}); 
   }
 
@@ -351,6 +352,7 @@ public class ProseVisSketch extends PApplet {
   
   @Override
   public void mouseDragged() {
+    toolTipContext.resetTimer();
     if (focused) {
       int y = emouseY;
       int dy = emouseY - lastY;
@@ -371,6 +373,7 @@ public class ProseVisSketch extends PApplet {
 
   @Override
   public void mousePressed() {
+    toolTipContext.resetTimer();
     int x = emouseX;
     int y = emouseY;
     if (focused && lastViews != null && lastViews.length > 0) {
@@ -412,6 +415,7 @@ public class ProseVisSketch extends PApplet {
 
   @Override
   public void focusLost() {
+    toolTipContext.resetTimer();
     lastViewScrollIdx = -1;
     inertialScrollIdx = -1;
     scrollInertia = 0.0;

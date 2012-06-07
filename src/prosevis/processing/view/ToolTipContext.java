@@ -28,4 +28,11 @@ public class ToolTipContext {
     return System.currentTimeMillis() - lastTime > minHoverTime;
   }
 
+  /**
+   * Notify the tooltip context that the user has pushed something and shouldn't be show tooltips
+   */
+  public void resetTimer() {
+      lastTime = System.currentTimeMillis();
+  }
+
 }
