@@ -152,8 +152,8 @@ public class Word {
     return stage;
   }
 
-  public float getComparisonValue(int syllableIdx, int syllableTypeIdx) {
-    return this.syllables.get(syllableIdx).getComparisonValue(syllableTypeIdx);
+  public float getComparisonValue(int syllableIdx, int syllableTypeIdx, int selfIdx) {
+    return this.syllables.get(syllableIdx).getComparisonValue(syllableTypeIdx, selfIdx);
   }
 
   public static void smoothData(final int window, Word head) {

@@ -207,7 +207,8 @@ public class ProseVisSketch extends PApplet {
             0,
             viewWidth - sliderWidth,
             viewHeight,
-            enabledComparisons);
+            enabledComparisons,
+            (renderInfo.enableSelfSimilarity)?-1:i);
       }
     } else {
       updateScrollWithInertia();
@@ -228,8 +229,8 @@ public class ProseVisSketch extends PApplet {
               0, 
               viewWidth - sliderWidth, 
               viewHeight, 
-              enabledComparisons
-              );
+              enabledComparisons,
+              (renderInfo.enableSelfSimilarity)?-1:i);
         }
       }
     }
@@ -426,7 +427,7 @@ public class ProseVisSketch extends PApplet {
       TypeMap typeMap,
       CoordinateWordMap wordMap,
       int minX, int minY, int viewWidth, int viewHeight,
-      boolean[] enabledComparisons) {
+      boolean[] enabledComparisons, int selfIdx) {
     
     final int yOrigin = minY;
     final int xOrigin = minX;
@@ -521,7 +522,7 @@ public class ProseVisSketch extends PApplet {
           rect(wordTopX, wordTopY, wordDx, wordDy);
         } else if (colorByLabelIdx != TypeMap.kNoLabelIdx) {
           colorBackground(colorByLabelIdx, colorMap, typeMap, wordNode, wordTopX,
-              wordTopY, wordDx, wordDy, enabledComparisons);
+              wordTopY, wordDx, wordDy, enabledComparisons, selfIdx);
         }
         lineBuffer.append(renderedText);
         renderedWidth += wordWidth;
@@ -547,7 +548,7 @@ public class ProseVisSketch extends PApplet {
   private void colorBackground(int colorByLabelIdx, Map<String, Color> colorMap,
       TypeMap typeMap,
       Word wordNode, int topX, int topY, int dx, int dy,
-      boolean[] enabledComparisons) {
+      boolean[] enabledComparisons, int selfIdx) {
     if (wordNode.isPunct()) {
       return;
     }
@@ -578,7 +579,7 @@ public class ProseVisSketch extends PApplet {
           final float[] hsb = new float[3];
           Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), hsb);
           final float similarity = wordNode.getComparisonValue(i,
-              syllableTypeIdx);
+              syllableTypeIdx, selfIdx);
           c = Color.getHSBColor(hsb[0], hsb[1] * similarity, hsb[2]);
         }
         fill(c.getRed(), c.getGreen(), c.getBlue());

@@ -28,6 +28,7 @@ public enum BreakLinesBy {
 //    return i == Section.idx || i == Paragraph.idx;
   }
   public static boolean insertWhiteSpace(int i) {
-    return i == Section.idx || i == Paragraph.idx;
+    return true;
+//    return i == Section.idx || i == Paragraph.idx;
   }
 }

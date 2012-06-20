@@ -47,11 +47,11 @@ public class Syllable {
     return label2type.get(labelIdx);
   }
 
-  public float getComparisonValue(int idx) {
+  public float getComparisonValue(int idx, int selfIdx) {
     if (comparisons == null) {
       return 0.0f;
     }
-    return comparisons.getValue(idx);
+    return comparisons.getValue(idx, selfIdx);
   }
 
   public int getComparisonCount() {

@@ -21,13 +21,13 @@ public class ComparisonData {
     return maxIdx;
   }
 
-  public float getValue(int idx) {
+  public float getValue(int idx, int selfIdx) {
     if (idx < 0 || idx >= smoothedComparisons.length) {
       return 0.0f;
     }
     float absMaxV = Float.MIN_NORMAL;
     for (int i = 0; i < smoothedComparisons.length; i++) {
-      if (smoothedComparisons[i] > absMaxV) {
+      if (smoothedComparisons[i] > absMaxV && i != selfIdx) {
         absMaxV = smoothedComparisons[i];
       }
     }
