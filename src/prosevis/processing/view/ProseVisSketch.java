@@ -208,21 +208,24 @@ public class ProseVisSketch extends PApplet {
             viewWidth - sliderWidth,
             viewHeight,
             enabledComparisons,
-            (renderInfo.enableSelfSimilarity)?-1:i);
+            (renderInfo.enableSelfSimilarity)?-1:lastViews[i].getSelfIdx());
       }
     } else {
       updateScrollWithInertia();
 
       for (int i = 0; i < views.length; i++) {
-        if (views[i].getAndClearNeedsRender()) {
+        if (lastViews[i].getAndClearNeedsRender()) {
           sliders.get(i).setValue((float) views[i].getScroll());
           enabledComparisons = renderInfo.enabled;
           if (!renderInfo.enableSelfSimilarity) {
             enabledComparisons = Arrays.copyOf(renderInfo.enabled, renderInfo.enabled.length);
-            enabledComparisons[i] = false;
+            int selfIdx = lastViews[i].getSelfIdx();
+            if (selfIdx >= 0) {
+              enabledComparisons[selfIdx] = false;
+            }
           }
           renderView(
-              views[i], 
+              lastViews[i], 
               typeMap, 
               wordMaps.get(i),
               i * viewWidth,
@@ -230,7 +233,7 @@ public class ProseVisSketch extends PApplet {
               viewWidth - sliderWidth, 
               viewHeight, 
               enabledComparisons,
-              (renderInfo.enableSelfSimilarity)?-1:i);
+              (renderInfo.enableSelfSimilarity)?-1:lastViews[i].getSelfIdx());
         }
       }
     }

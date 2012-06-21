@@ -113,16 +113,19 @@ public class Document {
           }
         }
       }
-      String nameWithoutSuffix = shortName.substring(0, shortName.lastIndexOf('.'));
       if (loadComparisonData > 0 && !typeMap.hasComparisonDataHeaders()) {
         String[] newHeaders = new String[loadComparisonData];
         for (int i = 0; i < loadComparisonData; i++) {
           newHeaders[i] = columns[i + TypeMap.kMaxFields];
-          if (newHeaders[i].equals(nameWithoutSuffix)) {
-            selfIdx = i;
-          }
         }
         typeMap.addComparisonDataHeaders(newHeaders);
+      }
+      String nameWithoutSuffix = shortName.substring(0, shortName.lastIndexOf('.'));
+      String [] headers = typeMap.getComparisonDataHeaders();
+      for (int i = 0; i < headers.length; i++) {
+          if (headers[i].equals(nameWithoutSuffix)) {
+            selfIdx = i;
+          }
       }
 
       Word lastWord = null;
