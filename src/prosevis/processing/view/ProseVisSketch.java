@@ -26,6 +26,17 @@ import controlP5.ControlEvent;
 import controlP5.ControlListener;
 import controlP5.ControlP5;
 import controlP5.Slider;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ContainerListener;
+import java.awt.event.HierarchyBoundsListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowListener;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 public class ProseVisSketch extends PApplet {
   private static final long serialVersionUID = 1L;
@@ -51,6 +62,10 @@ public class ProseVisSketch extends PApplet {
   private int lastDy;
   private int lastSliderWidth;
   private int lastViewWidth;
+  private boolean changedSize = false;
+  
+  private ControllerGUI window;
+  
   private final ArrayList<CoordinateWordMap> wordMaps = new ArrayList<CoordinateWordMap>();
   private final ToolTipContext toolTipContext = new ToolTipContext();
   private ControlListener sliderListener = new ControlListener() {
@@ -63,19 +78,24 @@ public class ProseVisSketch extends PApplet {
     // used.
     public void controlEvent(ControlEvent theEvent) {
       int sliderIdx = theEvent.controller().id();
+      
       if (sliderIdx >= sliders.size() || sliderIdx < 0) {
         System.err.println("Got a bad slider index: " + sliderIdx);
         return;
       }
       Slider updated = sliders.get(theEvent.controller().id());
-      DataTreeView updateData = lastViews[theEvent.controller().id()];
-      updateData.setScroll(updated.value());
+     
+      if(!theModel.isSlidesTogether()) {
+            DataTreeView updateData = lastViews[theEvent.controller().id()];
+            updateData.setScroll(updated.value());
+      } else {
+            for(DataTreeView updateData : lastViews) updateData.setScroll(updated.value());
+      }
     }
   };
 
   public ProseVisSketch() {
-    theModel = new ApplicationModel(ArgumentHack.getViewArea().width,
-        ArgumentHack.getViewArea().height);
+    theModel = new ApplicationModel(ArgumentHack.getViewArea().width,ArgumentHack.getViewArea().height);
     sliders = new ArrayList<Slider>();
     lastViews = null;
     fonts = new HashMap<Integer, PFont>();
@@ -92,14 +112,27 @@ public class ProseVisSketch extends PApplet {
     // size call must be first, Processing is possibly the worst library ever
     // written
     if (theModel.isLassoMode()) {
-      System.out.println("Entering big screen mode, using OpenGL components");
-      size(theModel.getScreenX(), theModel.getScreenY(), OPENGL);
+      //System.out.println("Entering big screen mode, using OpenGL components");
+      //size(theModel.getScreenX(), theModel.getScreenY(), OPENGL);
+      size(theModel.getScreenX(), theModel.getScreenY(), JAVA2D);
     } else {
       size(theModel.getScreenX(), theModel.getScreenY(), JAVA2D);
     }
     // can't do this in the constructor, again, worst library ever
     controlP5 = new ControlP5(this);
 
+    this.frame.setResizable(true);
+  
+    this.frame.addComponentListener(new ComponentAdapter() {
+    
+        @Override
+         public void componentResized(ComponentEvent e) {
+             theModel.setScreenX(e.getComponent().getWidth());
+             theModel.setScreenY(e.getComponent().getHeight());
+             changedSize = true;
+         }
+    
+    });
     background(255, 255, 255);
     frameRate(25);
     fill(0, 0, 0);
@@ -116,7 +149,7 @@ public class ProseVisSketch extends PApplet {
       @Override
       public void run() {
         try {
-          ControllerGUI window = new ControllerGUI(theModel);
+          window = new ControllerGUI(theModel);
           window.go();
         } catch (Exception e) {
           e.printStackTrace();
@@ -140,7 +173,53 @@ public class ProseVisSketch extends PApplet {
         }
         lastViews[viewIdx].addScrollOffset(-mwe.getUnitsToScroll() * ProseVisSketch.kScrollWheelSensitivity);
         toolTipContext.resetTimer();
-    }}); 
+    }});
+    
+    addKeyListener(new KeyListener() {
+
+          @Override
+          public void keyTyped(KeyEvent ke) {
+              
+          }
+
+          @Override
+          public void keyPressed(KeyEvent ke) {
+              
+              if(ke.getKeyChar() == 'M' || ke.getKeyChar() == 'm') {
+                  window.setFront();
+              }
+              if(ke.getKeyChar() == 'C' || ke.getKeyChar() == 'c') {
+                  window.setFront();
+              }
+              if(ke.getKeyChar() == 'G' || ke.getKeyChar() == 'g') {
+                  window.setFront();
+              }
+              if(ke.getKeyChar() == KeyEvent.VK_SPACE) {
+                  window.setFront();
+              }
+              
+              switch(ke.getKeyChar()) {
+                  case '1':theModel.setSmoothingWindow(1);break;
+                  case '2':theModel.setSmoothingWindow(3);break;
+                  case '3':theModel.setSmoothingWindow(5);break;
+                  case '4':theModel.setSmoothingWindow(7);break;
+                  case '5':theModel.setSmoothingWindow(9);break;
+                  case '6':theModel.setSmoothingWindow(11);break;
+                  case '7':theModel.setSmoothingWindow(13);break;
+                  case '8':theModel.setSmoothingWindow(15);break;
+                  case '9':theModel.setSmoothingWindow(17);break;
+                  case '0':theModel.setSmoothingWindow(19);break;
+                  case 'S':
+                  case 's':theModel.setAllowSelfSimilarity(!theModel.getAllowSelfSimilarity());
+              }
+              
+          }
+
+          @Override
+          public void keyReleased(KeyEvent ke) {
+              
+          }
+      });   
   }
 
   void setFont(int size) {
@@ -167,9 +246,12 @@ public class ProseVisSketch extends PApplet {
   @Override
   public void draw() {
     RenderingInformation renderInfo = theModel.getRenderingData();
+
     DataTreeView[] views = renderInfo.views;
     TypeMap typeMap = renderInfo.typeMap;
+    
     boolean[] enabledComparisons = renderInfo.enabled;
+    
     final int sliderWidth = lastSliderWidth = renderInfo.sliderWidth;
     final int viewWidth = lastViewWidth = renderInfo.viewWidth;
     final int viewHeight = renderInfo.viewHeight;
@@ -178,6 +260,7 @@ public class ProseVisSketch extends PApplet {
       // crap, new data or layout, remove all sliders, reset scroll inertia, possibly add wordMaps
       lastViewScrollIdx = -1;
       lastViews = views;
+      //changedSize = false;
       
       
       while (wordMaps.size() < lastViews.length) {
@@ -213,6 +296,11 @@ public class ProseVisSketch extends PApplet {
     } else {
       updateScrollWithInertia();
 
+      if(changedSize) {
+          refreshSliders(viewHeight);
+          changedSize = false;
+      }
+      
       for (int i = 0; i < views.length; i++) {
         if (lastViews[i].getAndClearNeedsRender()) {
           sliders.get(i).setValue((float) views[i].getScroll());

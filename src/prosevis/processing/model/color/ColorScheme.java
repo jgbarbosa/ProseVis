@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ColorScheme {
+    
   protected static Map<String, Color> buildEmptyMapping() {
     HashMap<String, Color> ret = new HashMap<String, Color>();
     ret.put(ColorSchemeUtil.kDefaultLabel, Color.white);

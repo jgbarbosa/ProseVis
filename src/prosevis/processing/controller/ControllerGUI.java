@@ -2,7 +2,6 @@ package prosevis.processing.controller;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -33,15 +32,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import net.miginfocom.swing.MigLayout;
 import prosevis.data.BreakLinesBy;
 import prosevis.data.TypeMap;
 import prosevis.processing.model.ApplicationModel;
 import prosevis.processing.model.DataTreeView;
-import prosevis.processing.model.color.ColorScheme;
 import prosevis.processing.model.color.ColorSchemeDB;
 import prosevis.processing.model.color.ColorSchemeUtil;
 import prosevis.processing.model.color.CustomColorScheme;
@@ -50,6 +46,9 @@ import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 
 public class ControllerGUI implements WindowStateListener, ColorRefreshable {
   static final String kXmlTag = " (with XML)";
@@ -90,7 +89,7 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
    */
   private void initialize() {
     colorByModel = new DefaultComboBoxModel();
-    colorByModel.addElement(TypeMap.kNoLabelLabel);
+    colorByModel.addElement(ColorSchemeDB.kNoneSchemeName);
     textByModel = new DefaultComboBoxModel();
     textByModel.addElement(TypeMap.kNoLabelLabel);
     textByModel.setSelectedItem(TypeMap.kNoLabelLabel);
@@ -314,7 +313,8 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
           selectedFiles.add((String) selected[i]);
         }
         theModel.searchForTerm(searchTerm, label, selectedFiles);
-        colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
+        
+        colorByDropdown.setSelectedItem(ColorSchemeDB.kNoneSchemeName);
       }
     };
     searchTermBox.addActionListener(searchActionListener);
@@ -369,7 +369,7 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
       }
     });
 
-    colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
+    colorByDropdown.setSelectedItem(ColorSchemeDB.kNoneSchemeName);
     colorByDropdown.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
@@ -380,7 +380,7 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
       }
     });
 
-    colorByDropdown.setSelectedItem(TypeMap.kNoLabelLabel);
+    colorByDropdown.setSelectedItem(ColorSchemeDB.kNoneSchemeName);
 
     JLabel lblText = new JLabel("  Text:  ");
 
@@ -921,6 +921,18 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
         // }
       }
     });
+    
+//    JCheckBox chckbxLockScroolBars = new JCheckBox("Lock scroll bars");
+//    chckbxLockScroolBars.addActionListener(new ActionListener() {
+//      @Override
+//      public void actionPerformed(ActionEvent e) {
+//        JCheckBox src = (JCheckBox)e.getSource();
+//        theModel.setSlidesTogether(src.isSelected());
+//      }
+//    });
+//    chckbxLockScroolBars.setSelected(theModel.isSlidesTogether());
+//    
+//    
 
     GroupLayout gl_colorTopButtons = new GroupLayout(colorTopButtons);
     gl_colorTopButtons.setHorizontalGroup(gl_colorTopButtons
@@ -974,6 +986,16 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
       smoothingWindowCombo.addItem(i * 2 + 1);
     }
     smoothingWindowCombo.setSelectedItem(theModel.getSmoothingWindow());
+
+//    JCheckBox chckbxUseGaussSmoothing = new JCheckBox("Use gaussian smoothing");
+//    chckbxUseGaussSmoothing.addActionListener(new ActionListener() {
+//      @Override
+//      public void actionPerformed(ActionEvent e) {
+//        JCheckBox src = (JCheckBox)e.getSource();
+//        theModel.setUseGaussianFilter(src.isSelected());
+//      }
+//    });
+//    chckbxUseGaussSmoothing.setSelected(theModel.getUseGaussianFilter());
     
     JCheckBox chckbxAllowSelfSimilarity = new JCheckBox("Allow self similarity");
     chckbxAllowSelfSimilarity.addActionListener(new ActionListener() {
@@ -983,16 +1005,17 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
         theModel.setAllowSelfSimilarity(src.isSelected());
       }
     });
-    chckbxAllowSelfSimilarity.setSelected(theModel.getAllowSelfSimilarity());
+    chckbxAllowSelfSimilarity.setSelected(theModel.getAllowSelfSimilarity());  
     
     JButton btnRefresh = new JButton("Refresh");
     btnRefresh.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent arg0) {
         theModel.setColorBy(ColorSchemeDB.kRandomComparision);
-        colorByModel.setSelectedItem(TypeMap.kNoLabelLabel);
+        colorByModel.setSelectedItem(ColorSchemeDB.kNoneSchemeName);
       }
     });
+    
     GroupLayout gl_comparisonPaneLeftPanel = new GroupLayout(
         comparisonPaneLeftPanel);
     gl_comparisonPaneLeftPanel.setHorizontalGroup(
@@ -1004,10 +1027,12 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
               .addComponent(lblSmoothingWindow)
               .addPreferredGap(ComponentPlacement.RELATED)
               .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE))
+//            .addComponent(chckbxUseGaussSmoothing)
             .addComponent(chckbxAllowSelfSimilarity)
             .addComponent(btnRefresh))
           .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
+    
     gl_comparisonPaneLeftPanel.setVerticalGroup(
       gl_comparisonPaneLeftPanel.createParallelGroup(Alignment.LEADING)
         .addGroup(gl_comparisonPaneLeftPanel.createSequentialGroup()
@@ -1016,11 +1041,14 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
             .addComponent(lblSmoothingWindow)
             .addComponent(smoothingWindowCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
           .addPreferredGap(ComponentPlacement.UNRELATED)
+//          .addComponent(chckbxUseGaussSmoothing)
+          .addPreferredGap(ComponentPlacement.RELATED, 0, Short.MAX_VALUE)
           .addComponent(chckbxAllowSelfSimilarity)
           .addPreferredGap(ComponentPlacement.RELATED, 385, Short.MAX_VALUE)
           .addComponent(btnRefresh)
           .addContainerGap())
     );
+    
     comparisonPaneLeftPanel.setLayout(gl_comparisonPaneLeftPanel);
 
     JScrollPane comparisonPaneRightPanel = new JScrollPane();
@@ -1032,10 +1060,28 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
 
     lblNoComparisonData = new JLabel("No comparison data loaded.");
     comparisonContent.add(lblNoComparisonData, "cell 0 0");
-
+    
+    JPanel generalSettings = new JPanel();
+    controllerTabGroup.addTab("General Settings", null, generalSettings, null);
+    
+    JCheckBox chckbxLockScroolBars = new JCheckBox("Lock together slider bars");
+    chckbxLockScroolBars.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        JCheckBox src = (JCheckBox)e.getSource();
+        theModel.setSlidesTogether(src.isSelected());
+      }
+    });
+    chckbxLockScroolBars.setSelected(theModel.isSlidesTogether());
+    
+    generalSettings.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+    generalSettings.add(chckbxLockScroolBars);
+  
   }
 
   public void go() {
+    //this.frame.setAlwaysOnTop(true);
+    this.frame.pack();
     this.frame.setVisible(true);
   }
 
@@ -1188,6 +1234,12 @@ public class ControllerGUI implements WindowStateListener, ColorRefreshable {
       txtCust_6.setBackground(ColorSchemeUtil.goodColors[6]);
       txtCust_7.setBackground(ColorSchemeUtil.goodColors[7]);
     }
+  }
+  
+  
+  public void setFront() {
+      this.frame.toFront();
+      this.frame.requestFocus();
   }
 }
 

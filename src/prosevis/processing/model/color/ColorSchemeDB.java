@@ -6,14 +6,14 @@ import java.util.List;
 import prosevis.data.TypeMap;
 
 public class ColorSchemeDB {
-  private static final String kNoneSchemeName = "None";
-  private static final String kRandomWordsName = "Random Words";
-  private static final String kRandomPOSName = "Random POS";
-  private static final String kRandomSoundName = "Random Whole Sound";
-  private static final String kRandomInitialSoundName = "Random Initial Sound";
-  private static final String kRandomVowelSoundName = "Random Vowel Sound";
-  private static final String kRandomFinalSoundName = "Random Final Sound";
-  private static final String kRandomSoundexName = "Random Soundex";
+  public static final String kNoneSchemeName = "None";
+  public static final String kRandomWordsName = "Random Words";
+  public static final String kRandomPOSName = "Random POS";
+  public static final String kRandomSoundName = "Random Whole Sound";
+  public static final String kRandomInitialSoundName = "Random Initial Sound";
+  public static final String kRandomVowelSoundName = "Random Vowel Sound";
+  public static final String kRandomFinalSoundName = "Random Final Sound";
+  public static final String kRandomSoundexName = "Random Soundex";
   public static final String kRandomComparision = "Random Comparison";
   
   
@@ -40,7 +40,7 @@ public class ColorSchemeDB {
   private WorkingColorScheme workingColorScheme;
   
   public ColorSchemeDB() {
-    BuiltInColorScheme noneScheme = new BuiltInColorScheme(kNoneSchemeName, "none");
+    BuiltInColorScheme noneScheme = new BuiltInColorScheme(kNoneSchemeName, TypeMap.kNoLabelLabel);
     BuiltInColorScheme wordScheme = new BuiltInColorScheme(kRandomWordsName, TypeMap.kWordLabel);
     BuiltInColorScheme posScheme = new BuiltInColorScheme(kRandomPOSName, TypeMap.kPosLabel);
     BuiltInColorScheme soundAllScheme = new BuiltInColorScheme(kRandomSoundName, TypeMap.kPhonemeAllLabel);
@@ -96,6 +96,7 @@ public class ColorSchemeDB {
   }
 
   public ColorScheme selectColorScheme(String name) {
+    
     if (workingColorScheme != null && workingColorScheme.getName().equals(name)) {
       selectedScheme = workingColorScheme;
     }
@@ -109,6 +110,7 @@ public class ColorSchemeDB {
         selectedScheme = scheme;
       }
     }
+    
     return selectedScheme;
   }
 

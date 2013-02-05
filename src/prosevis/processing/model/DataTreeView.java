@@ -187,15 +187,19 @@ public class DataTreeView {
   }
 
 
-  public synchronized void setSmoothingWindow(int smoothingWindow) {
+  public synchronized void setSmoothingWindow(int smoothingWindow, boolean allowSelfSimilarity, boolean useGauss, boolean useNormEntDom, boolean useNormComparison) {
     if (smoothingWindow % 2 == 0) {
       // we center each window around the word in question, so each window much
       // be an odd size
       smoothingWindow++;
     }
+    
     if (smoothingWindow != this.smoothingWindow) {
       this.smoothingWindow = smoothingWindow;
-      Word.smoothData(this.smoothingWindow, data.getFirstWord());
+      
+      int selfIdx = (allowSelfSimilarity) ? this.getSelfIdx() : -1;
+      
+      Word.smoothData(this.smoothingWindow, data.getFirstWord(), useGauss, useNormEntDom, useNormComparison, this.getSelfIdx());
       this.needsRender = true;
     }
   }

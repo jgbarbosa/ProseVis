@@ -24,6 +24,9 @@ Email: <input type="text" name="documents[email]" />
 <p>Users may upload a document or zip file containing documents for processing.  If a zip file is provided, comparisons will be calculated between the contained documents.</p>
 
 Document or zip file: <input type="file" name="documents[]" />
+
+<br>
+
 </div>
 
 <!-- Capcha stuff -->

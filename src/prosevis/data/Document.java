@@ -4,10 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-
 import nu.xom.Builder;
 import nu.xom.ParsingException;
 import prosevis.processing.controller.FileLoader;

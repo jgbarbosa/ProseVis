@@ -60,6 +60,10 @@ public class Syllable {
     }
     return comparisons.getCount();
   }
+  
+   public ComparisonData getComparison() {
+    return comparisons;
+  }
 
   public void addTo(ComparisonData runningSum) {
     if (comparisons == null) {
@@ -85,6 +89,12 @@ public class Syllable {
   public void resetSmoothing() {
     if (comparisons != null) {
       comparisons.resetSmoothing();
+    }
+  }
+  
+  public void reset() {
+    if (comparisons != null) {
+      comparisons.reset();
     }
   }
 }

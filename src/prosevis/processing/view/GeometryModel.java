@@ -2,7 +2,7 @@ package prosevis.processing.view;
 
 public class GeometryModel {
   private int viewX;
-  private final int viewY;
+  private int viewY;
   private int sliderSz;
   private static final double kSliderFraction = 0.01;
 
@@ -12,10 +12,15 @@ public class GeometryModel {
   }
 
   public void setX(int x) {
+    
     viewX = x;
     sliderSz = Math.max((int)(viewX * kSliderFraction), 10);
   }
 
+  public void setY(int y) {
+    viewY = y;
+  }
+    
   public int getViewX() {
     return viewX;
   }
